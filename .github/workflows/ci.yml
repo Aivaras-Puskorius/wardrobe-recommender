@@ -25,10 +25,11 @@ jobs:
         with:
           cache-provider: basic
 
+      # assembleRelease checks that the R8-minified demo build still builds.
       # verifyRoborazziDebug runs all unit tests and compares screenshots
       # with the references in app/src/test/screenshots.
       - name: Build, unit tests, screenshot tests and lint
-        run: ./gradlew assembleDebug verifyRoborazziDebug lintDebug
+        run: ./gradlew assembleDebug assembleRelease verifyRoborazziDebug lintDebug
 
       - name: Upload reports
         if: failure()
