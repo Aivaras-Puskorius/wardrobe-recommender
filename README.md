@@ -12,7 +12,7 @@ Status: prototype for presentation I. All data is sample data held in memory.
 
 - JDK 17
 - Android SDK Platform 37: `sdkmanager "platforms;android-37.0"`
-- Device or emulator with Android 8.0 (API 26) or newer
+- Device or emulator with Android 8.0 (API 26) or newer. Portrait only.
 
 ## Build and run
 
