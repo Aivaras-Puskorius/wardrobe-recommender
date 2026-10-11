@@ -17,9 +17,12 @@ Status: prototype for presentation I. All data is sample data held in memory.
 ## Build and run
 
 ```
-./gradlew assembleDebug    # build app/build/outputs/apk/debug/app-debug.apk
-./gradlew installDebug     # install on the connected device
+./gradlew assembleDebug     # build app/build/outputs/apk/debug/app-debug.apk
+./gradlew installDebug      # install on the connected device
+./gradlew installRelease    # install the minified build, for demos
 ```
+
+The release build is shrunk with R8 (about 1.7 MB, debug about 12.5 MB) and signed with the local debug key, so it installs over the debug build. Not for publishing.
 
 ## Use
 

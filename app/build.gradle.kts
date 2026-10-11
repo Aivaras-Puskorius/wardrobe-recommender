@@ -19,6 +19,17 @@ android {
         versionName = "0.1.0"
     }
 
+    buildTypes {
+        release {
+            // R8 shrinks the APK. Release builds are not debuggable, so Compose runs at full speed.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            // INFO(limit): signed with the debug key so it installs over the debug build, use a real key before publishing.
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
