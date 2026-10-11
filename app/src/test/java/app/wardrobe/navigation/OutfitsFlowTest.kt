@@ -10,7 +10,6 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import app.wardrobe.AppContainer
 import app.wardrobe.ui.theme.WardrobeTheme
@@ -54,7 +53,7 @@ class OutfitsFlowTest {
     @Test
     fun styleItShowsIdeasForThatItemToday() {
         clickInLazyGrid("Dark jeans")
-        composeRule.onNodeWithText("Style it").performScrollTo().performClick()
+        composeRule.onNodeWithText("Style it").performClick()
 
         composeRule.onNodeWithText("Smart casual").assertIsDisplayed()
         composeRule.onNodeWithText("Kaunas · Today").assertIsDisplayed()
@@ -63,7 +62,7 @@ class OutfitsFlowTest {
     @Test
     fun otherItemsExplainThatThereAreNoIdeasYet() {
         composeRule.onNodeWithText("Black tee").performClick()
-        composeRule.onNodeWithText("Style it").performScrollTo().performClick()
+        composeRule.onNodeWithText("Style it").performClick()
 
         composeRule.onNodeWithText("No outfit ideas yet").assertIsDisplayed()
     }

@@ -5,16 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.wardrobe.R
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Season
+import app.wardrobe.ui.components.BottomActionBar
 import app.wardrobe.ui.components.ColorSwatch
 import app.wardrobe.ui.components.EmptyState
 import app.wardrobe.ui.components.ItemImage
@@ -105,6 +103,15 @@ fun ItemDetailContent(
                 },
             )
         },
+        bottomBar = {
+            if (state is ItemDetailUiState.Loaded) {
+                BottomActionBar(
+                    label = stringResource(R.string.results_style_it),
+                    onClick = onStyle,
+                    icon = R.drawable.ic_auto_awesome,
+                )
+            }
+        },
     ) { padding ->
         when (state) {
             ItemDetailUiState.Loading -> Box(
@@ -125,7 +132,7 @@ fun ItemDetailContent(
                 onAction = onBack,
             )
 
-            is ItemDetailUiState.Loaded -> ItemDetails(state.item, onStyle, Modifier.padding(padding))
+            is ItemDetailUiState.Loaded -> ItemDetails(state.item, Modifier.padding(padding))
         }
     }
 
@@ -142,7 +149,7 @@ fun ItemDetailContent(
 }
 
 @Composable
-private fun ItemDetails(item: ClothingItem, onStyle: () -> Unit, modifier: Modifier = Modifier) {
+private fun ItemDetails(item: ClothingItem, modifier: Modifier = Modifier) {
     val colorName = stringResource(item.color.label())
     val garmentName = stringResource(item.garment.label())
     Column(
@@ -189,15 +196,6 @@ private fun ItemDetails(item: ClothingItem, onStyle: () -> Unit, modifier: Modif
                     value = seasonsText(item.seasons),
                 )
             }
-        }
-        Button(onClick = onStyle, modifier = Modifier.fillMaxWidth()) {
-            Icon(
-                painter = painterResource(R.drawable.ic_auto_awesome),
-                contentDescription = null,
-                modifier = Modifier.size(ButtonDefaults.IconSize),
-            )
-            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text(stringResource(R.string.results_style_it))
         }
     }
 }
