@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,6 +41,7 @@ import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Season
 import app.wardrobe.ui.components.BottomActionBar
 import app.wardrobe.ui.components.ColorSwatch
+import app.wardrobe.ui.components.DestructiveButton
 import app.wardrobe.ui.components.EmptyState
 import app.wardrobe.ui.components.ItemImage
 import app.wardrobe.ui.label
@@ -231,12 +231,7 @@ private fun DeleteDialog(itemName: String, onConfirm: () -> Unit, onDismiss: () 
         title = { Text(stringResource(R.string.item_delete_title, itemName)) },
         text = { Text(stringResource(R.string.item_delete_body)) },
         confirmButton = {
-            TextButton(
-                onClick = onConfirm,
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-            ) {
-                Text(stringResource(R.string.action_delete))
-            }
+            DestructiveButton(stringResource(R.string.action_delete), onConfirm)
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }

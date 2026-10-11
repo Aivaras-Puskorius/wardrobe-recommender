@@ -35,6 +35,11 @@ class ItemDetailScreenshotTest {
     }
 
     @Test
+    fun deleteDialogDark() = composeRule.captureScreenInTheme(darkTheme = true) {
+        ItemDetailContent(jeans, onBack = {}, onEdit = {}, onStyle = {}, onDelete = {}, showDeleteDialogInitially = true)
+    }
+
+    @Test
     fun notFound() = composeRule.captureInTheme {
         ItemDetailContent(ItemDetailUiState.NotFound, onBack = {}, onEdit = {}, onStyle = {}, onDelete = {})
     }
