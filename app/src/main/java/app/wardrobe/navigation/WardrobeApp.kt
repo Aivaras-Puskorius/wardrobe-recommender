@@ -33,6 +33,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.defaultPopTransitionSpec
 import app.wardrobe.AppContainer
 import app.wardrobe.R
 import app.wardrobe.domain.model.Garment
@@ -201,11 +202,17 @@ fun WardrobeApp(container: AppContainer) {
                         .padding(padding)
                         .consumeWindowInsets(padding),
                     sharedTransitionScope = this,
+                    // Navigation 3's default predictive back animation shrinks the old screen to 70%
+                    // without fading it, which looked like a frozen screenshot. Back by gesture or by
+                    // the system back button now cross-fades like the app's own back arrow.
+                    predictivePopTransitionSpec = { PopTransition() },
                 )
             }
         }
     }
 }
+
+private val PopTransition = defaultPopTransitionSpec<NavKey>()
 
 private enum class Tab(
     val route: NavKey,
