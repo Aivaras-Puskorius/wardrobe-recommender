@@ -2,7 +2,9 @@ package app.wardrobe.feature.item
 
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -67,6 +69,20 @@ class EditItemViewModelTest {
     fun changingTheColorKeepsTheName() {
         viewModel.update(ItemFormChange.SetColor(ItemColor.NAVY))
         assertEquals(tee.name, editing().form.name)
+    }
+
+    @Test
+    fun changingTheGarmentKeepsTheSavedMaterial() {
+        val jacket = SampleData.items.first { it.id == "olive-rain-jacket" }
+        val editJacket = EditItemViewModel(jacket.id, repository, defaultName = { _, _ -> "" })
+        editJacket.update(ItemFormChange.SetGarment(Garment.COAT))
+        assertEquals(Material.WATERPROOF, (editJacket.uiState.value as EditItemUiState.Editing).form.material)
+    }
+
+    @Test
+    fun saveStoresANewMaterial() = runTest {
+        viewModel.update(ItemFormChange.SetMaterial(Material.LINEN))
+        assertEquals(tee.copy(material = Material.LINEN), viewModel.save())
     }
 
     @Test

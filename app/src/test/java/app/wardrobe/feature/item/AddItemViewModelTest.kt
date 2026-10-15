@@ -4,6 +4,7 @@ import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import kotlinx.coroutines.Dispatchers
@@ -78,6 +79,18 @@ class AddItemViewModelTest {
     }
 
     @Test
+    fun theMaterialFollowsTheGarmentUntilTheUserPicksOne() {
+        viewModel.recognizePhoto()
+        assertEquals(Material.WOOL, form().material)
+        viewModel.update(ItemFormChange.SetGarment(Garment.JEANS))
+        assertEquals(Material.DENIM, form().material)
+
+        viewModel.update(ItemFormChange.SetMaterial(Material.LINEN))
+        viewModel.update(ItemFormChange.SetGarment(Garment.SHIRT))
+        assertEquals(Material.LINEN, form().material)
+    }
+
+    @Test
     fun saveRejectsABlankNameAndShowsErrors() = runTest {
         viewModel.recognizePhoto()
         viewModel.update(ItemFormChange.SetName("   "))
@@ -99,6 +112,7 @@ class AddItemViewModelTest {
         viewModel.recognizePhoto()
         viewModel.update(ItemFormChange.SetName("  Green jumper "))
         viewModel.update(ItemFormChange.SetWarmth(Warmth.WARM))
+        viewModel.update(ItemFormChange.SetMaterial(Material.SYNTHETIC))
         viewModel.update(ItemFormChange.ToggleSeason(Season.AUTUMN))
         viewModel.update(ItemFormChange.ToggleSeason(Season.WINTER))
 
@@ -108,6 +122,7 @@ class AddItemViewModelTest {
         assertEquals("Green jumper", saved?.name)
         assertEquals(setOf(Season.AUTUMN, Season.WINTER), saved?.seasons)
         assertEquals(Warmth.WARM, saved?.warmth)
+        assertEquals(Material.SYNTHETIC, saved?.material)
         assertEquals(listOf(saved), repository.items.first())
     }
 }

@@ -3,6 +3,7 @@ package app.wardrobe.data
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import kotlinx.coroutines.flow.first
@@ -26,6 +27,7 @@ abstract class WardrobeRepositoryContract {
         name = "Oxford shirt",
         garment = Garment.SHIRT,
         color = ItemColor.LIGHT_BLUE,
+        material = Material.COTTON,
         warmth = Warmth.MEDIUM,
         seasons = setOf(Season.SPRING, Season.AUTUMN),
     )
@@ -34,6 +36,7 @@ abstract class WardrobeRepositoryContract {
         name = "Dark jeans",
         garment = Garment.JEANS,
         color = ItemColor.DENIM,
+        material = Material.DENIM,
         warmth = Warmth.MEDIUM,
         seasons = Season.entries.toSet(),
     )
@@ -60,6 +63,13 @@ abstract class WardrobeRepositoryContract {
         val renamed = shirt.copy(name = "Blue oxford shirt")
         repository.update(renamed)
         assertEquals(listOf(renamed), repository.items.first())
+    }
+
+    @Test
+    fun updateChangesTheMaterial() = runTest {
+        val linen = shirt.copy(material = Material.LINEN)
+        repository.update(linen)
+        assertEquals(linen, repository.item(shirt.id).first())
     }
 
     @Test(expected = IllegalArgumentException::class)

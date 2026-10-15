@@ -1,6 +1,7 @@
 package app.wardrobe.data
 
 import app.wardrobe.domain.model.Category
+import app.wardrobe.domain.model.Material
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -25,6 +26,19 @@ class SampleDataTest {
     @Test
     fun everySampleItemHasASeason() {
         assertTrue(SampleData.items.all { it.seasons.isNotEmpty() })
+    }
+
+    @Test
+    fun jacketsAndCoatHaveTheMaterialTheirNamesSay() {
+        val materials = SampleData.items.filter { it.category == Category.OUTERWEAR }.associate { it.id to it.material }
+        assertEquals(
+            mapOf(
+                "denim-jacket" to Material.DENIM,
+                "olive-rain-jacket" to Material.WATERPROOF,
+                "camel-coat" to Material.WOOL,
+            ),
+            materials,
+        )
     }
 
     @Test

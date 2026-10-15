@@ -35,7 +35,7 @@ class OutfitEngineTest {
     private val coolDay = day(7, 14, PARTLY_CLOUDY, 10)
 
     private fun summerItem(id: String, garment: Garment, color: ItemColor, warmth: Warmth) =
-        ClothingItem(id, id, garment, color, warmth, setOf(Season.SUMMER))
+        ClothingItem(id, id, garment, color, garment.defaultMaterial, warmth, setOf(Season.SUMMER))
 
     private fun suggest(
         wardrobe: List<ClothingItem>,

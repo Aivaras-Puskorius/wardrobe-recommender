@@ -50,6 +50,8 @@ class AddItemViewModel(
                     nameEditedByUser = false,
                     garment = suggestion.garment,
                     color = suggestion.color,
+                    material = suggestion.garment.defaultMaterial,
+                    materialEditedByUser = false,
                     warmth = Warmth.MEDIUM,
                     seasons = emptySet(),
                     suggestion = suggestion,

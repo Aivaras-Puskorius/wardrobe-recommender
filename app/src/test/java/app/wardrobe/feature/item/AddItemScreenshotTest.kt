@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.testing.captureInTheme
 import app.wardrobe.testing.captureScreenInTheme
@@ -27,6 +28,8 @@ class AddItemScreenshotTest {
         nameEditedByUser = false,
         garment = Garment.SWEATER,
         color = ItemColor.GREEN,
+        material = Material.WOOL,
+        materialEditedByUser = false,
         warmth = Warmth.MEDIUM,
         seasons = emptySet(),
         suggestion = ItemSuggestion(Garment.SWEATER, ItemColor.GREEN),

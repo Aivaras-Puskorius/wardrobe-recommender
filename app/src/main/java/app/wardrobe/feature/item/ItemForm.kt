@@ -4,6 +4,7 @@ import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 
@@ -11,6 +12,7 @@ import app.wardrobe.domain.model.Warmth
  * The editable fields of an item.
  *
  * @param nameEditedByUser false while [name] is the generated default, which then follows garment and color changes.
+ * @param materialEditedByUser false while [material] is the garment's default, which then follows garment changes.
  * @param suggestion what recognition proposed, shown next to the matching choices.
  * @param showErrors becomes true after a failed save, so errors don't show before the user tries.
  */
@@ -19,6 +21,8 @@ data class ItemForm(
     val nameEditedByUser: Boolean,
     val garment: Garment,
     val color: ItemColor,
+    val material: Material,
+    val materialEditedByUser: Boolean,
     val warmth: Warmth,
     val seasons: Set<Season>,
     val suggestion: ItemSuggestion? = null,
@@ -28,7 +32,7 @@ data class ItemForm(
     val seasonsError: Boolean get() = seasons.isEmpty()
     val isValid: Boolean get() = !nameError && !seasonsError
 
-    fun toItem(id: String) = ClothingItem(id, name.trim(), garment, color, warmth, seasons)
+    fun toItem(id: String) = ClothingItem(id, name.trim(), garment, color, material, warmth, seasons)
 }
 
 /** A form holding an existing item's values, as the edit screen starts with. */
@@ -37,6 +41,8 @@ fun ClothingItem.toForm() = ItemForm(
     nameEditedByUser = true,
     garment = garment,
     color = color,
+    material = material,
+    materialEditedByUser = true,
     warmth = warmth,
     seasons = seasons,
 )
@@ -46,19 +52,21 @@ sealed interface ItemFormChange {
     data class SetName(val name: String) : ItemFormChange
     data class SetGarment(val garment: Garment) : ItemFormChange
     data class SetColor(val color: ItemColor) : ItemFormChange
+    data class SetMaterial(val material: Material) : ItemFormChange
     data class SetWarmth(val warmth: Warmth) : ItemFormChange
     data class ToggleSeason(val season: Season) : ItemFormChange
 }
 
 /**
  * Applies [change]. While the user hasn't typed a name, [defaultName] renames the item
- * whenever its garment or color changes.
+ * whenever its garment or color changes. While the user hasn't picked a material, it follows the garment.
  */
 fun ItemForm.apply(change: ItemFormChange, defaultName: (Garment, ItemColor) -> String): ItemForm =
     when (change) {
         is ItemFormChange.SetName -> copy(name = change.name, nameEditedByUser = true)
         is ItemFormChange.SetGarment -> renamed(change.garment, color, defaultName)
         is ItemFormChange.SetColor -> renamed(garment, change.color, defaultName)
+        is ItemFormChange.SetMaterial -> copy(material = change.material, materialEditedByUser = true)
         is ItemFormChange.SetWarmth -> copy(warmth = change.warmth)
         is ItemFormChange.ToggleSeason ->
             copy(seasons = if (change.season in seasons) seasons - change.season else seasons + change.season)
@@ -72,4 +80,5 @@ private fun ItemForm.renamed(
     garment = garment,
     color = color,
     name = if (nameEditedByUser) name else defaultName(garment, color),
+    material = if (materialEditedByUser) material else garment.defaultMaterial,
 )

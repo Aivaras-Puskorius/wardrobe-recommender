@@ -15,10 +15,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Update
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import kotlinx.coroutines.flow.Flow
@@ -30,6 +32,7 @@ data class ItemEntity(
     val name: String,
     val garment: Garment,
     val color: ItemColor,
+    val material: Material,
     val warmth: Warmth,
     val seasons: Set<Season>,
 )
@@ -66,14 +69,47 @@ class Converters {
 }
 
 /** The wardrobe on the phone. Room creates it on first launch and adds the sample items then. */
-@Database(entities = [ItemEntity::class], version = 1)
+@Database(entities = [ItemEntity::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class WardrobeDatabase : RoomDatabase() {
     abstract fun items(): ItemDao
 
     companion object {
+        /**
+         * Version 2 adds the material. Saved items get their garment's default material.
+         *
+         * WARN: a migration describes the past, so it lists the version 1 garments and their defaults
+         * as plain SQL. Building it from [Garment] would change it whenever a default changes.
+         * INFO(limit): saved sample items get the defaults too, so an upgraded olive rain jacket is synthetic
+         * until the user edits it. Only builds from cbb5cff up to this change made version 1 databases.
+         */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE items ADD COLUMN material TEXT NOT NULL DEFAULT 'SYNTHETIC'")
+                db.execSQL(
+                    """
+                    UPDATE items SET material = CASE garment
+                        WHEN 'T_SHIRT' THEN 'COTTON'
+                        WHEN 'SHIRT' THEN 'COTTON'
+                        WHEN 'SWEATER' THEN 'WOOL'
+                        WHEN 'JEANS' THEN 'DENIM'
+                        WHEN 'TROUSERS' THEN 'COTTON'
+                        WHEN 'SHORTS' THEN 'COTTON'
+                        WHEN 'SKIRT' THEN 'COTTON'
+                        WHEN 'SNEAKERS' THEN 'SYNTHETIC'
+                        WHEN 'BOOTS' THEN 'LEATHER'
+                        WHEN 'JACKET' THEN 'SYNTHETIC'
+                        WHEN 'COAT' THEN 'WOOL'
+                        ELSE material
+                    END
+                    """.trimIndent(),
+                )
+            }
+        }
+
         fun build(context: Context, name: String = "wardrobe.db"): WardrobeDatabase =
             Room.databaseBuilder(context, WardrobeDatabase::class.java, name)
+                .addMigrations(MIGRATION_1_2)
                 .addCallback(SeedSampleItems)
                 .build()
     }
@@ -93,6 +129,7 @@ private object SeedSampleItems : RoomDatabase.Callback() {
                 put("name", item.name)
                 put("garment", item.garment.name)
                 put("color", item.color.name)
+                put("material", item.material.name)
                 put("warmth", item.warmth.name)
                 put("seasons", converters.seasonsToText(item.seasons))
             }
@@ -101,6 +138,6 @@ private object SeedSampleItems : RoomDatabase.Callback() {
     }
 }
 
-fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, warmth, seasons)
+fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, material, warmth, seasons)
 
-fun ClothingItem.toEntity() = ItemEntity(id, name, garment, color, warmth, seasons)
+fun ClothingItem.toEntity() = ItemEntity(id, name, garment, color, material, warmth, seasons)

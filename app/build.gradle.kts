@@ -45,6 +45,12 @@ android {
         // Robolectric screenshot tests need the app's resources.
         unitTests.isIncludeAndroidResources = true
     }
+
+    sourceSets {
+        // MigrationTestHelper reads the schemas as assets, and Robolectric tests see only the app's merged
+        // assets, so the debug build carries them. Release builds don't.
+        getByName("debug").assets.srcDir("$projectDir/schemas")
+    }
 }
 
 room {
@@ -77,6 +83,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.room.testing)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.androidx.compose.ui.test.junit4)

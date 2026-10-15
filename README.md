@@ -55,7 +55,7 @@ The release build is shrunk with R8 (about 1.7 MB, debug about 12.5 MB) and sign
 ```
 
 - Reference screenshots: `app/src/test/screenshots/`
-- Database schemas, one file per version: `app/schemas/`
+- Database schemas, one file per version: `app/schemas/`. The debug build packs them as assets for `WardrobeMigrationTest`.
 - CI: `.github/workflows/ci.yml` runs `assembleDebug assembleRelease verifyRoborazziDebug lintDebug` on every push to `main` and on pull requests.
 
 ## Code

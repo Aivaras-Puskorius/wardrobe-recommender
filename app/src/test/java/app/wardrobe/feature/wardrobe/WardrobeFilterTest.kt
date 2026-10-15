@@ -4,6 +4,7 @@ import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import org.junit.Assert.assertFalse
@@ -17,6 +18,7 @@ class WardrobeFilterTest {
         name = "Navy coat",
         garment = Garment.COAT,
         color = ItemColor.NAVY,
+        material = Material.WOOL,
         warmth = Warmth.WARM,
         seasons = setOf(Season.AUTUMN, Season.WINTER),
     )

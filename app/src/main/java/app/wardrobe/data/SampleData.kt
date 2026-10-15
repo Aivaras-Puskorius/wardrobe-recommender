@@ -6,6 +6,7 @@ import app.wardrobe.domain.model.Forecast
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Season.AUTUMN
 import app.wardrobe.domain.model.Season.SPRING
@@ -33,8 +34,11 @@ object SampleData {
         item("white-sneakers", "White sneakers", Garment.SNEAKERS, ItemColor.WHITE, Warmth.LIGHT, SPRING, SUMMER, AUTUMN),
         item("black-sneakers", "Black sneakers", Garment.SNEAKERS, ItemColor.BLACK, Warmth.LIGHT, SPRING, SUMMER, AUTUMN),
         item("brown-boots", "Brown boots", Garment.BOOTS, ItemColor.BROWN, Warmth.WARM, AUTUMN, WINTER),
-        item("denim-jacket", "Denim jacket", Garment.JACKET, ItemColor.BLUE, Warmth.MEDIUM, SPRING, AUTUMN),
-        item("olive-rain-jacket", "Olive rain jacket", Garment.JACKET, ItemColor.OLIVE, Warmth.MEDIUM, SPRING, AUTUMN),
+        item("denim-jacket", "Denim jacket", Garment.JACKET, ItemColor.BLUE, Warmth.MEDIUM, SPRING, AUTUMN, material = Material.DENIM),
+        item(
+            "olive-rain-jacket", "Olive rain jacket", Garment.JACKET, ItemColor.OLIVE, Warmth.MEDIUM, SPRING, AUTUMN,
+            material = Material.WATERPROOF,
+        ),
         item("camel-coat", "Camel coat", Garment.COAT, ItemColor.CAMEL, Warmth.WARM, AUTUMN, WINTER),
     )
 
@@ -74,5 +78,6 @@ object SampleData {
         color: ItemColor,
         warmth: Warmth,
         vararg seasons: Season,
-    ) = ClothingItem(id, name, garment, color, warmth, seasons.toSet())
+        material: Material = garment.defaultMaterial,
+    ) = ClothingItem(id, name, garment, color, material, warmth, seasons.toSet())
 }
