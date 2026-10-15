@@ -106,8 +106,10 @@
     <!-- Why an outfit works, one line per engine rule. Items read as "light blue shirt", "brown boots". -->
     <string name="why_layers_outerwear">The %1$s over the %2$s suits a %3$d° morning.</string>
     <string name="why_layers_no_outerwear">The %1$s is right for %2$d° to %3$d°.</string>
-    <string name="why_rain">The %1$s and %2$s are ready for rain (%3$d%% chance).</string>
-    <string name="why_snow">The %1$s and %2$s are ready for snow.</string>
+    <string name="why_rain">The %1$s is waterproof and the %2$s are %3$s, so both are ready for rain (%4$d%% chance).</string>
+    <string name="why_snow">The %1$s is waterproof and the %2$s are %3$s, so both are ready for snow.</string>
+    <string name="why_warm_wool">Wool in the %1$s keeps you warm on a %2$d° morning.</string>
+    <string name="why_cool_fabric">%1$s breathes, so the %2$s keeps you cool at %3$d°.</string>
     <string name="why_neutral_colors">%1$s are all neutrals, so they never clash.</string>
     <string name="why_neutral_one_color">%1$s from head to toe is a neutral look that never clashes.</string>
     <string name="why_single_accent_item">The only accent color is the %1$s, which keeps the look calm.</string>
@@ -175,4 +177,12 @@
     <string name="warmth_light">Light</string>
     <string name="warmth_medium">Medium</string>
     <string name="warmth_warm">Warm</string>
+
+    <string name="material_cotton">Cotton</string>
+    <string name="material_linen">Linen</string>
+    <string name="material_wool">Wool</string>
+    <string name="material_denim">Denim</string>
+    <string name="material_leather">Leather</string>
+    <string name="material_synthetic">Synthetic</string>
+    <string name="material_waterproof">Waterproof</string>
 </resources>

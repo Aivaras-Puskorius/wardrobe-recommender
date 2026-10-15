@@ -5,6 +5,7 @@ import app.wardrobe.R
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.domain.model.WeatherCondition
@@ -70,6 +71,17 @@ fun Warmth.label(): Int = when (this) {
     Warmth.LIGHT -> R.string.warmth_light
     Warmth.MEDIUM -> R.string.warmth_medium
     Warmth.WARM -> R.string.warmth_warm
+}
+
+@StringRes
+fun Material.label(): Int = when (this) {
+    Material.COTTON -> R.string.material_cotton
+    Material.LINEN -> R.string.material_linen
+    Material.WOOL -> R.string.material_wool
+    Material.DENIM -> R.string.material_denim
+    Material.LEATHER -> R.string.material_leather
+    Material.SYNTHETIC -> R.string.material_synthetic
+    Material.WATERPROOF -> R.string.material_waterproof
 }
 
 @StringRes

@@ -44,10 +44,27 @@ fun ScoreTerm.whyLine(day: DayForecast): String? = when (reason) {
             stringResource(R.string.why_layers_no_outerwear, top.describe(), day.minTemperatureC, day.maxTemperatureC)
         }
     }
-    Reason.RAIN_READY -> if (day.condition == WeatherCondition.SNOW) {
-        stringResource(R.string.why_snow, items[0].describe(), items[1].describe())
-    } else {
-        stringResource(R.string.why_rain, items[0].describe(), items[1].describe(), day.precipitationChancePercent)
+    // WARN: the rain and snow lines say "is" for the outerwear and "are" for the footwear. That fits
+    // jackets, coats, sneakers and boots. A new garment that breaks this needs its own sentence.
+    Reason.RAIN_READY -> {
+        val (outerwear, footwear) = items
+        val material = stringResource(footwear.material.label()).lowercase()
+        if (day.condition == WeatherCondition.SNOW) {
+            stringResource(R.string.why_snow, outerwear.describe(), footwear.describe(), material)
+        } else {
+            stringResource(
+                R.string.why_rain,
+                outerwear.describe(),
+                footwear.describe(),
+                material,
+                day.precipitationChancePercent,
+            )
+        }
+    }
+    Reason.WARM_WOOL -> stringResource(R.string.why_warm_wool, joinWithAnd(items.map { it.describe() }), day.minTemperatureC)
+    Reason.COOL_FABRIC -> {
+        val top = items.single()
+        stringResource(R.string.why_cool_fabric, stringResource(top.material.label()), top.describe(), day.maxTemperatureC)
     }
     Reason.NEUTRAL_BASE -> {
         val colors = items.map { stringResource(it.color.label()).lowercase() }.distinct()

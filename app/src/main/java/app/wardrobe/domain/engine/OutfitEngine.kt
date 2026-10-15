@@ -5,6 +5,7 @@ import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.domain.model.WeatherCondition
@@ -16,7 +17,7 @@ import kotlin.math.pow
 
 /** Why an outfit gained or lost points. Ties between why lines follow this order. */
 enum class Reason {
-    LAYERS_FIT, RAIN_READY,
+    LAYERS_FIT, RAIN_READY, WARM_WOOL, COOL_FABRIC,
     NEUTRAL_BASE, SINGLE_ACCENT, TONAL, ANALOGOUS, COMPLEMENTARY,
     LIGHT_DARK,
     OUT_OF_SEASON, RECENT_REPEAT,
@@ -133,8 +134,13 @@ object OutfitEngine {
 
         val terms = mutableListOf<ScoreTerm>()
         terms += ScoreTerm(Reason.LAYERS_FIT, if (warmthGap == 0) 2 else 1, listOfNotNull(outer, top))
-        if (wet && footwear.garment == Garment.BOOTS && outer != null) {
-            terms += ScoreTerm(Reason.RAIN_READY, 2, listOf(footwear, outer))
+        if (wet && outer?.material == Material.WATERPROOF && footwear.material in RAIN_FOOTWEAR) {
+            terms += ScoreTerm(Reason.RAIN_READY, 2, listOf(outer, footwear))
+        }
+        val wool = items.filter { it.material == Material.WOOL }
+        if (day.minTemperatureC < COOL_LOW && wool.isNotEmpty()) terms += ScoreTerm(Reason.WARM_WOOL, 1, wool)
+        if (day.maxTemperatureC >= WARM_HIGH && top.material in COOL_FABRICS) {
+            terms += ScoreTerm(Reason.COOL_FABRIC, 1, listOf(top))
         }
         colorTerm(items, accents)?.let { terms += it }
         val light = items.filter { it.color.isLight }
@@ -190,12 +196,15 @@ object OutfitEngine {
     private const val MAX_ACCENTS = 2
     private const val WET_CHANCE_PERCENT = 50
     private const val SHORTS_HIGH = 20
+    private const val WARM_HIGH = 22
     private const val HOT_LOW = 18
     private const val MILD_LOW = 12
     private const val COOL_LOW = 5
     private const val TONAL_MAX = 20.0
     private const val ANALOGOUS_MAX = 60.0
     private const val COMPLEMENTARY_MIN = 125.0
+    private val RAIN_FOOTWEAR = setOf(Material.LEATHER, Material.WATERPROOF)
+    private val COOL_FABRICS = setOf(Material.COTTON, Material.LINEN)
 }
 
 private const val MAX_WHY_LINES = 3
