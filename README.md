@@ -80,6 +80,6 @@ Screens with data: a ViewModel exposing one `StateFlow` of UI state, and a state
 
 ## Stack
 
-Kotlin 2.4.20, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, AGP 9.4.1, Gradle 9.8.1. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.76.0.
+Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, AGP 9.4.1, Gradle 9.8.1. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.76.0.
 
 Icons: Material Symbols, Apache License 2.0.
