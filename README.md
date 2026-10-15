@@ -2,7 +2,7 @@
 
 Android app. Catalog of the clothes you own, outfit suggestions built from it.
 
-Status: prototype for presentation I. All data is sample data held in memory.
+Status: milestone 2 in progress. Items are stored on the phone, starting with 17 sample items. Weather and photo recognition are still samples.
 
 | Wardrobe | Item | Add item | Outfit ideas |
 |---|---|---|---|
