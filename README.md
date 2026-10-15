@@ -40,7 +40,7 @@ The release build is shrunk with R8 (about 1.7 MB, debug about 12.5 MB) and sign
 |---|---|
 | Storage | In memory. A restart restores the 17 sample items. |
 | Photo recognition | No camera. Returns green sweater, red sneakers, navy coat, in turn. |
-| Outfits | Three fixed outfits, only for Dark jeans. |
+| Outfits | Built by rules from the wardrobe and the day's sample weather, up to three per item. No memory of past suggestions yet. |
 | Weather | Fixed sample week for Kaunas, starting today. Celsius only. |
 | Likes | Kept until the results screen closes. |
 | Theme | Kept until the app restarts. |
@@ -64,9 +64,10 @@ app/src/main/java/app/wardrobe/
   AppContainer.kt         shared objects: repository, recognizer, forecast, theme
   data/                   repository, sample data, stand-in recognizer
   domain/model/           items, colors, forecast
+  domain/engine/          outfit rules, scoring and reasons
   feature/wardrobe/       grid and filters
   feature/item/           detail, add, edit
-  feature/outfits/        generator, results, sample outfits
+  feature/outfits/        generator, results, outfit titles and reason sentences
   feature/settings/       settings
   navigation/             routes, back stacks per tab, app shell
   ui/                     theme, shared components, labels

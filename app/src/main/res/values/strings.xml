@@ -89,21 +89,34 @@
     <string name="results_like">Like this outfit</string>
     <string name="results_dislike">Dislike this outfit</string>
     <string name="results_none_title">No outfit ideas yet</string>
-    <string name="results_none_body">This prototype has outfit ideas only for the sample Dark jeans.</string>
+    <string name="results_missing">Add some %1$s to get outfit ideas.</string>
+    <string name="results_missing_outerwear">This weather needs a jacket or coat. Add one to get outfit ideas.</string>
+    <string name="results_nothing_fits">Nothing in your wardrobe goes with this item in %1$d° to %2$d° weather.</string>
     <string name="results_style_it">Style it</string>
 
-    <string name="outfit_smart_casual">Smart casual</string>
-    <string name="outfit_rainy_day">Rainy day</string>
-    <string name="outfit_easy_weekend">Easy weekend</string>
-    <string name="reason_neutral_base">Denim, brown and camel are neutrals, so they never clash.</string>
-    <string name="reason_single_accent">The light blue shirt is the only accent color, which keeps the look calm.</string>
-    <string name="reason_coat_for_cold">The warm coat covers cold mornings.</string>
-    <string name="reason_rain_ready">The rain jacket and boots handle a wet day.</string>
-    <string name="reason_earth_tones">Olive, cream and brown are warm earth tones that sit well together.</string>
-    <string name="reason_knit_warmth">The knit adds warmth under the jacket.</string>
-    <string name="reason_accent_on_denim">Burgundy stands out well against dark denim.</string>
-    <string name="reason_light_shoes">White sneakers lighten the darker colors.</string>
-    <string name="reason_mild_day">Light enough for a mild day without a coat.</string>
+    <!-- Outfit titles, named by how the colors work together. -->
+    <string name="title_all_neutrals">All neutrals</string>
+    <string name="title_accent">%1$s accent</string>
+    <string name="title_tonal">Tonal %1$s</string>
+    <string name="title_neighboring">Neighboring colors</string>
+    <string name="title_opposite">Opposite colors</string>
+    <string name="title_mixed">Mixed colors</string>
+    <string name="title_numbered">%1$s %2$d</string>
+
+    <!-- Why an outfit works, one line per engine rule. Items read as "light blue shirt", "brown boots". -->
+    <string name="why_layers_outerwear">The %1$s over the %2$s suits a %3$d° morning.</string>
+    <string name="why_layers_no_outerwear">The %1$s is right for %2$d° to %3$d°.</string>
+    <string name="why_rain">The %1$s and %2$s are ready for rain (%3$d%% chance).</string>
+    <string name="why_snow">The %1$s and %2$s are ready for snow.</string>
+    <string name="why_neutral_colors">%1$s are all neutrals, so they never clash.</string>
+    <string name="why_neutral_one_color">%1$s from head to toe is a neutral look that never clashes.</string>
+    <string name="why_single_accent_item">The only accent color is the %1$s, which keeps the look calm.</string>
+    <string name="why_single_accent_color">%1$s is the only accent color, which keeps the look calm.</string>
+    <string name="why_tonal">The %1$s and %2$s are shades of one color, so they tie together.</string>
+    <string name="why_analogous">The %1$s and %2$s sit next to each other on the color wheel, so they blend.</string>
+    <string name="why_complementary">The %1$s and %2$s are opposites on the color wheel, so each stands out.</string>
+    <string name="why_light_dark">Light from the %1$s balances the darker pieces.</string>
+    <string name="list_and">%1$s and %2$s</string>
 
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme">Theme</string>

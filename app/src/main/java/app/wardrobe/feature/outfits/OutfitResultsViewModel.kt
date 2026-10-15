@@ -1,13 +1,18 @@
 package app.wardrobe.feature.outfits
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.wardrobe.data.WardrobeRepository
+import app.wardrobe.domain.engine.EngineResult
+import app.wardrobe.domain.engine.OutfitEngine
+import app.wardrobe.domain.engine.Reason
+import app.wardrobe.domain.engine.ScoreTerm
+import app.wardrobe.domain.engine.ScoredOutfit
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.domain.model.Forecast
+import app.wardrobe.domain.model.ItemColor
 import java.time.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,12 +23,18 @@ import kotlinx.coroutines.flow.update
 
 enum class Rating { LIKED, DISLIKED }
 
-/** An outfit as the results screen shows it, with [items] in display order. */
+/** How an outfit's colors work together. It names the outfit. */
+enum class ColorStory { ALL_NEUTRALS, ACCENT, TONAL, NEIGHBORING, OPPOSITE, MIXED }
+
+/** An outfit's name: its [story], the [color] the name mentions, and a [number] when an earlier outfit has the same name. */
+data class OutfitTitle(val story: ColorStory, val color: ItemColor? = null, val number: Int? = null)
+
+/** An outfit as the results screen shows it, with [items] in display order and [why] strongest first. */
 data class OutfitCard(
     val id: String,
-    @StringRes val title: Int,
+    val title: OutfitTitle,
     val items: List<ClothingItem>,
-    @StringRes val reasons: List<Int>,
+    val why: List<ScoreTerm>,
     val rating: Rating?,
 )
 
@@ -31,21 +42,25 @@ sealed interface OutfitResultsUiState {
     data object Loading : OutfitResultsUiState
     data object NotFound : OutfitResultsUiState
 
-    /** @param outfits empty when there are no outfits for [anchor]. */
+    /**
+     * @param outfits empty when no outfit fits [anchor] on [day].
+     * @param missing the category the wardrobe lacks when that is why [outfits] is empty, else null.
+     */
     data class Ready(
         val anchor: ClothingItem,
         val location: String,
         val today: LocalDate,
         val day: DayForecast,
         val outfits: List<OutfitCard>,
+        val missing: Category? = null,
     ) : OutfitResultsUiState
 }
 
 /**
- * Outfits built around one item for one forecast day.
+ * Outfits built around one item for one forecast day, by [OutfitEngine].
  *
- * INFO(limit): milestone 1 shows [SampleOutfits] for the sample anchor and nothing for other items.
- * Ratings live only as long as this screen. The recommendation engine and feedback storage replace both.
+ * INFO(limit): ratings live only as long as this screen, and the engine gets no history of shown
+ * outfits. Feedback storage (milestone 2, step 5) adds both.
  */
 class OutfitResultsViewModel(
     itemId: String,
@@ -60,12 +75,14 @@ class OutfitResultsViewModel(
     val uiState: StateFlow<OutfitResultsUiState> =
         combine(repository.items, ratings) { items, ratings ->
             val anchor = items.firstOrNull { it.id == itemId } ?: return@combine OutfitResultsUiState.NotFound
+            val result = OutfitEngine.suggest(items, anchor, day)
             OutfitResultsUiState.Ready(
                 anchor = anchor,
                 location = forecast.location,
                 today = forecast.days.first().date,
                 day = day,
-                outfits = if (anchor.id == SampleOutfits.ANCHOR_ITEM_ID) outfitCards(items, ratings) else emptyList(),
+                outfits = (result as? EngineResult.Outfits)?.outfits?.let { outfitCards(it, ratings) }.orEmpty(),
+                missing = (result as? EngineResult.Missing)?.category,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OutfitResultsUiState.Loading)
 
@@ -76,22 +93,30 @@ class OutfitResultsViewModel(
         }
     }
 
-    private fun outfitCards(items: List<ClothingItem>, ratings: Map<String, Rating>): List<OutfitCard> {
-        val byId = items.associateBy { it.id }
-        return SampleOutfits.all.mapNotNull { outfit ->
-            // An outfit drops out when the user has deleted one of its items.
-            val outfitItems = outfit.itemIds.map { byId[it] ?: return@mapNotNull null }
-            OutfitCard(
-                id = outfit.id,
-                title = outfit.title,
-                items = outfitItems.sortedBy { DISPLAY_ORDER.indexOf(it.category) },
-                reasons = outfit.reasons,
-                rating = ratings[outfit.id],
-            )
+    private fun outfitCards(outfits: List<ScoredOutfit>, ratings: Map<String, Rating>): List<OutfitCard> =
+        outfits.zip(outfitTitles(outfits)) { outfit, title ->
+            val id = outfit.items.map { it.id }.sorted().joinToString("+")
+            OutfitCard(id = id, title = title, items = outfit.items, why = outfit.why, rating = ratings[id])
         }
-    }
+}
 
-    private companion object {
-        val DISPLAY_ORDER = listOf(Category.OUTERWEAR, Category.TOP, Category.BOTTOM, Category.FOOTWEAR)
+/** Names each outfit by its color story. A name used by an earlier outfit gets a number, from 2. */
+internal fun outfitTitles(outfits: List<ScoredOutfit>): List<OutfitTitle> {
+    val titles = outfits.map { it.title() }
+    return titles.mapIndexed { index, title ->
+        val seen = titles.take(index + 1).count { it == title }
+        if (seen > 1) title.copy(number = seen) else title
+    }
+}
+
+private fun ScoredOutfit.title(): OutfitTitle {
+    val term = colorTerm ?: return OutfitTitle(ColorStory.MIXED)
+    return when (term.reason) {
+        Reason.NEUTRAL_BASE -> OutfitTitle(ColorStory.ALL_NEUTRALS)
+        Reason.SINGLE_ACCENT -> OutfitTitle(ColorStory.ACCENT, term.items.first().color)
+        Reason.TONAL -> OutfitTitle(ColorStory.TONAL, term.items.first().color)
+        Reason.ANALOGOUS -> OutfitTitle(ColorStory.NEIGHBORING)
+        Reason.COMPLEMENTARY -> OutfitTitle(ColorStory.OPPOSITE)
+        else -> OutfitTitle(ColorStory.MIXED)
     }
 }

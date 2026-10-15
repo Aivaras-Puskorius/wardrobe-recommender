@@ -41,12 +41,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.wardrobe.R
+import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.ui.components.EmptyState
 import app.wardrobe.ui.components.GarmentBackdrop
 import app.wardrobe.ui.components.GarmentImage
 import app.wardrobe.ui.components.WeatherSummary
 import app.wardrobe.ui.components.dayLabel
+import app.wardrobe.ui.pluralLabel
 
 @Composable
 fun OutfitResultsScreen(viewModel: OutfitResultsViewModel, onBack: () -> Unit) {
@@ -100,7 +103,7 @@ fun OutfitResultsContent(
                     EmptyState(
                         icon = R.drawable.ic_auto_awesome,
                         title = stringResource(R.string.results_none_title),
-                        body = stringResource(R.string.results_none_body),
+                        body = noOutfitsBody(state),
                         actionLabel = stringResource(R.string.action_back),
                         onAction = onBack,
                     )
@@ -113,12 +116,19 @@ fun OutfitResultsContent(
                 ) {
                     item { Header(state) }
                     items(state.outfits, key = { it.id }) { outfit ->
-                        OutfitCardView(outfit, anchorId = state.anchor.id, onRate = onRate)
+                        OutfitCardView(outfit, anchorId = state.anchor.id, day = state.day, onRate = onRate)
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun noOutfitsBody(state: OutfitResultsUiState.Ready): String = when (val missing = state.missing) {
+    null -> stringResource(R.string.results_nothing_fits, state.day.minTemperatureC, state.day.maxTemperatureC)
+    Category.OUTERWEAR -> stringResource(R.string.results_missing_outerwear)
+    else -> stringResource(R.string.results_missing, stringResource(missing.pluralLabel()).lowercase())
 }
 
 @Composable
@@ -162,14 +172,14 @@ private fun Header(state: OutfitResultsUiState.Ready, modifier: Modifier = Modif
 }
 
 @Composable
-private fun OutfitCardView(outfit: OutfitCard, anchorId: String, onRate: (String, Rating) -> Unit) {
+private fun OutfitCardView(outfit: OutfitCard, anchorId: String, day: DayForecast, onRate: (String, Rating) -> Unit) {
     Card(
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
-                text = stringResource(outfit.title),
+                text = outfit.title.text(),
                 modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
             )
@@ -185,7 +195,7 @@ private fun OutfitCardView(outfit: OutfitCard, anchorId: String, onRate: (String
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            outfit.reasons.forEach { reason ->
+            outfit.why.mapNotNull { it.whyLine(day) }.forEach { line ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(
                         painter = painterResource(R.drawable.ic_check),
@@ -193,7 +203,7 @@ private fun OutfitCardView(outfit: OutfitCard, anchorId: String, onRate: (String
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.tertiary,
                     )
-                    Text(stringResource(reason), style = MaterialTheme.typography.bodyMedium)
+                    Text(line, style = MaterialTheme.typography.bodyMedium)
                 }
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

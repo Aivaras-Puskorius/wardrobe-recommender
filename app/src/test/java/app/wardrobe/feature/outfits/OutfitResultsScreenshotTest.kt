@@ -23,36 +23,43 @@ class OutfitResultsScreenshotTest {
 
     private val today = LocalDate.of(2026, 10, 8)
 
-    /** The state the real view model builds, so the screenshots show the real sample outfits. */
-    private fun state(itemId: String, ratings: Map<String, Rating> = emptyMap()): OutfitResultsUiState = runBlocking {
-        val viewModel = OutfitResultsViewModel(
-            itemId = itemId,
-            date = today.plusDays(1),
-            repository = InMemoryWardrobeRepository(SampleData.items),
-            forecast = SampleData.forecast(today),
-        )
-        ratings.forEach { (id, rating) -> viewModel.rate(id, rating) }
-        viewModel.uiState.first { it is OutfitResultsUiState.Ready }
+    /** The state the real view model builds, so the screenshots show the engine's outfits for the sample wardrobe. */
+    private fun viewModel(itemId: String) = OutfitResultsViewModel(
+        itemId = itemId,
+        date = today.plusDays(1),
+        repository = InMemoryWardrobeRepository(SampleData.items),
+        forecast = SampleData.forecast(today),
+    )
+
+    private fun OutfitResultsViewModel.ready(): OutfitResultsUiState.Ready =
+        runBlocking { uiState.first { it is OutfitResultsUiState.Ready } as OutfitResultsUiState.Ready }
+
+    // WARN: rate before the first collection. Waiting for a later emission inside composition blocks the
+    // main looper the view model emits on, and the test hangs.
+    private fun state(itemId: String, likeFirst: Boolean = false): OutfitResultsUiState {
+        if (!likeFirst) return viewModel(itemId).ready()
+        val firstId = viewModel(itemId).ready().outfits.first().id
+        return viewModel(itemId).apply { rate(firstId, Rating.LIKED) }.ready()
     }
 
     @Test
     fun outfits() = composeRule.captureInTheme {
-        OutfitResultsContent(state(SampleOutfits.ANCHOR_ITEM_ID), onBack = {}, onRate = { _, _ -> })
+        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> })
     }
 
     @Test
     fun outfitsDark() = composeRule.captureInTheme(darkTheme = true) {
-        OutfitResultsContent(state(SampleOutfits.ANCHOR_ITEM_ID), onBack = {}, onRate = { _, _ -> })
+        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> })
     }
 
     @Test
     fun rated() = composeRule.captureInTheme {
-        val state = state(SampleOutfits.ANCHOR_ITEM_ID, mapOf("smart-casual" to Rating.LIKED))
+        val state = state("dark-jeans", likeFirst = true)
         OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> })
     }
 
     @Test
     fun noOutfitsForThisItem() = composeRule.captureInTheme {
-        OutfitResultsContent(state("black-tee"), onBack = {}, onRate = { _, _ -> })
+        OutfitResultsContent(state("khaki-shorts"), onBack = {}, onRate = { _, _ -> })
     }
 }

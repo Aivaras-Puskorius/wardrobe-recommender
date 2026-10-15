@@ -8,6 +8,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
@@ -43,7 +44,7 @@ class OutfitsFlowTest {
         clickInLazyGrid("Dark jeans")
         composeRule.onNodeWithText("Show outfits").performClick()
 
-        composeRule.onNodeWithText("Smart casual").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Why it works").onFirst().assertIsDisplayed()
         composeRule.onNodeWithText("Kaunas · Tomorrow").assertIsDisplayed()
 
         composeRule.onAllNodesWithContentDescription("Like this outfit").onFirst().performClick()
@@ -55,16 +56,17 @@ class OutfitsFlowTest {
         clickInLazyGrid("Dark jeans")
         composeRule.onNodeWithText("Style it").performClick()
 
-        composeRule.onNodeWithText("Smart casual").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Why it works").onFirst().assertIsDisplayed()
         composeRule.onNodeWithText("Kaunas · Today").assertIsDisplayed()
     }
 
     @Test
-    fun otherItemsExplainThatThereAreNoIdeasYet() {
-        composeRule.onNodeWithText("Black tee").performClick()
+    fun anItemThatFitsNoWeatherSaysSo() {
+        clickInLazyGrid("Khaki shorts")
         composeRule.onNodeWithText("Style it").performClick()
 
         composeRule.onNodeWithText("No outfit ideas yet").assertIsDisplayed()
+        composeRule.onNodeWithText("Nothing in your wardrobe goes with this item", substring = true).assertIsDisplayed()
     }
 
     /** Lazy grids compose only visible items, so scroll the grid to the item before clicking it. */

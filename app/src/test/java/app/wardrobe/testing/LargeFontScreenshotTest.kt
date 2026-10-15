@@ -17,7 +17,6 @@ import app.wardrobe.feature.outfits.OutfitGeneratorUiState
 import app.wardrobe.feature.outfits.OutfitResultsContent
 import app.wardrobe.feature.outfits.OutfitResultsUiState
 import app.wardrobe.feature.outfits.OutfitResultsViewModel
-import app.wardrobe.feature.outfits.SampleOutfits
 import app.wardrobe.feature.settings.SettingsScreen
 import app.wardrobe.feature.wardrobe.WardrobeContent
 import app.wardrobe.feature.wardrobe.WardrobeFilter
@@ -102,7 +101,7 @@ class LargeFontScreenshotTest {
     @Test
     fun outfitResults() {
         val state = runBlocking {
-            OutfitResultsViewModel(SampleOutfits.ANCHOR_ITEM_ID, today, InMemoryWardrobeRepository(SampleData.items), forecast)
+            OutfitResultsViewModel("dark-jeans", today, InMemoryWardrobeRepository(SampleData.items), forecast)
                 .uiState.first { it is OutfitResultsUiState.Ready }
         }
         composeRule.captureInTheme(fontScale = LARGE) { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }) }
