@@ -53,9 +53,9 @@ class OutfitResultsViewModelTest {
         assertEquals("dark-jeans", state.anchor.id)
         assertEquals(
             listOf(
-                listOf("camel-coat", "black-tee", "dark-jeans", "white-sneakers"),
-                listOf("camel-coat", "oxford-shirt", "dark-jeans", "black-sneakers"),
-                listOf("denim-jacket", "cream-knit", "dark-jeans", "black-sneakers"),
+                listOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat"),
+                listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket"),
+                listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
             ),
             state.outfits.map { outfit -> outfit.items.map { it.id } },
         )
@@ -63,7 +63,7 @@ class OutfitResultsViewModelTest {
             listOf(
                 OutfitTitle(ColorStory.ALL_NEUTRALS),
                 OutfitTitle(ColorStory.ACCENT, ItemColor.LIGHT_BLUE),
-                OutfitTitle(ColorStory.ACCENT, ItemColor.BLUE),
+                OutfitTitle(ColorStory.ACCENT, ItemColor.LIGHT_BLUE, number = 2),
             ),
             state.outfits.map { it.title },
         )

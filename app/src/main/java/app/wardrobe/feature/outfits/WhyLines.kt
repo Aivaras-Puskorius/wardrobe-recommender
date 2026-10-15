@@ -83,6 +83,7 @@ fun ScoreTerm.whyLine(day: DayForecast): String? = when (reason) {
     Reason.ANALOGOUS -> stringResource(R.string.why_analogous, items[0].describe(), items[1].describe())
     Reason.COMPLEMENTARY -> stringResource(R.string.why_complementary, items[0].describe(), items[1].describe())
     Reason.LIGHT_DARK -> stringResource(R.string.why_light_dark, items.single().describe())
+    Reason.OUTDOOR_HOLDS -> stringResource(R.string.why_outdoor_holds, items.single().describe())
     Reason.OUT_OF_SEASON, Reason.RECENT_REPEAT -> null
 }
 

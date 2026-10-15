@@ -19,7 +19,7 @@ import kotlin.math.pow
 enum class Reason {
     LAYERS_FIT, RAIN_READY, WARM_WOOL, COOL_FABRIC,
     NEUTRAL_BASE, SINGLE_ACCENT, TONAL, ANALOGOUS, COMPLEMENTARY,
-    LIGHT_DARK,
+    LIGHT_DARK, OUTDOOR_HOLDS,
     OUT_OF_SEASON, RECENT_REPEAT,
 }
 
@@ -28,7 +28,7 @@ private val COLOR_REASONS = setOf(Reason.NEUTRAL_BASE, Reason.SINGLE_ACCENT, Rea
 /** One rule that applied to an outfit: its [points] and the [items] the rule is about. */
 data class ScoreTerm(val reason: Reason, val points: Int, val items: List<ClothingItem> = emptyList())
 
-/** An outfit with [items] in display order (outerwear, top, bottom, footwear) and the rules that scored it. */
+/** An outfit with [items] in display order (top, bottom, footwear, outerwear) and the rules that scored it. */
 data class ScoredOutfit(val items: List<ClothingItem>, val terms: List<ScoreTerm>) {
     val score: Int get() = terms.sumOf { it.points }
 
@@ -89,7 +89,7 @@ object OutfitEngine {
         val candidates = buildList {
             for (outer in outerwearOptions) for (top in slot(Category.TOP)) for (bottom in slot(Category.BOTTOM)) {
                 for (footwear in slot(Category.FOOTWEAR)) {
-                    score(listOfNotNull(outer, top, bottom, footwear), anchor, day, wet, recent)?.let(::add)
+                    score(listOfNotNull(top, bottom, footwear, outer), anchor, day, wet, recent)?.let(::add)
                 }
             }
         }
@@ -129,8 +129,10 @@ object OutfitEngine {
         val layerWarmth = top.warmth.value + (outer?.warmth?.value ?: 0)
         val warmthGap = abs(layerWarmth - targetWarmth(day.minTemperatureC))
         if (warmthGap > 1) return null
-        val accents = items.filterNot { it.color.isNeutral }.map { it.color }.distinct()
-        if (accents.size > MAX_ACCENTS) return null
+        if (items.accents().size > MAX_ACCENTS) return null
+        // Outerwear comes off indoors, so the color rules judge the indoor look. The outerwear only adds OUTDOOR_HOLDS.
+        val indoor = listOf(top, bottom, footwear)
+        val accents = indoor.accents()
 
         val terms = mutableListOf<ScoreTerm>()
         terms += ScoreTerm(Reason.LAYERS_FIT, if (warmthGap == 0) 2 else 1, listOfNotNull(outer, top))
@@ -142,10 +144,13 @@ object OutfitEngine {
         if (day.maxTemperatureC >= WARM_HIGH && top.material in COOL_FABRICS) {
             terms += ScoreTerm(Reason.COOL_FABRIC, 1, listOf(top))
         }
-        colorTerm(items, accents)?.let { terms += it }
-        val light = items.filter { it.color.isLight }
-        if (light.isNotEmpty() && items.any { it.color.isDark }) {
+        colorTerm(indoor, accents)?.let { terms += it }
+        val light = indoor.filter { it.color.isLight }
+        if (light.isNotEmpty() && indoor.any { it.color.isDark }) {
             terms += ScoreTerm(Reason.LIGHT_DARK, 1, listOf(light.maxBy { it.color.lightness }))
+        }
+        if (outer != null && colorTerm(items, items.accents()) != null) {
+            terms += ScoreTerm(Reason.OUTDOOR_HOLDS, 1, listOf(outer))
         }
         val season = seasonOf(day.date)
         items.filter { it.id != anchor.id && season !in it.seasons }.forEach {
@@ -178,7 +183,10 @@ object OutfitEngine {
         else -> 5
     }
 
-    private fun ScoredOutfit.accentColors() = items.filterNot { it.color.isNeutral }.map { it.color }.distinct()
+    private fun List<ClothingItem>.accents() = filterNot { it.color.isNeutral }.map { it.color }.distinct()
+
+    /** The accent colors of the indoor look, used to break ties. */
+    private fun ScoredOutfit.accentColors() = items.filter { it.category != Category.OUTERWEAR }.accents()
 
     private fun ScoredOutfit.sortedIds() = items.map { it.id }.sorted()
 

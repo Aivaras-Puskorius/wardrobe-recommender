@@ -119,6 +119,7 @@
     <string name="why_analogous">The %1$s and %2$s sit next to each other on the color wheel, so they blend.</string>
     <string name="why_complementary">The %1$s and %2$s are opposites on the color wheel, so each stands out.</string>
     <string name="why_light_dark">Light from the %1$s balances the darker pieces.</string>
+    <string name="why_outdoor_holds">The %1$s goes with the rest, so the look holds outdoors too.</string>
     <string name="list_and">%1$s and %2$s</string>
 
     <string name="settings_appearance">Appearance</string>

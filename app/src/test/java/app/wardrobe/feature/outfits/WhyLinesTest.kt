@@ -13,7 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/** The sentences of the material rules, as docs/ENGINE.md section 4 words them. */
+/** The sentences of the material and outdoor rules, as docs/ENGINE.md section 4 words them. */
 @RunWith(RobolectricTestRunner::class)
 class WhyLinesTest {
 
@@ -56,6 +56,15 @@ class WhyLinesTest {
         assertEquals(
             "Wool in the camel coat and cream sweater keeps you warm on a 3° morning.",
             term.line(day(3, 9, WeatherCondition.CLOUDY, 30)),
+        )
+    }
+
+    @Test
+    fun outdoorLineNamesTheOuterwear() {
+        val term = ScoreTerm(Reason.OUTDOOR_HOLDS, 1, items("olive-rain-jacket"))
+        assertEquals(
+            "The olive jacket goes with the rest, so the look holds outdoors too.",
+            term.line(day(4, 12, WeatherCondition.CLEAR, 5)),
         )
     }
 

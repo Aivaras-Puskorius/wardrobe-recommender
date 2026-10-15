@@ -105,13 +105,16 @@ class OutfitEngineTest {
     fun t4SnowWithBoots() {
         val wardrobe = listOf(item("cream-knit"), item("dark-jeans"), item("white-sneakers"), item("camel-coat"), item("brown-boots"))
         val outfits = suggest(wardrobe, "dark-jeans", day(-1, 4, SNOW, 60)).outfits()
-        assertEquals(listOf(listOf("camel-coat", "cream-knit", "dark-jeans", "brown-boots")), outfits.map { o -> o.items.map { it.id } })
+        assertEquals(listOf(listOf("cream-knit", "dark-jeans", "brown-boots", "camel-coat")), outfits.map { o -> o.items.map { it.id } })
         assertEquals(
-            listOf(Reason.LAYERS_FIT to 1, Reason.WARM_WOOL to 1, Reason.NEUTRAL_BASE to 3, Reason.LIGHT_DARK to 1),
+            listOf(
+                Reason.LAYERS_FIT to 1, Reason.WARM_WOOL to 1, Reason.NEUTRAL_BASE to 3, Reason.LIGHT_DARK to 1,
+                Reason.OUTDOOR_HOLDS to 1,
+            ),
             outfits.single().points(),
         )
-        assertEquals(6, outfits.single().score)
-        assertEquals(listOf("camel-coat", "cream-knit"), outfits.single().term(Reason.WARM_WOOL).items.map { it.id })
+        assertEquals(7, outfits.single().score)
+        assertEquals(listOf("cream-knit", "camel-coat"), outfits.single().term(Reason.WARM_WOOL).items.map { it.id })
     }
 
     @Test
@@ -184,13 +187,14 @@ class OutfitEngineTest {
         val outfits = suggest(sample, "dark-jeans", coolDay).outfits()
         assertEquals(
             listOf(
-                listOf("camel-coat", "black-tee", "dark-jeans", "white-sneakers"),
-                listOf("camel-coat", "oxford-shirt", "dark-jeans", "black-sneakers"),
-                listOf("denim-jacket", "cream-knit", "dark-jeans", "black-sneakers"),
+                listOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat"),
+                listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket"),
+                listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
             ),
             outfits.map { o -> o.items.map { it.id } },
         )
-        assertEquals(listOf(6, 5, 5), outfits.map { it.score })
+        assertEquals(listOf(7, 7, 7), outfits.map { it.score })
+        assertTrue(outfits.all { outfit -> outfit.terms.any { it.reason == Reason.OUTDOOR_HOLDS } })
         assertEquals(
             listOf(Reason.NEUTRAL_BASE, Reason.LAYERS_FIT, Reason.LIGHT_DARK),
             outfits.first().why.map { it.reason },
@@ -204,12 +208,12 @@ class OutfitEngineTest {
 
     @Test
     fun t12RecentOutfitsAndNearCopiesDropBack() {
-        val recent = listOf(setOf("camel-coat", "black-tee", "dark-jeans", "white-sneakers"))
+        val recent = listOf(setOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat"))
         assertEquals(
             listOf(
-                listOf("camel-coat", "oxford-shirt", "dark-jeans", "black-sneakers"),
-                listOf("denim-jacket", "cream-knit", "dark-jeans", "black-sneakers"),
-                listOf("olive-rain-jacket", "olive-overshirt", "dark-jeans", "black-sneakers"),
+                listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket"),
+                listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
+                listOf("cream-knit", "dark-jeans", "black-sneakers", "olive-rain-jacket"),
             ),
             suggest(sample, "dark-jeans", coolDay, recent).itemIds(),
         )
@@ -218,14 +222,14 @@ class OutfitEngineTest {
     @Test
     fun t13RainyDayFavorsTheRainJacket() {
         val (first, second) = suggest(sample, "dark-jeans", day(5, 11, RAIN, 80)).outfits()
-        assertEquals(listOf("olive-rain-jacket", "cream-knit", "dark-jeans", "brown-boots"), first.items.map { it.id })
-        assertEquals(7, first.score)
-        assertEquals(listOf(Reason.SINGLE_ACCENT, Reason.RAIN_READY, Reason.LAYERS_FIT), first.why.map { it.reason })
+        assertEquals(listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"), first.items.map { it.id })
+        assertEquals(9, first.score)
+        assertEquals(listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.RAIN_READY), first.why.map { it.reason })
         assertEquals(listOf("olive-rain-jacket", "brown-boots"), first.term(Reason.RAIN_READY).items.map { it.id })
         assertTrue(first.terms.none { it.reason == Reason.WARM_WOOL })
 
-        assertEquals(listOf("camel-coat", "black-tee", "dark-jeans", "white-sneakers"), second.items.map { it.id })
-        assertEquals(6, second.score)
+        assertEquals(listOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat"), second.items.map { it.id })
+        assertEquals(7, second.score)
         assertTrue(second.terms.none { it.reason == Reason.RAIN_READY })
     }
 
@@ -258,9 +262,9 @@ class OutfitEngineTest {
     fun t16OutOfSeasonItemsCostPoints() {
         val wardrobe = listOf(item("white-tee"), item("dark-jeans"), item("white-sneakers"), item("camel-coat"))
         val outfit = suggest(wardrobe, "dark-jeans", coolDay).outfits().single()
-        assertEquals(listOf("camel-coat", "white-tee", "dark-jeans", "white-sneakers"), outfit.items.map { it.id })
+        assertEquals(listOf("white-tee", "dark-jeans", "white-sneakers", "camel-coat"), outfit.items.map { it.id })
         assertEquals(
-            listOf(Reason.LAYERS_FIT to 2, Reason.NEUTRAL_BASE to 3, Reason.OUT_OF_SEASON to -2),
+            listOf(Reason.LAYERS_FIT to 2, Reason.NEUTRAL_BASE to 3, Reason.OUTDOOR_HOLDS to 1, Reason.OUT_OF_SEASON to -2),
             outfit.points(),
         )
         assertTrue(outfit.why.none { it.reason == Reason.OUT_OF_SEASON })
@@ -271,7 +275,7 @@ class OutfitEngineTest {
         val base = listOf(item("olive-rain-jacket"), item("cream-knit"), item("dark-jeans"))
         val rain = day(5, 11, RAIN, 80)
         val synthetic = suggest(base + item("white-sneakers"), "dark-jeans", rain).outfits().single()
-        assertEquals(4, synthetic.score)
+        assertEquals(5, synthetic.score)
         assertTrue(synthetic.terms.none { it.reason == Reason.RAIN_READY })
 
         val rainSneakers = ClothingItem(
@@ -279,7 +283,7 @@ class OutfitEngineTest {
             Warmth.LIGHT, setOf(Season.AUTUMN),
         )
         val waterproof = suggest(base + rainSneakers, "dark-jeans", rain).outfits().single()
-        assertEquals(7, waterproof.score)
+        assertEquals(8, waterproof.score)
         assertEquals(2, waterproof.term(Reason.RAIN_READY).points)
     }
 
@@ -287,11 +291,11 @@ class OutfitEngineTest {
     fun t18WoolEarnsAPointBelow5Degrees() {
         val wardrobe = listOf(item("olive-rain-jacket"), item("cream-knit"), item("dark-jeans"), item("brown-boots"))
         val cold = suggest(wardrobe, "dark-jeans", day(4, 12, CLEAR, 5)).outfits().single()
-        assertEquals(7, cold.score)
+        assertEquals(8, cold.score)
         assertEquals(1 to listOf("cream-knit"), cold.term(Reason.WARM_WOOL).let { it.points to it.items.map { i -> i.id } })
 
         val cool = suggest(wardrobe, "dark-jeans", day(5, 12, CLEAR, 5)).outfits().single()
-        assertEquals(5, cool.score)
+        assertEquals(6, cool.score)
         assertTrue(cool.terms.none { it.reason == Reason.WARM_WOOL })
     }
 
@@ -309,6 +313,59 @@ class OutfitEngineTest {
         assertEquals(listOf("white-shirt"), linenAt22.term(Reason.COOL_FABRIC).items.map { it.id })
         assertEquals(5, outfit(Material.LINEN, 21).score)
         assertFalse(outfit(Material.SYNTHETIC, 22).terms.any { it.reason == Reason.COOL_FABRIC })
+    }
+
+    @Test
+    fun t20TheJacketEarnsAPointWhenItGoesWithTheRest() {
+        assertEquals(
+            listOf(
+                listOf("burgundy-sweater", "beige-chinos", "black-sneakers", "denim-jacket"),
+                listOf("burgundy-sweater", "black-trousers", "white-sneakers", "denim-jacket"),
+                listOf("burgundy-sweater", "beige-chinos", "brown-boots", "camel-coat"),
+            ),
+            suggest(sample, "burgundy-sweater", day(3, 9, CLOUDY, 30)).itemIds(),
+        )
+
+        val wardrobe = listOf(item("burgundy-sweater"), item("beige-chinos"), item("brown-boots"), item("olive-rain-jacket"))
+        val clash = suggest(wardrobe, "burgundy-sweater", coolDay).outfits().single()
+        assertEquals(5, clash.score)
+        assertTrue(clash.terms.none { it.reason == Reason.OUTDOOR_HOLDS })
+    }
+
+    @Test
+    fun t21TheIndoorLookSetsTheColorStory() {
+        val wardrobe = listOf(item("olive-rain-jacket"), item("cream-knit"), item("dark-jeans"), item("brown-boots"))
+        val outfit = suggest(wardrobe, "dark-jeans", day(4, 12, CLEAR, 5)).outfits().single()
+        assertEquals(listOf("cream-knit", "dark-jeans", "brown-boots", "olive-rain-jacket"), outfit.items.map { it.id })
+        assertEquals(Reason.NEUTRAL_BASE, outfit.colorTerm?.reason)
+        assertEquals(listOf("cream-knit", "dark-jeans", "brown-boots"), outfit.colorTerm?.items?.map { it.id })
+        assertEquals(listOf("olive-rain-jacket"), outfit.term(Reason.OUTDOOR_HOLDS).items.map { it.id })
+    }
+
+    @Test
+    fun t22TiesGoToFewerIndoorAccents() {
+        assertEquals(
+            listOf(
+                listOf("white-tee", "beige-chinos", "black-sneakers", "camel-coat"),
+                listOf("white-tee", "black-trousers", "brown-boots", "camel-coat"),
+                listOf("white-tee", "beige-chinos", "brown-boots", "denim-jacket"),
+            ),
+            suggest(sample, "white-tee", coolDay).itemIds(),
+        )
+    }
+
+    @Test
+    fun t23LightAndDarkCountIndoorsOnly() {
+        val navyCoat = ClothingItem(
+            "navy-coat", "Navy coat", Garment.COAT, ItemColor.NAVY, Material.WOOL, Warmth.WARM,
+            setOf(Season.AUTUMN, Season.WINTER),
+        )
+        val wardrobe = listOf(item("cream-knit"), item("beige-chinos"), item("white-sneakers"), navyCoat)
+        val outfit = suggest(wardrobe, "cream-knit", day(3, 9, CLOUDY, 30)).outfits().single()
+        assertEquals(
+            listOf(Reason.LAYERS_FIT to 1, Reason.WARM_WOOL to 1, Reason.NEUTRAL_BASE to 3, Reason.OUTDOOR_HOLDS to 1),
+            outfit.points(),
+        )
     }
 
     private fun ScoredOutfit.term(reason: Reason) = terms.single { it.reason == reason }
