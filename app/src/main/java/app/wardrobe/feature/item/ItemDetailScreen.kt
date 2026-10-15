@@ -186,6 +186,11 @@ private fun ItemDetails(item: ClothingItem, modifier: Modifier = Modifier) {
                     }
                 }
                 Attribute(
+                    icon = R.drawable.ic_texture,
+                    label = stringResource(R.string.item_material),
+                    value = stringResource(item.material.label()),
+                )
+                Attribute(
                     icon = R.drawable.ic_device_thermostat,
                     label = stringResource(R.string.item_warmth),
                     value = stringResource(item.warmth.label()),

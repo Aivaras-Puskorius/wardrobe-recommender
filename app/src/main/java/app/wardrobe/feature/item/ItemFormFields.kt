@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import app.wardrobe.R
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.ui.components.ColorSwatch
@@ -122,6 +123,16 @@ fun ItemFormFields(
                     label = { Text(stringResource(color.label())) },
                     leadingIcon = { ColorSwatch(color) },
                     trailingIcon = if (color == form.suggestion?.color) chipIcon(R.drawable.ic_auto_awesome) else null,
+                )
+            }
+        }
+
+        Section(stringResource(R.string.item_material)) {
+            Material.entries.forEach { material ->
+                FilterChip(
+                    selected = material == form.material,
+                    onClick = { onChange(ItemFormChange.SetMaterial(material)) },
+                    label = { Text(stringResource(material.label())) },
                 )
             }
         }

@@ -45,6 +45,15 @@ class EditItemFlowTest {
     }
 
     @Test
+    fun aPickedMaterialShowsOnTheDetailScreen() {
+        composeRule.onNodeWithText("Linen").performScrollTo().performClick()
+        composeRule.onNodeWithText("Save changes").performClick()
+
+        composeRule.onNodeWithText("Material").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Linen").assertIsDisplayed()
+    }
+
+    @Test
     fun closingWithChangesAsksFirst() {
         composeRule.onNodeWithText("Navy").performScrollTo().performClick()
         composeRule.onNodeWithContentDescription("Close").performClick()
