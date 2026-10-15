@@ -3,7 +3,7 @@ package app.wardrobe.data
 import app.wardrobe.domain.model.ClothingItem
 import kotlinx.coroutines.flow.Flow
 
-/** The user's clothing catalog. Milestone 1 keeps it in memory, milestone 2 stores it in Room. */
+/** The user's clothing catalog. The app stores it in Room, tests and previews keep it in memory. */
 interface WardrobeRepository {
     val items: Flow<List<ClothingItem>>
 

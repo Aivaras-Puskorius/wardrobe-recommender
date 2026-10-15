@@ -38,7 +38,7 @@ The release build is shrunk with R8 (about 1.7 MB, debug about 12.5 MB) and sign
 
 | Feature | Now |
 |---|---|
-| Storage | In memory. A restart restores the 17 sample items. |
+| Storage | Room database on the phone. The first launch adds the 17 sample items. |
 | Photo recognition | No camera. Returns green sweater, red sneakers, navy coat, in turn. |
 | Outfits | Built by rules from the wardrobe and the day's sample weather, up to three per item. No memory of past suggestions yet. |
 | Weather | Fixed sample week for Kaunas, starting today. Celsius only. |
@@ -55,6 +55,7 @@ The release build is shrunk with R8 (about 1.7 MB, debug about 12.5 MB) and sign
 ```
 
 - Reference screenshots: `app/src/test/screenshots/`
+- Database schemas, one file per version: `app/schemas/`
 - CI: `.github/workflows/ci.yml` runs `assembleDebug assembleRelease verifyRoborazziDebug lintDebug` on every push to `main` and on pull requests.
 
 ## Code
@@ -62,7 +63,7 @@ The release build is shrunk with R8 (about 1.7 MB, debug about 12.5 MB) and sign
 ```
 app/src/main/java/app/wardrobe/
   AppContainer.kt         shared objects: repository, recognizer, forecast, theme
-  data/                   repository, sample data, stand-in recognizer
+  data/                   repository (Room, and in memory for tests), sample data, stand-in recognizer
   domain/model/           items, colors, forecast
   domain/engine/          outfit rules, scoring and reasons
   feature/wardrobe/       grid and filters
@@ -80,6 +81,6 @@ Screens with data: a ViewModel exposing one `StateFlow` of UI state, and a state
 
 ## Stack
 
-Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, AGP 9.4.1, Gradle 9.8.1. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.76.0.
+Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, Room 2.8.5 with KSP 2.3.12, AGP 9.4.1, Gradle 9.8.1. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.76.0.
 
 Icons: Material Symbols, Apache License 2.0.

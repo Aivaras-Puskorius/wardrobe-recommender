@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.roborazzi)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -45,6 +47,11 @@ android {
     }
 }
 
+room {
+    // Each schema version is saved here and committed, so later migrations can be tested against it.
+    schemaDirectory("$projectDir/schemas")
+}
+
 roborazzi {
     // Reference screenshots live with the tests. verifyRoborazziDebug compares against them.
     outputDir.set(file("src/test/screenshots"))
@@ -62,6 +69,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.core)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
