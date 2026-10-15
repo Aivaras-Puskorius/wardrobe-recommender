@@ -79,6 +79,8 @@ object OutfitEngine {
             day.precipitationChancePercent >= WET_CHANCE_PERCENT
         val low = day.minTemperatureC
         val outerwear = slot(Category.OUTERWEAR)
+        // On these days every outfit has outerwear, so OUTDOOR_HOLDS can't favor wearing it when it's optional.
+        val outerwearNeeded = anchor.category == Category.OUTERWEAR || low < MILD_LOW || wet
         val outerwearOptions: List<ClothingItem?> = when {
             anchor.category == Category.OUTERWEAR -> outerwear
             low < MILD_LOW || wet -> outerwear.ifEmpty { return EngineResult.Missing(Category.OUTERWEAR) }
@@ -89,7 +91,7 @@ object OutfitEngine {
         val candidates = buildList {
             for (outer in outerwearOptions) for (top in slot(Category.TOP)) for (bottom in slot(Category.BOTTOM)) {
                 for (footwear in slot(Category.FOOTWEAR)) {
-                    score(listOfNotNull(top, bottom, footwear, outer), anchor, day, wet, recent)?.let(::add)
+                    score(listOfNotNull(top, bottom, footwear, outer), anchor, day, wet, outerwearNeeded, recent)?.let(::add)
                 }
             }
         }
@@ -117,6 +119,7 @@ object OutfitEngine {
         anchor: ClothingItem,
         day: DayForecast,
         wet: Boolean,
+        outerwearNeeded: Boolean,
         recent: List<Set<String>>,
     ): ScoredOutfit? {
         val outer = items.firstOrNull { it.category == Category.OUTERWEAR }
@@ -149,7 +152,7 @@ object OutfitEngine {
         if (light.isNotEmpty() && indoor.any { it.color.isDark }) {
             terms += ScoreTerm(Reason.LIGHT_DARK, 1, listOf(light.maxBy { it.color.lightness }))
         }
-        if (outer != null && colorTerm(items, items.accents()) != null) {
+        if (outerwearNeeded && outer != null && colorTerm(items, items.accents()) != null) {
             terms += ScoreTerm(Reason.OUTDOOR_HOLDS, 1, listOf(outer))
         }
         val season = seasonOf(day.date)

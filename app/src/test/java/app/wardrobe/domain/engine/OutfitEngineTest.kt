@@ -368,5 +368,24 @@ class OutfitEngineTest {
         )
     }
 
+    @Test
+    fun t24NoJacketPointWhenTheDayLeavesTheJacketOptional() {
+        val mild = day(13, 19, PARTLY_CLOUDY, 10)
+        val chinos = suggest(sample, "beige-chinos", mild).outfits()
+        assertEquals(
+            listOf(
+                listOf("olive-overshirt", "beige-chinos", "black-sneakers"),
+                listOf("oxford-shirt", "beige-chinos", "brown-boots"),
+                listOf("black-tee", "beige-chinos", "black-sneakers", "denim-jacket"),
+            ),
+            chinos.map { o -> o.items.map { it.id } },
+        )
+        assertEquals(listOf(6, 6, 5), chinos.map { it.score })
+
+        val jacket = suggest(sample, "denim-jacket", mild).outfits()
+        assertEquals(listOf("black-tee", "beige-chinos", "black-sneakers", "denim-jacket"), jacket.first().items.map { it.id })
+        assertTrue(jacket.all { outfit -> outfit.terms.any { it.reason == Reason.OUTDOOR_HOLDS } })
+    }
+
     private fun ScoredOutfit.term(reason: Reason) = terms.single { it.reason == reason }
 }
