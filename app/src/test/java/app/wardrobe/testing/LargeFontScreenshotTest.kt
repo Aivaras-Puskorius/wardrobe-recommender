@@ -88,7 +88,8 @@ class LargeFontScreenshotTest {
         AddItemContent(
             step = AddItemStep.Details(form),
             onClose = {},
-            onChooseSource = {},
+            onTakePhoto = {},
+            onPickPhoto = {},
             onFormChange = {},
             onSave = {},
         )

@@ -51,6 +51,8 @@
     <string name="add_item_gallery">Choose from gallery</string>
     <string name="add_item_gallery_body">Pick a photo you already have</string>
     <string name="add_item_tip">For the best result, photograph one item on a plain background.</string>
+    <string name="add_item_no_camera">No camera app found. Choose a photo from the gallery instead.</string>
+    <string name="add_item_photo_failed">That photo could not be opened. Try another one.</string>
     <string name="add_item_analyzing">Recognizing the item…</string>
     <string name="add_item_analyzing_body">Looking for its type and main color.</string>
     <string name="add_item_save">Save to wardrobe</string>

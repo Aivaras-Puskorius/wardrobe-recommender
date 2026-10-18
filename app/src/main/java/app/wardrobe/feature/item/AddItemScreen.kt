@@ -1,6 +1,10 @@
 package app.wardrobe.feature.item
 
+import android.content.ActivityNotFoundException
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,25 +29,32 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.wardrobe.R
 import app.wardrobe.ui.components.BottomActionBar
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.ui.components.GarmentBackdrop
+import java.io.FileNotFoundException
 import kotlinx.coroutines.launch
 
 @Composable
@@ -53,13 +64,44 @@ fun AddItemScreen(
     onSaved: (ClothingItem) -> Unit,
 ) {
     val step by viewModel.step.collectAsStateWithLifecycle()
+    val photoError by viewModel.photoError.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val noCamera = stringResource(R.string.add_item_no_camera)
+    val photoFailed = stringResource(R.string.add_item_photo_failed)
+
+    val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture(), viewModel::cameraFinished)
+    val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            viewModel.usePickedPhoto {
+                context.contentResolver.openInputStream(uri) ?: throw FileNotFoundException(uri.toString())
+            }
+        }
+    }
+    LaunchedEffect(photoError) {
+        if (photoError) {
+            snackbarHostState.showSnackbar(photoFailed)
+            viewModel.photoErrorShown()
+        }
+    }
+
     AddItemContent(
         step = step,
         onClose = onClose,
-        onChooseSource = { viewModel.recognizePhoto(null) },
+        onTakePhoto = {
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.photos", viewModel.startCamera())
+            try {
+                takePicture.launch(uri)
+            } catch (e: ActivityNotFoundException) {
+                viewModel.cameraFinished(saved = false)
+                scope.launch { snackbarHostState.showSnackbar(noCamera) }
+            }
+        },
+        onPickPhoto = { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
         onFormChange = viewModel::update,
         onSave = { scope.launch { viewModel.save()?.let(onSaved) } },
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -69,10 +111,12 @@ fun AddItemScreen(
 fun AddItemContent(
     step: AddItemStep,
     onClose: () -> Unit,
-    onChooseSource: () -> Unit,
+    onTakePhoto: () -> Unit,
+    onPickPhoto: () -> Unit,
     onFormChange: (ItemFormChange) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     showDiscardDialogInitially: Boolean = false,
 ) {
     var showDiscardDialog by rememberSaveable { mutableStateOf(showDiscardDialogInitially) }
@@ -81,6 +125,7 @@ fun AddItemContent(
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.add_item_title)) },
@@ -103,7 +148,7 @@ fun AddItemContent(
             label = "add item step",
         ) { current ->
             when (current) {
-                AddItemStep.ChooseSource -> SourceChoice(onChooseSource, Modifier.padding(padding))
+                AddItemStep.ChooseSource -> SourceChoice(onTakePhoto, onPickPhoto, Modifier.padding(padding))
                 AddItemStep.Analyzing -> Analyzing(Modifier.padding(padding))
                 is AddItemStep.Details -> ItemFormFields(
                     form = current.form,
@@ -131,7 +176,7 @@ fun AddItemContent(
 }
 
 @Composable
-private fun SourceChoice(onChoose: () -> Unit, modifier: Modifier = Modifier) {
+private fun SourceChoice(onTakePhoto: () -> Unit, onPickPhoto: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -143,13 +188,13 @@ private fun SourceChoice(onChoose: () -> Unit, modifier: Modifier = Modifier) {
             icon = R.drawable.ic_photo_camera,
             title = stringResource(R.string.add_item_camera),
             body = stringResource(R.string.add_item_camera_body),
-            onClick = onChoose,
+            onClick = onTakePhoto,
         )
         SourceCard(
             icon = R.drawable.ic_photo_library,
             title = stringResource(R.string.add_item_gallery),
             body = stringResource(R.string.add_item_gallery_body),
-            onClick = onChoose,
+            onClick = onPickPhoto,
         )
         Row(
             modifier = Modifier.padding(top = 8.dp),

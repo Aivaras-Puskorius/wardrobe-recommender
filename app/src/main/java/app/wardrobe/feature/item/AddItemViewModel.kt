@@ -2,6 +2,7 @@ package app.wardrobe.feature.item
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wardrobe.data.PhotoStore
 import app.wardrobe.data.WardrobeRepository
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Fit
@@ -9,12 +10,18 @@ import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
 import app.wardrobe.domain.model.Warmth
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.util.UUID
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface AddItemStep {
     /** Choose between the camera and the gallery. */
@@ -35,11 +42,48 @@ class AddItemViewModel(
     private val repository: WardrobeRepository,
     private val recognize: suspend () -> ItemSuggestion,
     private val defaultName: (Garment, ItemColor) -> String,
+    private val photoStore: PhotoStore,
     private val newId: () -> String = { UUID.randomUUID().toString() },
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
     private val _step = MutableStateFlow<AddItemStep>(AddItemStep.ChooseSource)
     val step: StateFlow<AddItemStep> = _step.asStateFlow()
+
+    private val _photoError = MutableStateFlow(false)
+
+    /** True after a picked photo could not be read, until the screen has told the user. */
+    val photoError: StateFlow<Boolean> = _photoError.asStateFlow()
+
+    private var cameraFile: File? = null
+
+    /** A new empty file for the camera app to write the photo into. */
+    fun startCamera(): File = photoStore.newFile().also { cameraFile = it }
+
+    /** Recognizes the camera photo, or deletes the empty file when the user backed out of the camera. */
+    fun cameraFinished(saved: Boolean) {
+        val file = cameraFile ?: return
+        cameraFile = null
+        if (saved) recognizePhoto(file.name) else file.delete()
+    }
+
+    /** Copies the photo that [open] reads, such as one from the gallery, and recognizes it. */
+    fun usePickedPhoto(open: () -> InputStream) {
+        viewModelScope.launch {
+            val photo = try {
+                withContext(ioDispatcher) { photoStore.copy(open()) }
+            } catch (e: IOException) {
+                null
+            } catch (e: SecurityException) {
+                null
+            }
+            if (photo != null) recognizePhoto(photo) else _photoError.value = true
+        }
+    }
+
+    fun photoErrorShown() {
+        _photoError.value = false
+    }
 
     /** Recognizes the item in [photo], a file name in the photo folder, or null when there is no photo. */
     fun recognizePhoto(photo: String?) {

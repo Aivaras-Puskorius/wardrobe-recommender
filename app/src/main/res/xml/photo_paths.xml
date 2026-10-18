@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lets the camera app write a new photo straight into the app's photo folder. -->
+<paths>
+    <files-path name="photos" path="photos/" />
+</paths>

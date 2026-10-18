@@ -39,7 +39,8 @@ The release build is shrunk with R8 (about 1.9 MB, debug about 13 MB) and signed
 | Feature | Now |
 |---|---|
 | Storage | Room database on the phone. The first launch adds the 17 sample items. |
-| Photo recognition | No camera. Returns green sweater, red sneakers, navy coat, in turn. |
+| Photos | Taken with the phone's camera app or picked from the gallery, kept at full size in app storage. Sample items show drawings. |
+| Photo recognition | Ignores the photo. Returns green sweater, red sneakers, navy coat, in turn. |
 | Outfits | Built by rules from the wardrobe and the day's sample weather, up to three per item. No memory of past suggestions yet. |
 | Weather | Fixed sample week for Kaunas, starting today. Celsius only. |
 | Likes | Kept until the results screen closes. |

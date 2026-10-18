@@ -110,6 +110,7 @@ fun WardrobeApp(container: AppContainer) {
                         repository = container.wardrobeRepository,
                         recognize = container.recognizer::recognize,
                         defaultName = defaultItemName,
+                        photoStore = container.photoStore,
                     )
                 },
                 onClose = navigator::goBack,

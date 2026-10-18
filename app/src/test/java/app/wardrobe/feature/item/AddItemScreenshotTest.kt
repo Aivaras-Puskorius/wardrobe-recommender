@@ -67,7 +67,8 @@ class AddItemScreenshotTest {
         AddItemContent(
             step = step,
             onClose = {},
-            onChooseSource = {},
+            onTakePhoto = {},
+            onPickPhoto = {},
             onFormChange = {},
             onSave = {},
             showDiscardDialogInitially = showDiscardDialog,
