@@ -37,6 +37,7 @@
     <string name="item_type_value">%1$s in %2$s</string>
     <string name="item_color">Color</string>
     <string name="item_material">Material</string>
+    <string name="item_fit">Fit</string>
     <string name="item_warmth">Warmth</string>
     <string name="item_seasons">Seasons</string>
     <string name="item_seasons_all">All year</string>

@@ -32,6 +32,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import app.wardrobe.R
+import app.wardrobe.domain.model.Category
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -134,6 +136,19 @@ fun ItemFormFields(
                     onClick = { onChange(ItemFormChange.SetMaterial(material)) },
                     label = { Text(stringResource(material.label())) },
                 )
+            }
+        }
+
+        // Footwear has no fit, so the row goes away while shoes are picked.
+        if (form.garment.category != Category.FOOTWEAR) {
+            Section(stringResource(R.string.item_fit)) {
+                Fit.entries.forEach { fit ->
+                    FilterChip(
+                        selected = fit == form.fit,
+                        onClick = { onChange(ItemFormChange.SetFit(fit)) },
+                        label = { Text(stringResource(fit.label())) },
+                    )
+                }
             }
         }
 

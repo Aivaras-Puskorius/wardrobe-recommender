@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.wardrobe.R
+import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Season
 import app.wardrobe.ui.components.BottomActionBar
@@ -190,6 +191,13 @@ private fun ItemDetails(item: ClothingItem, modifier: Modifier = Modifier) {
                     label = stringResource(R.string.item_material),
                     value = stringResource(item.material.label()),
                 )
+                if (item.category != Category.FOOTWEAR) {
+                    Attribute(
+                        icon = R.drawable.ic_straighten,
+                        label = stringResource(R.string.item_fit),
+                        value = stringResource(item.fit.label()),
+                    )
+                }
                 Attribute(
                     icon = R.drawable.ic_device_thermostat,
                     label = stringResource(R.string.item_warmth),

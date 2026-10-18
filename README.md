@@ -30,7 +30,7 @@ The release build is shrunk with R8 (about 1.7 MB, debug about 12.5 MB) and sign
 |---|---|
 | Wardrobe tab | Category chips. Filter icon: colors, seasons. Tap a card for details. Add item button. |
 | Item | Edit. Delete, with Undo on the snackbar. Style it: outfit ideas for this item, today. |
-| Add item | Take a photo or Choose from gallery, then confirm the suggested type and color, set material, warmth and seasons, Save. |
+| Add item | Take a photo or Choose from gallery, then confirm the suggested type and color, set material, fit, warmth and seasons, Save. |
 | Outfits tab | Pick a day and an item, Show outfits. Like or dislike each outfit. |
 | Settings tab | Theme: System, Light, Dark. |
 

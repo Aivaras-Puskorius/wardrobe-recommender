@@ -54,6 +54,22 @@ class EditItemFlowTest {
     }
 
     @Test
+    fun aPickedFitShowsOnTheDetailScreen() {
+        composeRule.onNodeWithText("Loose").performScrollTo().performClick()
+        composeRule.onNodeWithText("Save changes").performClick()
+
+        composeRule.onNodeWithText("Fit").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Loose").assertIsDisplayed()
+    }
+
+    @Test
+    fun footwearHasNoFitRow() {
+        composeRule.onNodeWithText("Fit").assertExists()
+        composeRule.onNodeWithText("Sneakers").performScrollTo().performClick()
+        composeRule.onNodeWithText("Fit").assertDoesNotExist()
+    }
+
+    @Test
     fun closingWithChangesAsksFirst() {
         composeRule.onNodeWithText("Navy").performScrollTo().performClick()
         composeRule.onNodeWithContentDescription("Close").performClick()
