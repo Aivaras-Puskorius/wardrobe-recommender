@@ -44,7 +44,7 @@ class OutfitEngineTest {
         warmth: Warmth,
         material: Material = garment.defaultMaterial,
         fit: Fit = Fit.REGULAR,
-    ) = ClothingItem(id, id, garment, color, material, fit, warmth, setOf(Season.SUMMER))
+    ) = ClothingItem(id, id, garment, color, material, fit, warmth, setOf(Season.SUMMER), photo = null)
 
     private fun suggest(
         wardrobe: List<ClothingItem>,
@@ -286,7 +286,7 @@ class OutfitEngineTest {
 
         val rainSneakers = ClothingItem(
             "black-rain-sneakers", "Black rain sneakers", Garment.SNEAKERS, ItemColor.BLACK, Material.WATERPROOF,
-            Fit.REGULAR, Warmth.LIGHT, setOf(Season.AUTUMN),
+            Fit.REGULAR, Warmth.LIGHT, setOf(Season.AUTUMN), photo = null,
         )
         val waterproof = suggest(base + rainSneakers, "dark-jeans", rain).outfits().single()
         assertEquals(8, waterproof.score)
@@ -364,7 +364,7 @@ class OutfitEngineTest {
     fun t23LightAndDarkCountIndoorsOnly() {
         val navyCoat = ClothingItem(
             "navy-coat", "Navy coat", Garment.COAT, ItemColor.NAVY, Material.WOOL, Fit.REGULAR, Warmth.WARM,
-            setOf(Season.AUTUMN, Season.WINTER),
+            setOf(Season.AUTUMN, Season.WINTER), photo = null,
         )
         val wardrobe = listOf(item("cream-knit"), item("beige-chinos"), item("white-sneakers"), navyCoat)
         val outfit = suggest(wardrobe, "cream-knit", day(3, 9, CLOUDY, 30)).outfits().single()

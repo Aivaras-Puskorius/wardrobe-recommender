@@ -55,7 +55,7 @@ class AddItemViewModelTest {
 
     @Test
     fun recognitionPrefillsTheSuggestionAndADefaultName() {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         val form = form()
         assertEquals(Garment.SWEATER, form.garment)
         assertEquals(ItemColor.GREEN, form.color)
@@ -66,14 +66,14 @@ class AddItemViewModelTest {
 
     @Test
     fun changingTheColorRenamesWhileTheNameIsUntouched() {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         viewModel.update(ItemFormChange.SetColor(ItemColor.NAVY))
         assertEquals("NAVY SWEATER", form().name)
     }
 
     @Test
     fun aTypedNameIsKept() {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         viewModel.update(ItemFormChange.SetName("My jumper"))
         viewModel.update(ItemFormChange.SetGarment(Garment.COAT))
         assertEquals("My jumper", form().name)
@@ -81,7 +81,7 @@ class AddItemViewModelTest {
 
     @Test
     fun theMaterialFollowsTheGarmentUntilTheUserPicksOne() {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         assertEquals(Material.WOOL, form().material)
         viewModel.update(ItemFormChange.SetGarment(Garment.JEANS))
         assertEquals(Material.DENIM, form().material)
@@ -92,14 +92,20 @@ class AddItemViewModelTest {
     }
 
     @Test
+    fun theFormKeepsThePhoto() {
+        viewModel.recognizePhoto(PHOTO)
+        assertEquals(PHOTO, form().photo)
+    }
+
+    @Test
     fun aNewItemStartsWithRegularFit() {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         assertEquals(Fit.REGULAR, form().fit)
     }
 
     @Test
     fun footwearIsSavedAsRegularFit() = runTest {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         viewModel.update(ItemFormChange.SetFit(Fit.OVERSIZED))
         viewModel.update(ItemFormChange.SetGarment(Garment.BOOTS))
         viewModel.update(ItemFormChange.ToggleSeason(Season.WINTER))
@@ -108,7 +114,7 @@ class AddItemViewModelTest {
 
     @Test
     fun saveRejectsABlankNameAndShowsErrors() = runTest {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         viewModel.update(ItemFormChange.SetName("   "))
         viewModel.update(ItemFormChange.ToggleSeason(Season.WINTER))
         assertNull(viewModel.save())
@@ -118,14 +124,14 @@ class AddItemViewModelTest {
 
     @Test
     fun saveRejectsAnItemWithoutSeasons() = runTest {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         assertNull(viewModel.save())
         assertTrue(form().seasonsError)
     }
 
     @Test
     fun saveAddsTheItemWithATrimmedName() = runTest {
-        viewModel.recognizePhoto()
+        viewModel.recognizePhoto(PHOTO)
         viewModel.update(ItemFormChange.SetName("  Green jumper "))
         viewModel.update(ItemFormChange.SetWarmth(Warmth.WARM))
         viewModel.update(ItemFormChange.SetMaterial(Material.SYNTHETIC))
@@ -141,6 +147,11 @@ class AddItemViewModelTest {
         assertEquals(Warmth.WARM, saved?.warmth)
         assertEquals(Material.SYNTHETIC, saved?.material)
         assertEquals(Fit.OVERSIZED, saved?.fit)
+        assertEquals(PHOTO, saved?.photo)
         assertEquals(listOf(saved), repository.items.first())
+    }
+
+    private companion object {
+        const val PHOTO = "green-sweater.jpg"
     }
 }

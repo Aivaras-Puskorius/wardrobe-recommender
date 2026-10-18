@@ -67,6 +67,7 @@ class WardrobeMigrationTest {
                 fit = Fit.REGULAR,
                 warmth = Warmth.WARM,
                 seasons = setOf(Season.AUTUMN, Season.WINTER),
+                photo = null,
             )
         }
         assertEquals(expected, items)
@@ -95,11 +96,37 @@ class WardrobeMigrationTest {
             listOf(
                 ClothingItem(
                     "rain-jacket", "Rain jacket", Garment.JACKET, ItemColor.OLIVE, Material.WATERPROOF, Fit.REGULAR,
-                    Warmth.MEDIUM, setOf(Season.SPRING, Season.AUTUMN),
+                    Warmth.MEDIUM, setOf(Season.SPRING, Season.AUTUMN), photo = null,
                 ),
                 ClothingItem(
                     "boots", "Boots", Garment.BOOTS, ItemColor.BROWN, Material.LEATHER, Fit.REGULAR, Warmth.WARM,
-                    setOf(Season.WINTER),
+                    setOf(Season.WINTER), photo = null,
+                ),
+            ),
+            items,
+        )
+    }
+
+    @Test
+    fun version3ItemsKeepTheirValuesAndHaveNoPhoto() {
+        helper.createDatabase(NAME, 3).apply {
+            execSQL(
+                "INSERT INTO items (id, name, garment, color, material, fit, warmth, seasons) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                arrayOf("jeans", "Jeans", "JEANS", "DENIM", "DENIM", "FITTED", "MEDIUM", "AUTUMN"),
+            )
+            close()
+        }
+
+        helper.runMigrationsAndValidate(NAME, 4, true, WardrobeDatabase.MIGRATION_3_4).close()
+
+        val database = WardrobeDatabase.build(RuntimeEnvironment.getApplication(), NAME)
+        val items = runBlocking { RoomWardrobeRepository(database.items()).items.first() }
+        database.close()
+        assertEquals(
+            listOf(
+                ClothingItem(
+                    "jeans", "Jeans", Garment.JEANS, ItemColor.DENIM, Material.DENIM, Fit.FITTED, Warmth.MEDIUM,
+                    setOf(Season.AUTUMN), photo = null,
                 ),
             ),
             items,

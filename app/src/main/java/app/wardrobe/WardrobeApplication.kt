@@ -1,11 +1,31 @@
 package app.wardrobe
 
 import android.app.Application
+import app.wardrobe.data.PhotoStore
 import app.wardrobe.data.RoomWardrobeRepository
 import app.wardrobe.data.WardrobeDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class WardrobeApplication : Application() {
     val container: AppContainer by lazy {
-        AppContainer(wardrobeRepository = RoomWardrobeRepository(WardrobeDatabase.build(this).items()))
+        AppContainer(
+            wardrobeRepository = RoomWardrobeRepository(WardrobeDatabase.build(this).items()),
+            photoStore = PhotoStore(filesDir),
+        )
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        val startedAt = System.currentTimeMillis()
+        // Photos of deleted items and discarded adds. A delete can still be undone while the app runs, so
+        // the files wait for the next start.
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            val used = container.wardrobeRepository.items.first().mapNotNull { it.photo }.toSet()
+            container.photoStore.deleteUnused(used, olderThan = startedAt)
+        }
     }
 }

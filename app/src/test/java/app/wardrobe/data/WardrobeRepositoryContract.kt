@@ -32,6 +32,7 @@ abstract class WardrobeRepositoryContract {
         fit = Fit.REGULAR,
         warmth = Warmth.MEDIUM,
         seasons = setOf(Season.SPRING, Season.AUTUMN),
+        photo = null,
     )
     protected val jeans = ClothingItem(
         id = "jeans",
@@ -42,6 +43,7 @@ abstract class WardrobeRepositoryContract {
         fit = Fit.FITTED,
         warmth = Warmth.MEDIUM,
         seasons = Season.entries.toSet(),
+        photo = "jeans.jpg",
     )
     protected val repository: WardrobeRepository by lazy { createRepository(listOf(shirt)) }
 
@@ -80,6 +82,13 @@ abstract class WardrobeRepositoryContract {
         val loose = shirt.copy(fit = Fit.LOOSE)
         repository.update(loose)
         assertEquals(loose, repository.item(shirt.id).first())
+    }
+
+    @Test
+    fun updateChangesThePhoto() = runTest {
+        val photographed = shirt.copy(photo = "shirt.jpg")
+        repository.update(photographed)
+        assertEquals(photographed, repository.item(shirt.id).first())
     }
 
     @Test(expected = IllegalArgumentException::class)

@@ -37,6 +37,7 @@ data class ItemEntity(
     val fit: Fit,
     val warmth: Warmth,
     val seasons: Set<Season>,
+    val photo: String?,
 )
 
 @Dao
@@ -71,7 +72,7 @@ class Converters {
 }
 
 /** The wardrobe on the phone. Room creates it on first launch and adds the sample items then. */
-@Database(entities = [ItemEntity::class], version = 3)
+@Database(entities = [ItemEntity::class], version = 4)
 @TypeConverters(Converters::class)
 abstract class WardrobeDatabase : RoomDatabase() {
     abstract fun items(): ItemDao
@@ -122,9 +123,16 @@ abstract class WardrobeDatabase : RoomDatabase() {
             }
         }
 
+        /** Version 4 adds the photo file name. Saved items have none and keep their illustration. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE items ADD COLUMN photo TEXT")
+            }
+        }
+
         fun build(context: Context, name: String = "wardrobe.db"): WardrobeDatabase =
             Room.databaseBuilder(context, WardrobeDatabase::class.java, name)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .addCallback(SeedSampleItems)
                 .build()
     }
@@ -154,6 +162,6 @@ private object SeedSampleItems : RoomDatabase.Callback() {
     }
 }
 
-fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, material, fit, warmth, seasons)
+fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, material, fit, warmth, seasons, photo)
 
-fun ClothingItem.toEntity() = ItemEntity(id, name, garment, color, material, fit, warmth, seasons)
+fun ClothingItem.toEntity() = ItemEntity(id, name, garment, color, material, fit, warmth, seasons, photo)

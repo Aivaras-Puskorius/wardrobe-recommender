@@ -28,6 +28,7 @@ data class ItemForm(
     val fit: Fit,
     val warmth: Warmth,
     val seasons: Set<Season>,
+    val photo: String?,
     val suggestion: ItemSuggestion? = null,
     val showErrors: Boolean = false,
 ) {
@@ -39,7 +40,7 @@ data class ItemForm(
     fun toItem(id: String) = ClothingItem(
         id, name.trim(), garment, color, material,
         if (garment.category == Category.FOOTWEAR) Fit.REGULAR else fit,
-        warmth, seasons,
+        warmth, seasons, photo,
     )
 }
 
@@ -54,6 +55,7 @@ fun ClothingItem.toForm() = ItemForm(
     fit = fit,
     warmth = warmth,
     seasons = seasons,
+    photo = photo,
 )
 
 /** One edit the user makes in the item form. */

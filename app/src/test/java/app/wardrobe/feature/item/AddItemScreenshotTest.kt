@@ -32,6 +32,7 @@ class AddItemScreenshotTest {
         material = Material.WOOL,
         materialEditedByUser = false,
         fit = Fit.REGULAR,
+        photo = null,
         warmth = Warmth.MEDIUM,
         seasons = emptySet(),
         suggestion = ItemSuggestion(Garment.SWEATER, ItemColor.GREEN),

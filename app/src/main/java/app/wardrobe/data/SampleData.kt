@@ -87,5 +87,5 @@ object SampleData {
         vararg seasons: Season,
         material: Material = garment.defaultMaterial,
         fit: Fit = Fit.REGULAR,
-    ) = ClothingItem(id, name, garment, color, material, fit, warmth, seasons.toSet())
+    ) = ClothingItem(id, name, garment, color, material, fit, warmth, seasons.toSet(), photo = null)
 }

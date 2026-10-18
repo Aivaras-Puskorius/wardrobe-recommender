@@ -10,6 +10,8 @@ data class ClothingItem(
     val fit: Fit,
     val warmth: Warmth,
     val seasons: Set<Season>,
+    /** The file name of the item's photo in the app's photo folder, or null to show the garment illustration. */
+    val photo: String?,
 ) {
     val category: Category get() = garment.category
 }

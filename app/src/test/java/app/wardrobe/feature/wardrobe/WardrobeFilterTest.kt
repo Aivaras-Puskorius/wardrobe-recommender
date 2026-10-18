@@ -23,6 +23,7 @@ class WardrobeFilterTest {
         fit = Fit.REGULAR,
         warmth = Warmth.WARM,
         seasons = setOf(Season.AUTUMN, Season.WINTER),
+        photo = null,
     )
 
     @Test

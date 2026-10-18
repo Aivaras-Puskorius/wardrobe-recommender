@@ -93,6 +93,15 @@ class EditItemViewModelTest {
     }
 
     @Test
+    fun saveKeepsThePhoto() = runTest {
+        val photographed = tee.copy(id = "photographed", photo = "tee.jpg")
+        repository.add(photographed)
+        val edit = EditItemViewModel(photographed.id, repository, defaultName = { _, _ -> "" })
+        edit.update(ItemFormChange.SetName("Old tee"))
+        assertEquals("tee.jpg", edit.save()?.photo)
+    }
+
+    @Test
     fun saveUpdatesTheItemUnderTheSameId() = runTest {
         viewModel.update(ItemFormChange.SetName("Favorite black tee"))
         viewModel.update(ItemFormChange.ToggleSeason(Season.WINTER))

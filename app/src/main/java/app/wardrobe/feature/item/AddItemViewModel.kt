@@ -41,7 +41,8 @@ class AddItemViewModel(
     private val _step = MutableStateFlow<AddItemStep>(AddItemStep.ChooseSource)
     val step: StateFlow<AddItemStep> = _step.asStateFlow()
 
-    fun recognizePhoto() {
+    /** Recognizes the item in [photo], a file name in the photo folder, or null when there is no photo. */
+    fun recognizePhoto(photo: String?) {
         _step.value = AddItemStep.Analyzing
         viewModelScope.launch {
             val suggestion = recognize()
@@ -56,6 +57,7 @@ class AddItemViewModel(
                     fit = Fit.REGULAR,
                     warmth = Warmth.MEDIUM,
                     seasons = emptySet(),
+                    photo = photo,
                     suggestion = suggestion,
                 ),
             )

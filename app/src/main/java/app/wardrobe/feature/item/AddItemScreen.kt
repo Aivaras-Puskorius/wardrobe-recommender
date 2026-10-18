@@ -57,7 +57,7 @@ fun AddItemScreen(
     AddItemContent(
         step = step,
         onClose = onClose,
-        onChooseSource = viewModel::recognizePhoto,
+        onChooseSource = { viewModel.recognizePhoto(null) },
         onFormChange = viewModel::update,
         onSave = { scope.launch { viewModel.save()?.let(onSaved) } },
     )
