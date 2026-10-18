@@ -47,6 +47,18 @@ class AddItemScreenshotTest {
     @Test
     fun suggestion() = composeRule.captureInTheme { AddItem(AddItemStep.Details(suggested)) }
 
+    /** Recognition found only the color, so the type has no suggestion mark. */
+    @Test
+    fun colorOnlySuggestion() = composeRule.captureInTheme {
+        val colorOnly = suggested.copy(
+            name = "Green T-shirt",
+            garment = Garment.T_SHIRT,
+            material = Material.COTTON,
+            suggestion = ItemSuggestion(garment = null, color = ItemColor.GREEN),
+        )
+        AddItem(AddItemStep.Details(colorOnly))
+    }
+
     @Test
     fun suggestionDark() = composeRule.captureInTheme(darkTheme = true) {
         AddItem(AddItemStep.Details(suggested))

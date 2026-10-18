@@ -24,6 +24,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,6 +34,8 @@ class AddItemViewModelTest {
     val folder = TemporaryFolder()
 
     private val suggestion = ItemSuggestion(Garment.SWEATER, ItemColor.GREEN)
+    private var nextSuggestion = suggestion
+    private val recognizedFiles = mutableListOf<File>()
     private lateinit var photoStore: PhotoStore
     private lateinit var repository: InMemoryWardrobeRepository
     private lateinit var viewModel: AddItemViewModel
@@ -45,7 +48,7 @@ class AddItemViewModelTest {
         repository = InMemoryWardrobeRepository(emptyList())
         viewModel = AddItemViewModel(
             repository = repository,
-            recognize = { suggestion },
+            recognize = { file -> recognizedFiles += file; nextSuggestion },
             defaultName = { garment, color -> "$color $garment" },
             photoStore = photoStore,
             newId = { "new-id" },
@@ -134,6 +137,37 @@ class AddItemViewModelTest {
         viewModel.update(ItemFormChange.SetMaterial(Material.LINEN))
         viewModel.update(ItemFormChange.SetGarment(Garment.SHIRT))
         assertEquals(Material.LINEN, form().material)
+    }
+
+    @Test
+    fun recognitionLooksAtThePhotoFile() {
+        viewModel.recognizePhoto(PHOTO)
+        assertEquals(listOf(photoStore.file(PHOTO)), recognizedFiles)
+    }
+
+    @Test
+    fun aColorOnlySuggestionLeavesTheTypeToTheUser() {
+        nextSuggestion = ItemSuggestion(garment = null, color = ItemColor.NAVY)
+        viewModel.recognizePhoto(PHOTO)
+        assertEquals(Garment.T_SHIRT, form().garment)
+        assertEquals(ItemColor.NAVY, form().color)
+        assertEquals("NAVY T_SHIRT", form().name)
+        assertEquals(nextSuggestion, form().suggestion)
+    }
+
+    @Test
+    fun anEmptySuggestionShowsNoHint() {
+        nextSuggestion = ItemSuggestion(garment = null, color = null)
+        viewModel.recognizePhoto(PHOTO)
+        assertNull(form().suggestion)
+    }
+
+    @Test
+    fun aSuggestedMaterialReplacesTheGarmentDefault() {
+        nextSuggestion = ItemSuggestion(Garment.JACKET, ItemColor.BLUE, Material.DENIM)
+        viewModel.recognizePhoto(PHOTO)
+        assertEquals(Material.DENIM, form().material)
+        assertTrue(!form().materialEditedByUser)
     }
 
     @Test

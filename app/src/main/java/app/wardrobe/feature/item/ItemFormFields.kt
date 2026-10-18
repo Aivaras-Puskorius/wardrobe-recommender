@@ -135,6 +135,7 @@ fun ItemFormFields(
                     selected = material == form.material,
                     onClick = { onChange(ItemFormChange.SetMaterial(material)) },
                     label = { Text(stringResource(material.label())) },
+                    trailingIcon = if (material == form.suggestion?.material) chipIcon(R.drawable.ic_auto_awesome) else null,
                 )
             }
         }

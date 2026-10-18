@@ -1,6 +1,7 @@
 package app.wardrobe.data
 
 import app.wardrobe.domain.model.ItemSuggestion
+import java.io.File
 import kotlinx.coroutines.delay
 
 /**
@@ -13,7 +14,7 @@ class SampleRecognizer(
 ) {
     private var next = 0
 
-    suspend fun recognize(): ItemSuggestion {
+    suspend fun recognize(photo: File): ItemSuggestion {
         delay(delayMillis)
         return suggestions[next++ % suggestions.size]
     }

@@ -35,12 +35,12 @@ sealed interface AddItemStep {
 }
 
 /**
- * @param recognize returns what the photo shows. Milestone 1 uses a stand-in with sample answers.
+ * @param recognize returns what the photo file shows.
  * @param defaultName builds a name such as "Green sweater" until the user types one.
  */
 class AddItemViewModel(
     private val repository: WardrobeRepository,
-    private val recognize: suspend () -> ItemSuggestion,
+    private val recognize: suspend (File) -> ItemSuggestion,
     private val defaultName: (Garment, ItemColor) -> String,
     private val photoStore: PhotoStore,
     private val newId: () -> String = { UUID.randomUUID().toString() },
@@ -85,24 +85,27 @@ class AddItemViewModel(
         _photoError.value = false
     }
 
-    /** Recognizes the item in [photo], a file name in the photo folder, or null when there is no photo. */
-    fun recognizePhoto(photo: String?) {
+    /** Recognizes the item in [photo], a file name in the photo folder. */
+    fun recognizePhoto(photo: String) {
         _step.value = AddItemStep.Analyzing
         viewModelScope.launch {
-            val suggestion = recognize()
+            val suggestion = recognize(photoStore.file(photo))
+            // What recognition can't tell starts at the first choice, with no suggestion mark.
+            val garment = suggestion.garment ?: Garment.entries.first()
+            val color = suggestion.color ?: ItemColor.entries.first()
             _step.value = AddItemStep.Details(
                 ItemForm(
-                    name = defaultName(suggestion.garment, suggestion.color),
+                    name = defaultName(garment, color),
                     nameEditedByUser = false,
-                    garment = suggestion.garment,
-                    color = suggestion.color,
-                    material = suggestion.garment.defaultMaterial,
+                    garment = garment,
+                    color = color,
+                    material = suggestion.material ?: garment.defaultMaterial,
                     materialEditedByUser = false,
                     fit = Fit.REGULAR,
                     warmth = Warmth.MEDIUM,
                     seasons = emptySet(),
                     photo = photo,
-                    suggestion = suggestion,
+                    suggestion = suggestion.takeIf { it.garment != null || it.color != null || it.material != null },
                 ),
             )
         }
