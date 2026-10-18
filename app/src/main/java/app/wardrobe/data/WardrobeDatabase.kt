@@ -18,6 +18,7 @@ import androidx.room.Update
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -33,6 +34,7 @@ data class ItemEntity(
     val garment: Garment,
     val color: ItemColor,
     val material: Material,
+    val fit: Fit,
     val warmth: Warmth,
     val seasons: Set<Season>,
 )
@@ -69,7 +71,7 @@ class Converters {
 }
 
 /** The wardrobe on the phone. Room creates it on first launch and adds the sample items then. */
-@Database(entities = [ItemEntity::class], version = 2)
+@Database(entities = [ItemEntity::class], version = 3)
 @TypeConverters(Converters::class)
 abstract class WardrobeDatabase : RoomDatabase() {
     abstract fun items(): ItemDao
@@ -107,9 +109,16 @@ abstract class WardrobeDatabase : RoomDatabase() {
             }
         }
 
+        /** Version 3 adds the fit. Saved items become Regular, the default. */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE items ADD COLUMN fit TEXT NOT NULL DEFAULT 'REGULAR'")
+            }
+        }
+
         fun build(context: Context, name: String = "wardrobe.db"): WardrobeDatabase =
             Room.databaseBuilder(context, WardrobeDatabase::class.java, name)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .addCallback(SeedSampleItems)
                 .build()
     }
@@ -130,6 +139,7 @@ private object SeedSampleItems : RoomDatabase.Callback() {
                 put("garment", item.garment.name)
                 put("color", item.color.name)
                 put("material", item.material.name)
+                put("fit", item.fit.name)
                 put("warmth", item.warmth.name)
                 put("seasons", converters.seasonsToText(item.seasons))
             }
@@ -138,6 +148,6 @@ private object SeedSampleItems : RoomDatabase.Callback() {
     }
 }
 
-fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, material, warmth, seasons)
+fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, material, fit, warmth, seasons)
 
-fun ClothingItem.toEntity() = ItemEntity(id, name, garment, color, material, warmth, seasons)
+fun ClothingItem.toEntity() = ItemEntity(id, name, garment, color, material, fit, warmth, seasons)

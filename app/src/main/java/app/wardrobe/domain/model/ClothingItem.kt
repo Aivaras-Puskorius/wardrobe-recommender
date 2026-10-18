@@ -7,6 +7,7 @@ data class ClothingItem(
     val garment: Garment,
     val color: ItemColor,
     val material: Material,
+    val fit: Fit,
     val warmth: Warmth,
     val seasons: Set<Season>,
 ) {
@@ -37,6 +38,9 @@ enum class Garment(val category: Category, val defaultMaterial: Material) {
 
 /** The main fabric. The user sets it, since recognition doesn't guess it. */
 enum class Material { COTTON, LINEN, WOOL, DENIM, LEATHER, SYNTHETIC, WATERPROOF }
+
+/** How a garment sits on the body. Footwear has no fit and is always [REGULAR]. */
+enum class Fit { FITTED, REGULAR, LOOSE, OVERSIZED }
 
 /** How warm a garment is. The user sets it, since a photo can't show it. */
 enum class Warmth { LIGHT, MEDIUM, WARM }

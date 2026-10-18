@@ -1,6 +1,7 @@
 package app.wardrobe.data
 
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -28,6 +29,7 @@ abstract class WardrobeRepositoryContract {
         garment = Garment.SHIRT,
         color = ItemColor.LIGHT_BLUE,
         material = Material.COTTON,
+        fit = Fit.REGULAR,
         warmth = Warmth.MEDIUM,
         seasons = setOf(Season.SPRING, Season.AUTUMN),
     )
@@ -37,6 +39,7 @@ abstract class WardrobeRepositoryContract {
         garment = Garment.JEANS,
         color = ItemColor.DENIM,
         material = Material.DENIM,
+        fit = Fit.FITTED,
         warmth = Warmth.MEDIUM,
         seasons = Season.entries.toSet(),
     )
@@ -70,6 +73,13 @@ abstract class WardrobeRepositoryContract {
         val linen = shirt.copy(material = Material.LINEN)
         repository.update(linen)
         assertEquals(linen, repository.item(shirt.id).first())
+    }
+
+    @Test
+    fun updateChangesTheFit() = runTest {
+        val loose = shirt.copy(fit = Fit.LOOSE)
+        repository.update(loose)
+        assertEquals(loose, repository.item(shirt.id).first())
     }
 
     @Test(expected = IllegalArgumentException::class)

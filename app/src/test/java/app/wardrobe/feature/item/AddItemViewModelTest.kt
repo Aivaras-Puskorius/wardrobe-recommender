@@ -1,6 +1,7 @@
 package app.wardrobe.feature.item
 
 import app.wardrobe.data.InMemoryWardrobeRepository
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
@@ -91,6 +92,21 @@ class AddItemViewModelTest {
     }
 
     @Test
+    fun aNewItemStartsWithRegularFit() {
+        viewModel.recognizePhoto()
+        assertEquals(Fit.REGULAR, form().fit)
+    }
+
+    @Test
+    fun footwearIsSavedAsRegularFit() = runTest {
+        viewModel.recognizePhoto()
+        viewModel.update(ItemFormChange.SetFit(Fit.OVERSIZED))
+        viewModel.update(ItemFormChange.SetGarment(Garment.BOOTS))
+        viewModel.update(ItemFormChange.ToggleSeason(Season.WINTER))
+        assertEquals(Fit.REGULAR, viewModel.save()?.fit)
+    }
+
+    @Test
     fun saveRejectsABlankNameAndShowsErrors() = runTest {
         viewModel.recognizePhoto()
         viewModel.update(ItemFormChange.SetName("   "))
@@ -113,6 +129,7 @@ class AddItemViewModelTest {
         viewModel.update(ItemFormChange.SetName("  Green jumper "))
         viewModel.update(ItemFormChange.SetWarmth(Warmth.WARM))
         viewModel.update(ItemFormChange.SetMaterial(Material.SYNTHETIC))
+        viewModel.update(ItemFormChange.SetFit(Fit.OVERSIZED))
         viewModel.update(ItemFormChange.ToggleSeason(Season.AUTUMN))
         viewModel.update(ItemFormChange.ToggleSeason(Season.WINTER))
 
@@ -123,6 +140,7 @@ class AddItemViewModelTest {
         assertEquals(setOf(Season.AUTUMN, Season.WINTER), saved?.seasons)
         assertEquals(Warmth.WARM, saved?.warmth)
         assertEquals(Material.SYNTHETIC, saved?.material)
+        assertEquals(Fit.OVERSIZED, saved?.fit)
         assertEquals(listOf(saved), repository.items.first())
     }
 }

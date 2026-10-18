@@ -2,6 +2,7 @@ package app.wardrobe.feature.wardrobe
 
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -19,6 +20,7 @@ class WardrobeFilterTest {
         garment = Garment.COAT,
         color = ItemColor.NAVY,
         material = Material.WOOL,
+        fit = Fit.REGULAR,
         warmth = Warmth.WARM,
         seasons = setOf(Season.AUTUMN, Season.WINTER),
     )

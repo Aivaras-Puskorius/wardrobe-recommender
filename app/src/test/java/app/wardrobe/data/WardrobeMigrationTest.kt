@@ -3,6 +3,7 @@ package app.wardrobe.data
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -63,11 +64,46 @@ class WardrobeMigrationTest {
                 garment = garment,
                 color = ItemColor.NAVY,
                 material = material,
+                fit = Fit.REGULAR,
                 warmth = Warmth.WARM,
                 seasons = setOf(Season.AUTUMN, Season.WINTER),
             )
         }
         assertEquals(expected, items)
+    }
+
+    @Test
+    fun version2ItemsKeepTheirValuesAndBecomeRegularFit() {
+        helper.createDatabase(NAME, 2).apply {
+            execSQL(
+                "INSERT INTO items (id, name, garment, color, material, warmth, seasons) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                arrayOf("rain-jacket", "Rain jacket", "JACKET", "OLIVE", "WATERPROOF", "MEDIUM", "AUTUMN,SPRING"),
+            )
+            execSQL(
+                "INSERT INTO items (id, name, garment, color, material, warmth, seasons) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                arrayOf("boots", "Boots", "BOOTS", "BROWN", "LEATHER", "WARM", "WINTER"),
+            )
+            close()
+        }
+
+        helper.runMigrationsAndValidate(NAME, 3, true, WardrobeDatabase.MIGRATION_2_3).close()
+
+        val database = WardrobeDatabase.build(RuntimeEnvironment.getApplication(), NAME)
+        val items = runBlocking { RoomWardrobeRepository(database.items()).items.first() }
+        database.close()
+        assertEquals(
+            listOf(
+                ClothingItem(
+                    "rain-jacket", "Rain jacket", Garment.JACKET, ItemColor.OLIVE, Material.WATERPROOF, Fit.REGULAR,
+                    Warmth.MEDIUM, setOf(Season.SPRING, Season.AUTUMN),
+                ),
+                ClothingItem(
+                    "boots", "Boots", Garment.BOOTS, ItemColor.BROWN, Material.LEATHER, Fit.REGULAR, Warmth.WARM,
+                    setOf(Season.WINTER),
+                ),
+            ),
+            items,
+        )
     }
 
     private companion object {

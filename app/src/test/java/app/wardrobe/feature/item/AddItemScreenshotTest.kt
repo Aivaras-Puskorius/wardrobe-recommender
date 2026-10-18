@@ -2,6 +2,7 @@ package app.wardrobe.feature.item
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.junit4.createComposeRule
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
@@ -30,6 +31,7 @@ class AddItemScreenshotTest {
         color = ItemColor.GREEN,
         material = Material.WOOL,
         materialEditedByUser = false,
+        fit = Fit.REGULAR,
         warmth = Warmth.MEDIUM,
         seasons = emptySet(),
         suggestion = ItemSuggestion(Garment.SWEATER, ItemColor.GREEN),

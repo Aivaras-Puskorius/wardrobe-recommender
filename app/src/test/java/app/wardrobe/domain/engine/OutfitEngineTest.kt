@@ -4,6 +4,7 @@ import app.wardrobe.data.SampleData
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -42,7 +43,8 @@ class OutfitEngineTest {
         color: ItemColor,
         warmth: Warmth,
         material: Material = garment.defaultMaterial,
-    ) = ClothingItem(id, id, garment, color, material, warmth, setOf(Season.SUMMER))
+        fit: Fit = Fit.REGULAR,
+    ) = ClothingItem(id, id, garment, color, material, fit, warmth, setOf(Season.SUMMER))
 
     private fun suggest(
         wardrobe: List<ClothingItem>,
@@ -280,7 +282,7 @@ class OutfitEngineTest {
 
         val rainSneakers = ClothingItem(
             "black-rain-sneakers", "Black rain sneakers", Garment.SNEAKERS, ItemColor.BLACK, Material.WATERPROOF,
-            Warmth.LIGHT, setOf(Season.AUTUMN),
+            Fit.REGULAR, Warmth.LIGHT, setOf(Season.AUTUMN),
         )
         val waterproof = suggest(base + rainSneakers, "dark-jeans", rain).outfits().single()
         assertEquals(8, waterproof.score)
@@ -357,7 +359,7 @@ class OutfitEngineTest {
     @Test
     fun t23LightAndDarkCountIndoorsOnly() {
         val navyCoat = ClothingItem(
-            "navy-coat", "Navy coat", Garment.COAT, ItemColor.NAVY, Material.WOOL, Warmth.WARM,
+            "navy-coat", "Navy coat", Garment.COAT, ItemColor.NAVY, Material.WOOL, Fit.REGULAR, Warmth.WARM,
             setOf(Season.AUTUMN, Season.WINTER),
         )
         val wardrobe = listOf(item("cream-knit"), item("beige-chinos"), item("white-sneakers"), navyCoat)

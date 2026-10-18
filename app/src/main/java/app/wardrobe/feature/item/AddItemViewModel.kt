@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.wardrobe.data.WardrobeRepository
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
@@ -52,6 +53,7 @@ class AddItemViewModel(
                     color = suggestion.color,
                     material = suggestion.garment.defaultMaterial,
                     materialEditedByUser = false,
+                    fit = Fit.REGULAR,
                     warmth = Warmth.MEDIUM,
                     seasons = emptySet(),
                     suggestion = suggestion,

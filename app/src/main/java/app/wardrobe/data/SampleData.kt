@@ -2,6 +2,7 @@ package app.wardrobe.data
 
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Forecast
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -21,20 +22,26 @@ object SampleData {
 
     val items: List<ClothingItem> = listOf(
         item("white-tee", "White tee", Garment.T_SHIRT, ItemColor.WHITE, Warmth.LIGHT, SPRING, SUMMER),
-        item("black-tee", "Black tee", Garment.T_SHIRT, ItemColor.BLACK, Warmth.LIGHT, SPRING, SUMMER, AUTUMN),
+        item("black-tee", "Black tee", Garment.T_SHIRT, ItemColor.BLACK, Warmth.LIGHT, SPRING, SUMMER, AUTUMN, fit = Fit.FITTED),
         item("oxford-shirt", "Oxford shirt", Garment.SHIRT, ItemColor.LIGHT_BLUE, Warmth.MEDIUM, SPRING, AUTUMN),
-        item("olive-overshirt", "Olive overshirt", Garment.SHIRT, ItemColor.OLIVE, Warmth.MEDIUM, SPRING, AUTUMN),
+        item("olive-overshirt", "Olive overshirt", Garment.SHIRT, ItemColor.OLIVE, Warmth.MEDIUM, SPRING, AUTUMN, fit = Fit.LOOSE),
         item("cream-knit", "Cream knit", Garment.SWEATER, ItemColor.CREAM, Warmth.WARM, AUTUMN, WINTER),
         item("burgundy-sweater", "Burgundy sweater", Garment.SWEATER, ItemColor.BURGUNDY, Warmth.WARM, AUTUMN, WINTER),
-        item("dark-jeans", "Dark jeans", Garment.JEANS, ItemColor.DENIM, Warmth.MEDIUM, SPRING, SUMMER, AUTUMN, WINTER),
+        item(
+            "dark-jeans", "Dark jeans", Garment.JEANS, ItemColor.DENIM, Warmth.MEDIUM, SPRING, SUMMER, AUTUMN, WINTER,
+            fit = Fit.FITTED,
+        ),
         item("beige-chinos", "Beige chinos", Garment.TROUSERS, ItemColor.BEIGE, Warmth.MEDIUM, SPRING, SUMMER, AUTUMN),
         item("black-trousers", "Black trousers", Garment.TROUSERS, ItemColor.BLACK, Warmth.MEDIUM, SPRING, SUMMER, AUTUMN, WINTER),
         item("khaki-shorts", "Khaki shorts", Garment.SHORTS, ItemColor.BEIGE, Warmth.LIGHT, SUMMER),
-        item("grey-skirt", "Pleated skirt", Garment.SKIRT, ItemColor.GREY, Warmth.LIGHT, SPRING, SUMMER, AUTUMN),
+        item("grey-skirt", "Pleated skirt", Garment.SKIRT, ItemColor.GREY, Warmth.LIGHT, SPRING, SUMMER, AUTUMN, fit = Fit.LOOSE),
         item("white-sneakers", "White sneakers", Garment.SNEAKERS, ItemColor.WHITE, Warmth.LIGHT, SPRING, SUMMER, AUTUMN),
         item("black-sneakers", "Black sneakers", Garment.SNEAKERS, ItemColor.BLACK, Warmth.LIGHT, SPRING, SUMMER, AUTUMN),
         item("brown-boots", "Brown boots", Garment.BOOTS, ItemColor.BROWN, Warmth.WARM, AUTUMN, WINTER),
-        item("denim-jacket", "Denim jacket", Garment.JACKET, ItemColor.BLUE, Warmth.MEDIUM, SPRING, AUTUMN, material = Material.DENIM),
+        item(
+            "denim-jacket", "Denim jacket", Garment.JACKET, ItemColor.BLUE, Warmth.MEDIUM, SPRING, AUTUMN,
+            material = Material.DENIM, fit = Fit.FITTED,
+        ),
         item(
             "olive-rain-jacket", "Olive rain jacket", Garment.JACKET, ItemColor.OLIVE, Warmth.MEDIUM, SPRING, AUTUMN,
             material = Material.WATERPROOF,
@@ -79,5 +86,6 @@ object SampleData {
         warmth: Warmth,
         vararg seasons: Season,
         material: Material = garment.defaultMaterial,
-    ) = ClothingItem(id, name, garment, color, material, warmth, seasons.toSet())
+        fit: Fit = Fit.REGULAR,
+    ) = ClothingItem(id, name, garment, color, material, fit, warmth, seasons.toSet())
 }

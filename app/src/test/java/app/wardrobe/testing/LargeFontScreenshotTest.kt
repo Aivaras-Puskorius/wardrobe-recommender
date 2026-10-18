@@ -3,6 +3,7 @@ package app.wardrobe.testing
 import androidx.compose.ui.test.junit4.createComposeRule
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
@@ -78,6 +79,7 @@ class LargeFontScreenshotTest {
             color = ItemColor.GREEN,
             material = Material.WOOL,
             materialEditedByUser = false,
+            fit = Fit.REGULAR,
             warmth = Warmth.MEDIUM,
             seasons = emptySet(),
             suggestion = ItemSuggestion(Garment.SWEATER, ItemColor.GREEN),

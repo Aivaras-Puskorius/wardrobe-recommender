@@ -49,6 +49,8 @@ android {
     sourceSets {
         // MigrationTestHelper reads the schemas as assets, and Robolectric tests see only the app's merged
         // assets, so the debug build carries them. Release builds don't.
+        // WARN: the first test run after a schema change fails with "Cannot find the schema file", because the
+        // assets are merged before KSP writes the new file. Run the tests again.
         getByName("debug").assets.srcDir("$projectDir/schemas")
     }
 }

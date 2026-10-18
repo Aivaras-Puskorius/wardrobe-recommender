@@ -1,6 +1,8 @@
 package app.wardrobe.feature.item
 
+import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
@@ -23,6 +25,7 @@ data class ItemForm(
     val color: ItemColor,
     val material: Material,
     val materialEditedByUser: Boolean,
+    val fit: Fit,
     val warmth: Warmth,
     val seasons: Set<Season>,
     val suggestion: ItemSuggestion? = null,
@@ -32,7 +35,12 @@ data class ItemForm(
     val seasonsError: Boolean get() = seasons.isEmpty()
     val isValid: Boolean get() = !nameError && !seasonsError
 
-    fun toItem(id: String) = ClothingItem(id, name.trim(), garment, color, material, warmth, seasons)
+    /** The item to save. Footwear has no fit, so a fit picked before switching to shoes is dropped. */
+    fun toItem(id: String) = ClothingItem(
+        id, name.trim(), garment, color, material,
+        if (garment.category == Category.FOOTWEAR) Fit.REGULAR else fit,
+        warmth, seasons,
+    )
 }
 
 /** A form holding an existing item's values, as the edit screen starts with. */
@@ -43,6 +51,7 @@ fun ClothingItem.toForm() = ItemForm(
     color = color,
     material = material,
     materialEditedByUser = true,
+    fit = fit,
     warmth = warmth,
     seasons = seasons,
 )
@@ -53,6 +62,7 @@ sealed interface ItemFormChange {
     data class SetGarment(val garment: Garment) : ItemFormChange
     data class SetColor(val color: ItemColor) : ItemFormChange
     data class SetMaterial(val material: Material) : ItemFormChange
+    data class SetFit(val fit: Fit) : ItemFormChange
     data class SetWarmth(val warmth: Warmth) : ItemFormChange
     data class ToggleSeason(val season: Season) : ItemFormChange
 }
@@ -67,6 +77,7 @@ fun ItemForm.apply(change: ItemFormChange, defaultName: (Garment, ItemColor) -> 
         is ItemFormChange.SetGarment -> renamed(change.garment, color, defaultName)
         is ItemFormChange.SetColor -> renamed(garment, change.color, defaultName)
         is ItemFormChange.SetMaterial -> copy(material = change.material, materialEditedByUser = true)
+        is ItemFormChange.SetFit -> copy(fit = change.fit)
         is ItemFormChange.SetWarmth -> copy(warmth = change.warmth)
         is ItemFormChange.ToggleSeason ->
             copy(seasons = if (change.season in seasons) seasons - change.season else seasons + change.season)

@@ -2,6 +2,7 @@ package app.wardrobe.feature.item
 
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -83,6 +84,12 @@ class EditItemViewModelTest {
     fun saveStoresANewMaterial() = runTest {
         viewModel.update(ItemFormChange.SetMaterial(Material.LINEN))
         assertEquals(tee.copy(material = Material.LINEN), viewModel.save())
+    }
+
+    @Test
+    fun saveStoresANewFit() = runTest {
+        viewModel.update(ItemFormChange.SetFit(Fit.LOOSE))
+        assertEquals(tee.copy(fit = Fit.LOOSE), viewModel.save())
     }
 
     @Test

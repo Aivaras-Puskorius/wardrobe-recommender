@@ -1,6 +1,7 @@
 package app.wardrobe.data
 
 import app.wardrobe.domain.model.Category
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Material
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
@@ -38,6 +39,21 @@ class SampleDataTest {
                 "camel-coat" to Material.WOOL,
             ),
             materials,
+        )
+    }
+
+    @Test
+    fun fiveSampleItemsHaveAFitOtherThanRegular() {
+        val fits = SampleData.items.filter { it.fit != Fit.REGULAR }.associate { it.id to it.fit }
+        assertEquals(
+            mapOf(
+                "black-tee" to Fit.FITTED,
+                "olive-overshirt" to Fit.LOOSE,
+                "dark-jeans" to Fit.FITTED,
+                "grey-skirt" to Fit.LOOSE,
+                "denim-jacket" to Fit.FITTED,
+            ),
+            fits,
         )
     }
 
