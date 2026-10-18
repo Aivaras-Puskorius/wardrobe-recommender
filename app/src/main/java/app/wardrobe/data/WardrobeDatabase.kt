@@ -109,7 +109,12 @@ abstract class WardrobeDatabase : RoomDatabase() {
             }
         }
 
-        /** Version 3 adds the fit. Saved items become Regular, the default. */
+        /**
+         * Version 3 adds the fit. Saved items become Regular, the default.
+         *
+         * INFO(limit): saved sample items become Regular too, so the sample fits only appear in a new database,
+         * for example after Clear data. Fixing them by id would also overwrite fits the user set.
+         */
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE items ADD COLUMN fit TEXT NOT NULL DEFAULT 'REGULAR'")
