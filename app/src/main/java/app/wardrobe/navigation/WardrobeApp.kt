@@ -39,6 +39,7 @@ import app.wardrobe.R
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.ui.components.LocalEntryAnimatedScope
+import app.wardrobe.ui.components.LocalPhotoStore
 import app.wardrobe.ui.components.LocalSharedTransitionScope
 import app.wardrobe.ui.label
 import java.time.LocalDate
@@ -194,7 +195,10 @@ fun WardrobeApp(container: AppContainer) {
         contentWindowInsets = WindowInsets(0),
     ) { padding ->
         SharedTransitionLayout {
-            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+            CompositionLocalProvider(
+                LocalSharedTransitionScope provides this,
+                LocalPhotoStore provides container.photoStore,
+            ) {
                 NavDisplay(
                     entries = navigationState.toEntries(entryProvider),
                     onBack = navigator::goBack,

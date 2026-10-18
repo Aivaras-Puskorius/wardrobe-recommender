@@ -41,7 +41,7 @@ import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.ui.components.ColorSwatch
 import app.wardrobe.ui.components.GarmentBackdrop
-import app.wardrobe.ui.components.GarmentImage
+import app.wardrobe.ui.components.ItemPicture
 import app.wardrobe.ui.label
 
 /** The item fields shared by the add and edit screens, with a live preview of the garment. */
@@ -61,7 +61,7 @@ fun ItemFormFields(
                 .background(GarmentBackdrop),
             contentAlignment = Alignment.Center,
         ) {
-            GarmentImage(form.garment, form.color, contentDescription = null, modifier = Modifier.size(150.dp))
+            ItemPicture(form.photo, form.garment, form.color, illustrationPadding = 25.dp, contentDescription = null)
         }
 
         if (form.suggestion != null) {

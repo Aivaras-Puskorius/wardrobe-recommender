@@ -49,7 +49,7 @@ import app.wardrobe.R
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.ui.components.BottomActionBar
 import app.wardrobe.ui.components.GarmentBackdrop
-import app.wardrobe.ui.components.GarmentImage
+import app.wardrobe.ui.components.ItemPicture
 import app.wardrobe.ui.components.WeatherSummary
 import app.wardrobe.ui.components.dayLabel
 import app.wardrobe.ui.components.icon
@@ -211,14 +211,7 @@ private fun SelectableItemTile(item: ClothingItem, selected: Boolean, onClick: (
                     },
                 ),
         ) {
-            GarmentImage(
-                garment = item.garment,
-                color = item.color,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(14.dp),
-            )
+            ItemPicture(item, illustrationPadding = 14.dp, contentDescription = null)
             if (selected) {
                 Box(
                     modifier = Modifier

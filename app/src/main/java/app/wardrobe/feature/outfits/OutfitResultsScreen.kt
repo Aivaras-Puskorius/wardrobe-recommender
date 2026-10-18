@@ -46,7 +46,7 @@ import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.ui.components.EmptyState
 import app.wardrobe.ui.components.GarmentBackdrop
-import app.wardrobe.ui.components.GarmentImage
+import app.wardrobe.ui.components.ItemPicture
 import app.wardrobe.ui.components.WeatherSummary
 import app.wardrobe.ui.components.dayLabel
 import app.wardrobe.ui.pluralLabel
@@ -144,14 +144,7 @@ private fun Header(state: OutfitResultsUiState.Ready, modifier: Modifier = Modif
                     .clip(MaterialTheme.shapes.medium)
                     .background(GarmentBackdrop),
             ) {
-                GarmentImage(
-                    garment = state.anchor.garment,
-                    color = state.anchor.color,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                )
+                ItemPicture(state.anchor, illustrationPadding = 8.dp, contentDescription = null)
             }
             Column {
                 Text(
@@ -261,14 +254,7 @@ private fun OutfitItemTile(item: ClothingItem, isAnchor: Boolean, modifier: Modi
                     },
                 ),
         ) {
-            GarmentImage(
-                garment = item.garment,
-                color = item.color,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-            )
+            ItemPicture(item, illustrationPadding = 8.dp, contentDescription = null)
         }
         Text(
             text = item.name,
