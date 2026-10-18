@@ -3,6 +3,7 @@ package app.wardrobe.ui
 import androidx.annotation.StringRes
 import app.wardrobe.R
 import app.wardrobe.domain.model.Category
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -71,6 +72,14 @@ fun Warmth.label(): Int = when (this) {
     Warmth.LIGHT -> R.string.warmth_light
     Warmth.MEDIUM -> R.string.warmth_medium
     Warmth.WARM -> R.string.warmth_warm
+}
+
+@StringRes
+fun Fit.label(): Int = when (this) {
+    Fit.FITTED -> R.string.fit_fitted
+    Fit.REGULAR -> R.string.fit_regular
+    Fit.LOOSE -> R.string.fit_loose
+    Fit.OVERSIZED -> R.string.fit_oversized
 }
 
 @StringRes

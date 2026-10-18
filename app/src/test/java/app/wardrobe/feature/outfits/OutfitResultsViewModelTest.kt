@@ -55,7 +55,7 @@ class OutfitResultsViewModelTest {
             listOf(
                 listOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat"),
                 listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket"),
-                listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
+                listOf("olive-overshirt", "dark-jeans", "black-sneakers", "olive-rain-jacket"),
             ),
             state.outfits.map { outfit -> outfit.items.map { it.id } },
         )
@@ -63,7 +63,7 @@ class OutfitResultsViewModelTest {
             listOf(
                 OutfitTitle(ColorStory.ALL_NEUTRALS),
                 OutfitTitle(ColorStory.ACCENT, ItemColor.LIGHT_BLUE),
-                OutfitTitle(ColorStory.ACCENT, ItemColor.LIGHT_BLUE, number = 2),
+                OutfitTitle(ColorStory.ACCENT, ItemColor.OLIVE),
             ),
             state.outfits.map { it.title },
         )

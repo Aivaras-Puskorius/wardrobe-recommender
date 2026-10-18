@@ -191,11 +191,15 @@ class OutfitEngineTest {
             listOf(
                 listOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat"),
                 listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket"),
-                listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
+                listOf("olive-overshirt", "dark-jeans", "black-sneakers", "olive-rain-jacket"),
             ),
             outfits.map { o -> o.items.map { it.id } },
         )
         assertEquals(listOf(7, 7, 7), outfits.map { it.score })
+        assertEquals(
+            listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.BALANCED_FIT),
+            outfits[2].why.map { it.reason },
+        )
         assertTrue(outfits.all { outfit -> outfit.terms.any { it.reason == Reason.OUTDOOR_HOLDS } })
         assertEquals(
             listOf(Reason.NEUTRAL_BASE, Reason.LAYERS_FIT, Reason.LIGHT_DARK),
@@ -214,8 +218,8 @@ class OutfitEngineTest {
         assertEquals(
             listOf(
                 listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket"),
+                listOf("olive-overshirt", "dark-jeans", "black-sneakers", "olive-rain-jacket"),
                 listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
-                listOf("cream-knit", "dark-jeans", "black-sneakers", "olive-rain-jacket"),
             ),
             suggest(sample, "dark-jeans", coolDay, recent).itemIds(),
         )
@@ -224,7 +228,7 @@ class OutfitEngineTest {
     @Test
     fun t13RainyDayFavorsTheRainJacket() {
         val (first, second) = suggest(sample, "dark-jeans", day(5, 11, RAIN, 80)).outfits()
-        assertEquals(listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"), first.items.map { it.id })
+        assertEquals(listOf("olive-overshirt", "dark-jeans", "brown-boots", "olive-rain-jacket"), first.items.map { it.id })
         assertEquals(9, first.score)
         assertEquals(listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.RAIN_READY), first.why.map { it.reason })
         assertEquals(listOf("olive-rain-jacket", "brown-boots"), first.term(Reason.RAIN_READY).items.map { it.id })
@@ -385,8 +389,40 @@ class OutfitEngineTest {
         assertEquals(listOf(6, 6, 5), chinos.map { it.score })
 
         val jacket = suggest(sample, "denim-jacket", mild).outfits()
-        assertEquals(listOf("black-tee", "beige-chinos", "black-sneakers", "denim-jacket"), jacket.first().items.map { it.id })
+        assertEquals(listOf("black-tee", "grey-skirt", "white-sneakers", "denim-jacket"), jacket.first().items.map { it.id })
         assertTrue(jacket.all { outfit -> outfit.terms.any { it.reason == Reason.OUTDOOR_HOLDS } })
+    }
+
+    @Test
+    fun t25AFittedJacketCannotGoOverALooseTop() {
+        val wardrobe = listOf(item("olive-overshirt"), item("dark-jeans"), item("black-sneakers"), item("denim-jacket"))
+        assertEquals(EngineResult.NothingFits, suggest(wardrobe, "dark-jeans", coolDay))
+
+        val outfit = suggest(wardrobe + item("camel-coat"), "dark-jeans", coolDay).outfits().single()
+        assertEquals(listOf("olive-overshirt", "dark-jeans", "black-sneakers", "camel-coat"), outfit.items.map { it.id })
+        assertEquals(6, outfit.score)
+    }
+
+    @Test
+    fun t26ARoomyPieceWithAFittedOneIsBalanced() {
+        val day = day(13, 20, CLEAR, 0, july)
+        val sneakers = summerItem("white-sneakers", Garment.SNEAKERS, ItemColor.WHITE, Warmth.LIGHT)
+        fun shirt(fit: Fit) = summerItem("white-shirt", Garment.SHIRT, ItemColor.WHITE, Warmth.MEDIUM, fit = fit)
+        fun trousers(fit: Fit) = summerItem("beige-trousers", Garment.TROUSERS, ItemColor.BEIGE, Warmth.MEDIUM, fit = fit)
+        fun outfit(vararg items: ClothingItem) = suggest(items.toList() + sneakers, items.first().id, day).outfits().single()
+
+        val looseOverFitted = outfit(shirt(Fit.LOOSE), trousers(Fit.FITTED))
+        assertEquals(6, looseOverFitted.score)
+        assertEquals(listOf("white-shirt", "beige-trousers"), looseOverFitted.term(Reason.BALANCED_FIT).items.map { it.id })
+        assertEquals(6, outfit(shirt(Fit.OVERSIZED), trousers(Fit.FITTED)).score)
+
+        val tee = summerItem("white-tee", Garment.T_SHIRT, ItemColor.WHITE, Warmth.LIGHT, fit = Fit.FITTED)
+        val skirt = summerItem("grey-skirt", Garment.SKIRT, ItemColor.GREY, Warmth.LIGHT, fit = Fit.LOOSE)
+        assertEquals(1, outfit(tee, skirt).term(Reason.BALANCED_FIT).points)
+
+        assertEquals(5, outfit(shirt(Fit.REGULAR), trousers(Fit.FITTED)).score)
+        val looseOnLoose = outfit(shirt(Fit.OVERSIZED), trousers(Fit.LOOSE))
+        assertEquals(listOf(Reason.LAYERS_FIT to 2, Reason.NEUTRAL_BASE to 3), looseOnLoose.points())
     }
 
     private fun ScoredOutfit.term(reason: Reason) = terms.single { it.reason == reason }

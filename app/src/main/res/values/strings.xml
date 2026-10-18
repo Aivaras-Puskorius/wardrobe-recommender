@@ -118,6 +118,7 @@
     <string name="why_tonal">The %1$s and %2$s are shades of one color, so they tie together.</string>
     <string name="why_analogous">The %1$s and %2$s sit next to each other on the color wheel, so they blend.</string>
     <string name="why_complementary">The %1$s and %2$s are opposites on the color wheel, so each stands out.</string>
+    <string name="why_balanced_fit">The %1$s %2$s with the %3$s %4$s keeps the proportions balanced.</string>
     <string name="why_light_dark">Light from the %1$s balances the darker pieces.</string>
     <string name="why_outdoor_holds">The %1$s goes with the rest, so the look holds outdoors too.</string>
     <string name="list_and">%1$s and %2$s</string>
@@ -179,6 +180,11 @@
     <string name="warmth_light">Light</string>
     <string name="warmth_medium">Medium</string>
     <string name="warmth_warm">Warm</string>
+
+    <string name="fit_fitted">Fitted</string>
+    <string name="fit_regular">Regular</string>
+    <string name="fit_loose">Loose</string>
+    <string name="fit_oversized">Oversized</string>
 
     <string name="material_cotton">Cotton</string>
     <string name="material_linen">Linen</string>

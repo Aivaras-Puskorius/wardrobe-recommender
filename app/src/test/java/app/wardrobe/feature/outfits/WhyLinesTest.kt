@@ -13,7 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/** The sentences of the material and outdoor rules, as docs/ENGINE.md section 4 words them. */
+/** The sentences of the material, fit and outdoor rules, as docs/ENGINE.md section 4 words them. */
 @RunWith(RobolectricTestRunner::class)
 class WhyLinesTest {
 
@@ -65,6 +65,15 @@ class WhyLinesTest {
         assertEquals(
             "The olive jacket goes with the rest, so the look holds outdoors too.",
             term.line(day(4, 12, WeatherCondition.CLEAR, 5)),
+        )
+    }
+
+    @Test
+    fun fitLineNamesBothFits() {
+        val term = ScoreTerm(Reason.BALANCED_FIT, 1, items("olive-overshirt", "dark-jeans"))
+        assertEquals(
+            "The loose olive shirt with the fitted denim jeans keeps the proportions balanced.",
+            term.line(day(7, 14, WeatherCondition.PARTLY_CLOUDY, 10)),
         )
     }
 

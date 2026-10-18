@@ -3,6 +3,7 @@ package app.wardrobe.domain.engine
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
+import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
@@ -19,7 +20,7 @@ import kotlin.math.pow
 enum class Reason {
     LAYERS_FIT, RAIN_READY, WARM_WOOL, COOL_FABRIC,
     NEUTRAL_BASE, SINGLE_ACCENT, TONAL, ANALOGOUS, COMPLEMENTARY,
-    LIGHT_DARK, OUTDOOR_HOLDS,
+    BALANCED_FIT, LIGHT_DARK, OUTDOOR_HOLDS,
     OUT_OF_SEASON, RECENT_REPEAT,
 }
 
@@ -133,6 +134,7 @@ object OutfitEngine {
         val warmthGap = abs(layerWarmth - targetWarmth(day.minTemperatureC))
         if (warmthGap > 1) return null
         if (items.accents().size > MAX_ACCENTS) return null
+        if (outer?.fit == Fit.FITTED && top.fit in ROOMY) return null
         // Outerwear comes off indoors, so the color rules judge the indoor look. The outerwear only adds OUTDOOR_HOLDS.
         val indoor = listOf(top, bottom, footwear)
         val accents = indoor.accents()
@@ -148,6 +150,9 @@ object OutfitEngine {
             terms += ScoreTerm(Reason.COOL_FABRIC, 1, listOf(top))
         }
         colorTerm(indoor, accents)?.let { terms += it }
+        if ((top.fit in ROOMY && bottom.fit == Fit.FITTED) || (top.fit == Fit.FITTED && bottom.fit in ROOMY)) {
+            terms += ScoreTerm(Reason.BALANCED_FIT, 1, listOf(top, bottom))
+        }
         val light = indoor.filter { it.color.isLight }
         if (light.isNotEmpty() && indoor.any { it.color.isDark }) {
             terms += ScoreTerm(Reason.LIGHT_DARK, 1, listOf(light.maxBy { it.color.lightness }))
@@ -216,6 +221,7 @@ object OutfitEngine {
     private const val COMPLEMENTARY_MIN = 125.0
     private val RAIN_FOOTWEAR = setOf(Material.LEATHER, Material.WATERPROOF)
     private val COOL_FABRICS = setOf(Material.COTTON, Material.LINEN)
+    private val ROOMY = setOf(Fit.LOOSE, Fit.OVERSIZED)
 }
 
 private const val MAX_WHY_LINES = 3
