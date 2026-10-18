@@ -13,6 +13,8 @@ robolectric = "4.17"
 room = "2.8.5"
 ksp = "2.3.12"
 coil = "3.6.3"
+mlkitLabeling = "16.0.8"
+mlkitCustomLabeling = "17.0.3"
 
 [libraries]
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -40,6 +42,8 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-test = { group = "io.coil-kt.coil3", name = "coil-test", version.ref = "coil" }
+mlkit-image-labeling = { group = "com.google.android.gms", name = "play-services-mlkit-image-labeling", version.ref = "mlkitLabeling" }
+mlkit-image-labeling-custom = { group = "com.google.mlkit", name = "image-labeling-custom", version.ref = "mlkitCustomLabeling" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

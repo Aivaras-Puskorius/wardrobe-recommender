@@ -2,6 +2,7 @@ package app.wardrobe
 
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.PhotoStore
+import app.wardrobe.data.Recognizer
 import app.wardrobe.data.SampleData
 import app.wardrobe.data.SampleRecognizer
 import app.wardrobe.data.WardrobeRepository
@@ -13,11 +14,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Creates the app's shared objects. Screens get their dependencies from here.
- * The defaults suit tests. WardrobeApplication passes Room and the app's own files folder.
+ * The defaults suit tests. WardrobeApplication passes Room, the app's own files folder and ML Kit.
  */
 class AppContainer(
     val wardrobeRepository: WardrobeRepository = InMemoryWardrobeRepository(SampleData.items),
-    val recognizer: SampleRecognizer = SampleRecognizer(SampleData.photoSuggestions),
+    val recognizer: Recognizer = SampleRecognizer(SampleData.photoSuggestions),
     val photoStore: PhotoStore = PhotoStore(File(System.getProperty("java.io.tmpdir"), "wardrobe-test-files")),
 ) {
     /**

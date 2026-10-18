@@ -26,7 +26,7 @@ android {
             // R8 shrinks the APK. Release builds are not debuggable, so Compose runs at full speed.
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // INFO(limit): signed with the debug key so it installs over the debug build, use a real key before publishing.
             signingConfig = signingConfigs.getByName("debug")
         }
@@ -79,6 +79,10 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.androidx.room.runtime)
     implementation(libs.coil.compose)
+    // ML Kit's standard labeling model comes through Google Play services. The ImageNet model runs in
+    // the bundled custom pipeline, because the Play services version of that pipeline is still in beta.
+    implementation(libs.mlkit.image.labeling)
+    implementation(libs.mlkit.image.labeling.custom)
     ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
