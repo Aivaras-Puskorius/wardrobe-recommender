@@ -6,15 +6,14 @@ import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Lab
 import app.wardrobe.domain.model.Material
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.domain.model.WeatherCondition
 import java.time.LocalDate
 import kotlin.math.abs
-import kotlin.math.cbrt
 import kotlin.math.min
-import kotlin.math.pow
 
 /** Why an outfit gained or lost points. Ties between why lines follow this order. */
 enum class Reason {
@@ -260,13 +259,7 @@ internal val ItemColor.hue: Double
     }
 
 /** CIELAB lightness L*: 0 is black, 100 is white. */
-internal val ItemColor.lightness: Double
-    get() {
-        fun linear(c: Double) = if (c <= 0.04045) c / 12.92 else ((c + 0.055) / 1.055).pow(2.4)
-        val y = 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
-        val f = if (y > 0.008856) cbrt(y) else 7.787 * y + 16.0 / 116
-        return 116 * f - 16
-    }
+internal val ItemColor.lightness: Double get() = Lab.of(argb).l
 
 internal val ItemColor.isLight: Boolean get() = lightness >= 70
 internal val ItemColor.isDark: Boolean get() = lightness <= 36
