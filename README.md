@@ -22,7 +22,7 @@ Status: milestone 2 in progress. Items are stored on the phone, starting with 17
 ./gradlew installRelease    # install the minified build, for demos
 ```
 
-The release build is shrunk with R8 (about 50 MB, most of it ML Kit's native code for four processor types, debug about 64 MB) and signed with the local debug key, so it installs over the debug build. Not for publishing.
+The build makes one APK per processor type, and the install tasks pick the device's. The release build is shrunk with R8 (arm64 about 19 MB, most of it ML Kit's native code and the image model) and signed with the local debug key, so it installs over the debug build. Not for publishing.
 
 ## Use
 

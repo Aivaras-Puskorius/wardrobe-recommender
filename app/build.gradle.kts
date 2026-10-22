@@ -32,6 +32,17 @@ android {
         }
     }
 
+    splits {
+        abi {
+            // One APK per processor type. ML Kit's custom labeling ships about 7 to 12 MB of native code per
+            // type, so a single APK for all four was about 50 MB. The install tasks pick the device's APK.
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+            isUniversalApk = false
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
