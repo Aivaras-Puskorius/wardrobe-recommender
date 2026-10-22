@@ -40,7 +40,7 @@ The build makes one APK per processor type, and the install tasks pick the devic
 |---|---|
 | Storage | Room database on the phone. The first launch adds the 17 sample items. |
 | Photos | Taken with the phone's camera app or picked from the gallery, kept at full size in app storage. Sample items show drawings. |
-| Photo recognition | On the phone. A clothes model trained for the app (`tools/train_garment_model.py`) suggests the type. ML Kit's standard labels (Google Play services downloads that model on first use) and an ImageNet model split its pants, shoes and outerwear classes and suggest the material. Boots are told from sneakers only when the ImageNet model sees a boot. The color comes from the middle of the photo, so a plain background works best. `adb logcat -s MlKitRecognizer` shows the raw labels. |
+| Photo recognition | On the phone. A clothes model trained for the app (`tools/train_garment_model.py`) suggests the type. ML Kit's standard labels (Google Play services downloads that model on first use) and an ImageNet model split its pants, shoes and outerwear classes and suggest the material. Its boots class learned from 55 hand-sorted photos, so it finds some boots and calls some dark leather shoes boots. The color comes from the middle of the photo, so a plain background works best. `adb logcat -s MlKitRecognizer` shows the raw labels. |
 | Outfits | Built by rules from the wardrobe and the day's sample weather, up to three per item. No memory of past suggestions yet. |
 | Weather | Fixed sample week for Kaunas, starting today. Celsius only. |
 | Likes | Kept until the results screen closes. |

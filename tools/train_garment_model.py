@@ -9,6 +9,9 @@ order as the model's outputs.
 MobileNetV2 rather than the newer MobileNetV3: the int8 MobileNetV3-Large model was rejected by XNNPACK,
 TensorFlow Lite's CPU accelerator ("failed to prepare"), while MobileNetV2 runs with it.
 
+The dataset puts all footwear in "Shoes". tools/clothing_relabels.csv moves its 55 boots, sorted by eye
+from contact sheets on 2026-10-23, to a "Boots" class, and fixes two photos of shorts filed as shoes.
+
 Setup, outside the repo (TensorFlow needs Python 3.10 to 3.13):
     uv venv --python 3.12 ~/.cache/clankdrobe-training/venv
     VIRTUAL_ENV=~/.cache/clankdrobe-training/venv uv pip install tensorflow==2.21.0 pillow numpy
@@ -38,6 +41,7 @@ CLASSES = {
     "shorts": ["Shorts"],
     "skirt": ["Skirt"],
     "shoes": ["Shoes"],
+    "boots": ["Boots"],
     "outerwear": ["Outwear", "Blazer"],
     "other": ["Dress", "Hat", "Body", "Other"],
 }
@@ -46,17 +50,21 @@ SIZE = 224
 SEED = 7
 OUT_DIR = Path(__file__).resolve().parent.parent / "app/src/main/assets/models"
 MODEL_NAME = "garments_mobilenetv2_int8.tflite"
+RELABELS = Path(__file__).resolve().parent / "clothing_relabels.csv"
 LABELS_NAME = "garments_labels.txt"
 
 
 def load_rows(dataset: Path):
     """(image path, class index, sender) for every photo in a used class."""
     to_class = {source: LABELS.index(target) for target, sources in CLASSES.items() for source in sources}
+    with open(RELABELS) as f:
+        relabels = {row["image"]: row["label"] for row in csv.DictReader(f)}
     rows = []
     with open(dataset / "images.csv") as f:
         for row in csv.DictReader(f):
-            if row["label"] in to_class:
-                rows.append((str(dataset / "images" / f"{row['image']}.jpg"), to_class[row["label"]], row["sender_id"]))
+            label = relabels.get(row["image"], row["label"])
+            if label in to_class:
+                rows.append((str(dataset / "images" / f"{row['image']}.jpg"), to_class[label], row["sender_id"]))
     return rows
 
 
@@ -136,6 +144,11 @@ def main():
     parser.add_argument("--work-dir", type=Path, default=Path.home() / ".cache/clankdrobe-training",
                         help="where the trained Keras model is kept between runs")
     parser.add_argument("--skip-training", action="store_true", help="convert the Keras model from the last run")
+    # sqrt: with balanced weights the 50 boots counted 8 times each, and the model called 6 of 22 other shoes
+    # boots in validation and test. sqrt counts them 3 times: 5 of 22, and 78.9% right overall instead of 76.5%.
+    parser.add_argument("--weighting", choices=["balanced", "sqrt"], default="sqrt",
+                        help="class weights: balanced makes every class count equally, sqrt only halfway, "
+                             "so rare classes such as boots get picked less eagerly")
     args = parser.parse_args()
     keras_path = args.work_dir / "garments.keras"
     tf.keras.utils.set_random_seed(SEED)
@@ -154,6 +167,8 @@ def main():
 
     counts = collections.Counter(c for _, c, _ in parts["train"])
     weights = {c: len(parts["train"]) / (len(LABELS) * counts[c]) for c in counts}
+    if args.weighting == "sqrt":
+        weights = {c: w ** 0.5 for c, w in weights.items()}
 
     if args.skip_training:
         model = tf.keras.models.load_model(keras_path)

@@ -90,7 +90,7 @@ private const val CLASSIFIER_MIN = 0.6f
 
 /**
  * The garment for a photo. The clothes classifier decides, and the other two models split its broad classes:
- * pants into jeans or trousers, shoes into sneakers or boots, outerwear into jacket or coat. When the classifier
+ * pants into jeans or trousers, other shoes into sneakers or boots, outerwear into jacket or coat. When the classifier
  * is unsure, the other models decide alone. When it is sure the photo shows something else, such as a dress or
  * a hat, nothing is suggested.
  *
@@ -113,6 +113,7 @@ fun garmentFor(classifier: List<PhotoLabel>, standard: List<PhotoLabel>, imageNe
                 imageNetSays("jean")
             if (denim) Garment.JEANS else Garment.TROUSERS
         }
+        "boots" -> Garment.BOOTS
         "shoes" -> if (imageNetSays("cowboy boot")) Garment.BOOTS else Garment.SNEAKERS
         "outerwear" -> if (imageNetSays("trench coat", "fur coat", "lab coat")) Garment.COAT else Garment.JACKET
         else -> null

@@ -5,5 +5,6 @@ pants
 shorts
 skirt
 shoes
+boots
 outerwear
 other
