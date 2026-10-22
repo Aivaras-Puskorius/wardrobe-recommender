@@ -82,6 +82,6 @@ Screens with data: a ViewModel exposing one `StateFlow` of UI state, and a state
 
 ## Stack
 
-Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, Room 2.8.5 with KSP 2.3.12, Coil 3.6.3, ML Kit image labeling 16.0.8 and custom image labeling 17.0.3, AGP 9.4.1, Gradle 9.8.1. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.76.0.
+Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, Room 2.8.5 with KSP 2.3.12, Coil 3.6.3, ML Kit image labeling 16.0.8 and custom image labeling 17.0.3, AGP 9.4.1, Gradle 9.8.2. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.77.0.
 
 Icons: Material Symbols, Apache License 2.0. Image model `app/src/main/assets/models/imagenet_efficientnet_lite0_int8.tflite`: EfficientNet-Lite0 int8 by TensorFlow, from tensorflow/efficientnet on Kaggle, Apache License 2.0. Clothes model `garments_mobilenetv2_int8.tflite`: trained by `tools/train_garment_model.py` on the clothing dataset by Alexey Grigorev (github.com/alexeygrigorev/clothing-dataset, CC0 1.0), starting from Keras 3.15.1's MobileNetV2 ImageNet weights (Keras: Apache License 2.0).
