@@ -1,0 +1,9 @@
+t_shirt
+shirt
+sweater
+pants
+shorts
+skirt
+shoes
+outerwear
+other

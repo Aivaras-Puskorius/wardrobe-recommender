@@ -40,6 +40,48 @@ class PhotoLabelsTest {
         assertEquals(null, material(standard = boots))
     }
 
+    private fun classified(
+        classifier: List<PhotoLabel>,
+        standard: List<PhotoLabel> = emptyList(),
+        imageNet: List<PhotoLabel> = emptyList(),
+    ) = garmentFor(classifier, standard, imageNet)
+
+    @Test
+    fun theClothesClassifierNamesWhatTheOtherModelsCannot() {
+        assertEquals(Garment.SHIRT, classified(labels("shirt" to 0.8f)))
+        assertEquals(Garment.TROUSERS, classified(labels("pants" to 0.8f)))
+        assertEquals(Garment.SWEATER, classified(labels("sweater" to 0.8f)))
+        assertEquals(Garment.SKIRT, classified(labels("skirt" to 0.8f)))
+    }
+
+    @Test
+    fun theOtherModelsSplitTheClassifiersBroadClasses() {
+        assertEquals(Garment.JEANS, classified(labels("pants" to 0.8f), standard = labels("Denim" to 0.78f)))
+        assertEquals(Garment.JEANS, classified(labels("pants" to 0.8f), imageNet = labels("jean" to 0.6f)))
+        assertEquals(Garment.COAT, classified(labels("outerwear" to 0.8f), imageNet = labels("trench coat" to 0.55f)))
+        assertEquals(Garment.JACKET, classified(labels("outerwear" to 0.8f)))
+        assertEquals(Garment.BOOTS, classified(labels("shoes" to 0.8f), imageNet = labels("cowboy boot" to 0.55f)))
+        assertEquals(Garment.SNEAKERS, classified(labels("shoes" to 0.8f)))
+    }
+
+    /** Light grey sweatpants on the S25: the usual Jeans and Denim tags don't make them jeans. */
+    @Test
+    fun weakDenimTagsLeaveTrousersAsTrousers() {
+        val sweatpants = labels("Jeans" to 0.83f, "Denim" to 0.55f)
+        assertEquals(Garment.TROUSERS, classified(labels("pants" to 0.8f), standard = sweatpants))
+    }
+
+    @Test
+    fun aConfidentOtherSuggestsNothing() {
+        assertEquals(null, classified(labels("other" to 0.9f), standard = labels("Jacket" to 0.95f)))
+    }
+
+    @Test
+    fun anUnsureClassifierLeavesItToTheOtherModels() {
+        assertEquals(Garment.T_SHIRT, classified(labels("shirt" to 0.3f), imageNet = labels("jersey" to 0.77f)))
+        assertEquals(null, classified(emptyList()))
+    }
+
     @Test
     fun theDogBreedCardiganIsNotASweater() {
         assertEquals(null, garment(imageNet = labels("Cardigan" to 0.9f)))

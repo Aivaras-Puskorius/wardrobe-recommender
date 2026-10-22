@@ -12,6 +12,7 @@ import com.google.android.gms.tasks.Task
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.ImageLabel
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
@@ -25,7 +26,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
 /**
- * Recognizes a garment on the phone with two ML Kit labelers, and its color from the photo's pixels.
+ * Recognizes a garment on the phone with three ML Kit labelers, and its color from the photo's pixels.
+ * A clothes classifier trained for this app decides the type. ML Kit's standard model and an ImageNet model
+ * refine it and suggest the material.
  *
  * The standard labeler's model comes through Google Play services, which download it on first use.
  * Until then, and on phones without Play services, only the ImageNet labeler and the color work.
@@ -42,6 +45,18 @@ class MlKitRecognizer(private val context: Context) : Recognizer {
             .build(),
     )
 
+    /** Trained by tools/train_garment_model.py. It has no metadata, so its labels come from a file by index. */
+    private val clothes = ImageLabeling.getClient(
+        CustomImageLabelerOptions.Builder(LocalModel.Builder().setAssetFilePath(CLOTHES_MODEL).build())
+            .setConfidenceThreshold(0.1f)
+            .setMaxResultCount(3)
+            .build(),
+    )
+
+    private val clothesLabelNames: List<String> by lazy {
+        context.assets.open(CLOTHES_LABELS).bufferedReader().use { it.readLines() }
+    }
+
     /** Asks Google Play services to download the standard model now, so the first photo doesn't wait for it. */
     fun requestModelDownload() {
         ModuleInstall.getClient(context).installModules(ModuleInstallRequest.newBuilder().addApi(standard).build())
@@ -55,20 +70,25 @@ class MlKitRecognizer(private val context: Context) : Recognizer {
         } catch (e: IOException) {
             return@withContext ItemSuggestion(garment = null, color = null)
         }
+        val clothesLabels = labels(clothes, image) { clothesLabelNames.getOrElse(it.index) { "" } }
         val standardLabels = labels(standard, image)
         val imageNetLabels = labels(imageNet, image)
         // The raw labels, for tuning the thresholds in PhotoLabels.kt: adb logcat -s MlKitRecognizer
-        Log.d(TAG, "standard $standardLabels, ImageNet $imageNetLabels")
+        Log.d(TAG, "clothes $clothesLabels, standard $standardLabels, ImageNet $imageNetLabels")
         ItemSuggestion(
-            garment = garmentFromLabels(standardLabels, imageNetLabels),
+            garment = garmentFor(clothesLabels, standardLabels, imageNetLabels),
             color = colorOf(photo),
             material = materialFromLabels(standardLabels, imageNetLabels),
         )
     }
 
     /** The labeler's labels, or none when it fails, as the standard one does before its model is downloaded. */
-    private suspend fun labels(labeler: ImageLabeler, image: InputImage): List<PhotoLabel> = try {
-        labeler.process(image).await().map { PhotoLabel(it.text, it.confidence) }
+    private suspend fun labels(
+        labeler: ImageLabeler,
+        image: InputImage,
+        name: (ImageLabel) -> String = { it.text },
+    ): List<PhotoLabel> = try {
+        labeler.process(image).await().map { PhotoLabel(name(it), it.confidence) }
     } catch (e: MlKitException) {
         Log.w(TAG, "Labeler failed: ${e.message}")
         emptyList()
@@ -91,6 +111,12 @@ class MlKitRecognizer(private val context: Context) : Recognizer {
         const val TAG = "MlKitRecognizer"
         /** EfficientNet-Lite0, int8, trained on ImageNet. Apache License 2.0, from tensorflow/efficientnet on Kaggle. */
         const val IMAGENET_MODEL = "models/imagenet_efficientnet_lite0_int8.tflite"
+
+        /** MobileNetV2 fine-tuned on the CC0 clothing dataset by alexeygrigorev, see tools/train_garment_model.py. */
+        const val CLOTHES_MODEL = "models/garments_mobilenetv2_int8.tflite"
+
+        // WARN: one label per line, in the model's output order. Retraining writes both files together.
+        const val CLOTHES_LABELS = "models/garments_labels.txt"
         const val COLOR_SIZE = 64
     }
 }

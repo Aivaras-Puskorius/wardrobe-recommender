@@ -40,7 +40,7 @@ The build makes one APK per processor type, and the install tasks pick the devic
 |---|---|
 | Storage | Room database on the phone. The first launch adds the 17 sample items. |
 | Photos | Taken with the phone's camera app or picked from the gallery, kept at full size in app storage. Sample items show drawings. |
-| Photo recognition | On the phone. ML Kit's standard labels (Google Play services downloads that model on first use) and an ImageNet model suggest the type for 9 of 11 types, never shirt or trousers. The color comes from the middle of the photo, so a plain background works best. `adb logcat -s MlKitRecognizer` shows the raw labels. |
+| Photo recognition | On the phone. A clothes model trained for the app (`tools/train_garment_model.py`) suggests the type. ML Kit's standard labels (Google Play services downloads that model on first use) and an ImageNet model split its pants, shoes and outerwear classes and suggest the material. Boots are told from sneakers only when the ImageNet model sees a boot. The color comes from the middle of the photo, so a plain background works best. `adb logcat -s MlKitRecognizer` shows the raw labels. |
 | Outfits | Built by rules from the wardrobe and the day's sample weather, up to three per item. No memory of past suggestions yet. |
 | Weather | Fixed sample week for Kaunas, starting today. Celsius only. |
 | Likes | Kept until the results screen closes. |
@@ -84,4 +84,4 @@ Screens with data: a ViewModel exposing one `StateFlow` of UI state, and a state
 
 Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, Room 2.8.5 with KSP 2.3.12, Coil 3.6.3, ML Kit image labeling 16.0.8 and custom image labeling 17.0.3, AGP 9.4.1, Gradle 9.8.1. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.76.0.
 
-Icons: Material Symbols, Apache License 2.0. Image model `app/src/main/assets/models/imagenet_efficientnet_lite0_int8.tflite`: EfficientNet-Lite0 int8 by TensorFlow, from tensorflow/efficientnet on Kaggle, Apache License 2.0.
+Icons: Material Symbols, Apache License 2.0. Image model `app/src/main/assets/models/imagenet_efficientnet_lite0_int8.tflite`: EfficientNet-Lite0 int8 by TensorFlow, from tensorflow/efficientnet on Kaggle, Apache License 2.0. Clothes model `garments_mobilenetv2_int8.tflite`: trained by `tools/train_garment_model.py` on the clothing dataset by Alexey Grigorev (github.com/alexeygrigorev/clothing-dataset, CC0 1.0), starting from Keras 3.15.1's MobileNetV2 ImageNet weights (Keras: Apache License 2.0).

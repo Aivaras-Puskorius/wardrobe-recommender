@@ -84,3 +84,37 @@ private fun <T> mostConfident(
     }
     return candidates.maxByOrNull { it.second }?.first
 }
+
+/** The clothes classifier's top class counts from this confidence. */
+private const val CLASSIFIER_MIN = 0.6f
+
+/**
+ * The garment for a photo. The clothes classifier decides, and the other two models split its broad classes:
+ * pants into jeans or trousers, shoes into sneakers or boots, outerwear into jacket or coat. When the classifier
+ * is unsure, the other models decide alone. When it is sure the photo shows something else, such as a dress or
+ * a hat, nothing is suggested.
+ *
+ * @param classifier labels of the model trained by tools/train_garment_model.py, named as in garments_labels.txt.
+ */
+fun garmentFor(classifier: List<PhotoLabel>, standard: List<PhotoLabel>, imageNet: List<PhotoLabel>): Garment? {
+    val top = classifier.maxByOrNull { it.confidence }
+    if (top == null || top.confidence < CLASSIFIER_MIN) return garmentFromLabels(standard, imageNet)
+    fun standardSays(vararg texts: String, min: Float) = standard.any { it.text in texts && it.confidence >= min }
+    fun imageNetSays(vararg texts: String) = imageNet.any { it.text in texts && it.confidence >= IMAGENET_MIN }
+    return when (top.text) {
+        "t_shirt" -> Garment.T_SHIRT
+        "shirt" -> Garment.SHIRT
+        "sweater" -> Garment.SWEATER
+        "shorts" -> Garment.SHORTS
+        "skirt" -> Garment.SKIRT
+        "pants" -> {
+            val denim = standardSays("Denim", min = STANDARD_MATERIAL_MIN) ||
+                standardSays("Jeans", min = STANDARD_GARMENT_MIN) ||
+                imageNetSays("jean")
+            if (denim) Garment.JEANS else Garment.TROUSERS
+        }
+        "shoes" -> if (imageNetSays("cowboy boot")) Garment.BOOTS else Garment.SNEAKERS
+        "outerwear" -> if (imageNetSays("trench coat", "fur coat", "lab coat")) Garment.COAT else Garment.JACKET
+        else -> null
+    }
+}
