@@ -17,11 +17,27 @@ class PhotoLabelsTest {
 
     @Test
     fun eachModelNamesGarmentsTheOtherDoesNot() {
-        assertEquals(Garment.JACKET, garment(standard = labels("Jacket" to 0.8f)))
+        assertEquals(Garment.JACKET, garment(standard = labels("Jacket" to 0.92f)))
         assertEquals(Garment.SWEATER, garment(imageNet = labels("cardigan" to 0.6f)))
-        assertEquals(Garment.BOOTS, garment(imageNet = labels("cowboy boot" to 0.4f)))
+        assertEquals(Garment.BOOTS, garment(imageNet = labels("cowboy boot" to 0.55f)))
         assertEquals(Garment.SKIRT, garment(imageNet = labels("miniskirt" to 0.5f)))
         assertEquals(Garment.COAT, garment(imageNet = labels("trench coat" to 0.5f)))
+    }
+
+    /** Photo 4 of the S25 test: light grey sweatpants. The standard model tags jeans, jacket and shorts on almost every photo. */
+    @Test
+    fun theStandardModelsUsualClothingTagsSuggestNothing() {
+        val sweatpants = labels("Jeans" to 0.83f, "Jacket" to 0.69f, "Shorts" to 0.64f, "Denim" to 0.55f)
+        assertEquals(null, garment(standard = sweatpants, imageNet = labels("cloak" to 0.42f)))
+        assertEquals(null, material(standard = sweatpants))
+    }
+
+    /** Photo 7 of the S25 test: black faux-leather boots. */
+    @Test
+    fun aConfidentShoeLabelBeatsTheJeansTag() {
+        val boots = labels("Shoe" to 0.94f, "Jeans" to 0.64f, "Sneakers" to 0.59f, "Leather" to 0.51f)
+        assertEquals(Garment.SNEAKERS, garment(standard = boots))
+        assertEquals(null, material(standard = boots))
     }
 
     @Test
@@ -31,22 +47,23 @@ class PhotoLabelsTest {
 
     @Test
     fun labelsBelowTheThresholdAreIgnored() {
-        assertEquals(null, garment(standard = labels("Jeans" to 0.4f), imageNet = labels("jersey" to 0.2f)))
+        assertEquals(null, garment(standard = labels("Jeans" to 0.89f), imageNet = labels("jersey" to 0.49f)))
     }
 
     @Test
     fun theMostConfidentLabelWins() {
         assertEquals(
             Garment.SWEATER,
-            garment(standard = labels("Jersey" to 0.6f), imageNet = labels("sweatshirt" to 0.7f)),
+            garment(standard = labels("Jersey" to 0.95f), imageNet = labels("sweatshirt" to 0.97f)),
         )
     }
 
     @Test
     fun genericLabelsCountOnlyWithoutASpecificOne() {
-        assertEquals(Garment.BOOTS, garment(standard = labels("Shoe" to 0.9f), imageNet = labels("cowboy boot" to 0.3f)))
-        assertEquals(Garment.SNEAKERS, garment(standard = labels("Shoe" to 0.9f)))
-        assertEquals(Garment.JACKET, garment(standard = labels("Outerwear" to 0.8f)))
+        assertEquals(Garment.BOOTS, garment(standard = labels("Shoe" to 0.9f), imageNet = labels("cowboy boot" to 0.55f)))
+        assertEquals(Garment.SNEAKERS, garment(standard = labels("Shoe" to 0.6f)))
+        assertEquals(Garment.JACKET, garment(standard = labels("Outerwear" to 0.6f)))
+        assertEquals(null, garment(standard = labels("Shoe" to 0.59f)))
     }
 
     @Test
@@ -57,8 +74,9 @@ class PhotoLabelsTest {
 
     @Test
     fun theMostConfidentMaterialWins() {
-        assertEquals(Material.DENIM, material(standard = labels("Denim" to 0.8f)))
-        assertEquals(Material.LEATHER, material(standard = labels("Leather" to 0.7f, "Wool" to 0.6f)))
-        assertEquals(Material.WOOL, material(imageNet = labels("wool" to 0.3f)))
+        assertEquals(Material.DENIM, material(standard = labels("Denim" to 0.78f)))
+        assertEquals(Material.WOOL, material(standard = labels("Wool" to 0.76f, "Leather" to 0.7f)))
+        assertEquals(null, material(standard = labels("Wool" to 0.69f)))
+        assertEquals(Material.WOOL, material(imageNet = labels("wool" to 0.5f)))
     }
 }

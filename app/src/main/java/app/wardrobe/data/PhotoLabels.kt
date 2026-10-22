@@ -8,14 +8,23 @@ data class PhotoLabel(val text: String, val confidence: Float)
 
 // Turns the labels of ML Kit's standard model and of the ImageNet model into app values.
 // Label texts are matched exactly, because ImageNet has both "cardigan" (the sweater) and "Cardigan" (the dog).
-// INFO(limit): the two models score on different scales, and the thresholds are first guesses.
-// Tune them on photos of real clothes.
+// The thresholds come from 12 photos of the user's own clothes on the S25 (2026-10-22).
+// INFO(limit): 12 photos is a small sample. Retune when more photos show a pattern.
 
-/** ML Kit's standard model reports labels it is at least this sure of. */
-private const val STANDARD_MIN = 0.5f
+/**
+ * ML Kit's standard model tagged Jeans, Jacket and Shorts on almost every photo, at up to 86%, whatever the
+ * garment was. Only garment labels above that tell anything.
+ */
+private const val STANDARD_GARMENT_MIN = 0.9f
 
-/** The ImageNet model spreads its confidence over 1,000 classes, so its useful scores are lower. */
-private const val IMAGENET_MIN = 0.25f
+/** "Shoe" scored 67% and more only on footwear, and "Outerwear" appeared only on outerwear. */
+private const val STANDARD_GENERIC_MIN = 0.6f
+
+/** Wool, Denim and Leather were right at 70% and more, and wrong below. */
+private const val STANDARD_MATERIAL_MIN = 0.7f
+
+/** The ImageNet model's right answers scored 50% and more. */
+private const val IMAGENET_MIN = 0.5f
 
 private val standardGarments = mapOf(
     "Jersey" to Garment.T_SHIRT,
@@ -52,22 +61,23 @@ private val imageNetGarments = mapOf(
 private val standardMaterials = mapOf("Denim" to Material.DENIM, "Wool" to Material.WOOL, "Leather" to Material.LEATHER)
 private val imageNetMaterials = mapOf("wool" to Material.WOOL)
 
-/** The garment named by the most confident label above its model's threshold, or null if none names one. */
+/** The garment named by the most confident label above its threshold, or null if none names one. */
 fun garmentFromLabels(standard: List<PhotoLabel>, imageNet: List<PhotoLabel>): Garment? =
-    mostConfident(standard, standardGarments, imageNet, imageNetGarments)
-        ?: mostConfident(standard, standardGenericGarments, emptyList(), emptyMap())
+    mostConfident(standard, standardGarments, STANDARD_GARMENT_MIN, imageNet, imageNetGarments)
+        ?: mostConfident(standard, standardGenericGarments, STANDARD_GENERIC_MIN, emptyList(), emptyMap())
 
-/** The material named by the most confident label above its model's threshold, or null. */
+/** The material named by the most confident label above its threshold, or null. */
 fun materialFromLabels(standard: List<PhotoLabel>, imageNet: List<PhotoLabel>): Material? =
-    mostConfident(standard, standardMaterials, imageNet, imageNetMaterials)
+    mostConfident(standard, standardMaterials, STANDARD_MATERIAL_MIN, imageNet, imageNetMaterials)
 
 private fun <T> mostConfident(
     standard: List<PhotoLabel>,
     standardMap: Map<String, T>,
+    standardMin: Float,
     imageNet: List<PhotoLabel>,
     imageNetMap: Map<String, T>,
 ): T? {
-    val candidates = standard.filter { it.confidence >= STANDARD_MIN }.mapNotNull { label ->
+    val candidates = standard.filter { it.confidence >= standardMin }.mapNotNull { label ->
         standardMap[label.text]?.let { it to label.confidence }
     } + imageNet.filter { it.confidence >= IMAGENET_MIN }.mapNotNull { label ->
         imageNetMap[label.text]?.let { it to label.confidence }
