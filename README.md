@@ -17,7 +17,7 @@ Status: milestone 2 in progress. Items are stored on the phone, starting with 17
 ## Build and run
 
 ```
-./gradlew assembleDebug     # build app/build/outputs/apk/debug/app-debug.apk
+./gradlew assembleDebug     # build app/build/outputs/apk/debug/app-<abi>-debug.apk
 ./gradlew installDebug      # install on the connected device
 ./gradlew installRelease    # install the minified build, for demos
 ```
