@@ -82,6 +82,7 @@ class LargeFontScreenshotTest {
             fit = Fit.REGULAR,
             photo = null,
             warmth = Warmth.MEDIUM,
+            warmthEditedByUser = false,
             seasons = emptySet(),
             suggestion = ItemSuggestion(Garment.SWEATER, ItemColor.GREEN),
         )

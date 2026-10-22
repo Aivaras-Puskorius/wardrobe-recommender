@@ -15,6 +15,7 @@ import app.wardrobe.domain.model.Warmth
  *
  * @param nameEditedByUser false while [name] is the generated default, which then follows garment and color changes.
  * @param materialEditedByUser false while [material] is the garment's default, which then follows garment changes.
+ * @param warmthEditedByUser the same for [warmth].
  * @param suggestion what recognition proposed, shown next to the matching choices.
  * @param showErrors becomes true after a failed save, so errors don't show before the user tries.
  */
@@ -27,6 +28,7 @@ data class ItemForm(
     val materialEditedByUser: Boolean,
     val fit: Fit,
     val warmth: Warmth,
+    val warmthEditedByUser: Boolean,
     val seasons: Set<Season>,
     val photo: String?,
     val suggestion: ItemSuggestion? = null,
@@ -54,6 +56,7 @@ fun ClothingItem.toForm() = ItemForm(
     materialEditedByUser = true,
     fit = fit,
     warmth = warmth,
+    warmthEditedByUser = true,
     seasons = seasons,
     photo = photo,
 )
@@ -71,7 +74,7 @@ sealed interface ItemFormChange {
 
 /**
  * Applies [change]. While the user hasn't typed a name, [defaultName] renames the item
- * whenever its garment or color changes. While the user hasn't picked a material, it follows the garment.
+ * whenever its garment or color changes. While the user hasn't picked a material or warmth, they follow the garment.
  */
 fun ItemForm.apply(change: ItemFormChange, defaultName: (Garment, ItemColor) -> String): ItemForm =
     when (change) {
@@ -80,7 +83,7 @@ fun ItemForm.apply(change: ItemFormChange, defaultName: (Garment, ItemColor) -> 
         is ItemFormChange.SetColor -> renamed(garment, change.color, defaultName)
         is ItemFormChange.SetMaterial -> copy(material = change.material, materialEditedByUser = true)
         is ItemFormChange.SetFit -> copy(fit = change.fit)
-        is ItemFormChange.SetWarmth -> copy(warmth = change.warmth)
+        is ItemFormChange.SetWarmth -> copy(warmth = change.warmth, warmthEditedByUser = true)
         is ItemFormChange.ToggleSeason ->
             copy(seasons = if (change.season in seasons) seasons - change.season else seasons + change.season)
     }
@@ -94,4 +97,5 @@ private fun ItemForm.renamed(
     color = color,
     name = if (nameEditedByUser) name else defaultName(garment, color),
     material = if (materialEditedByUser) material else garment.defaultMaterial,
+    warmth = if (warmthEditedByUser) warmth else garment.defaultWarmth,
 )

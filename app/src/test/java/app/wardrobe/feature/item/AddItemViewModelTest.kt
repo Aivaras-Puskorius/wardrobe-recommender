@@ -177,6 +177,18 @@ class AddItemViewModelTest {
     }
 
     @Test
+    fun theWarmthFollowsTheGarmentUntilTheUserPicksOne() {
+        viewModel.recognizePhoto(PHOTO)
+        assertEquals(Warmth.WARM, form().warmth)
+        viewModel.update(ItemFormChange.SetGarment(Garment.T_SHIRT))
+        assertEquals(Warmth.LIGHT, form().warmth)
+
+        viewModel.update(ItemFormChange.SetWarmth(Warmth.MEDIUM))
+        viewModel.update(ItemFormChange.SetGarment(Garment.COAT))
+        assertEquals(Warmth.MEDIUM, form().warmth)
+    }
+
+    @Test
     fun aNewItemStartsWithRegularFit() {
         viewModel.recognizePhoto(PHOTO)
         assertEquals(Fit.REGULAR, form().fit)

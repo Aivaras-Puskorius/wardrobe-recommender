@@ -81,6 +81,12 @@ class EditItemViewModelTest {
     }
 
     @Test
+    fun changingTheGarmentKeepsTheSavedWarmth() {
+        viewModel.update(ItemFormChange.SetGarment(Garment.SWEATER))
+        assertEquals(tee.warmth, editing().form.warmth)
+    }
+
+    @Test
     fun saveStoresANewMaterial() = runTest {
         viewModel.update(ItemFormChange.SetMaterial(Material.LINEN))
         assertEquals(tee.copy(material = Material.LINEN), viewModel.save())

@@ -9,7 +9,6 @@ import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
-import app.wardrobe.domain.model.Warmth
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -102,7 +101,8 @@ class AddItemViewModel(
                     material = suggestion.material ?: garment.defaultMaterial,
                     materialEditedByUser = false,
                     fit = Fit.REGULAR,
-                    warmth = Warmth.MEDIUM,
+                    warmth = garment.defaultWarmth,
+                    warmthEditedByUser = false,
                     seasons = emptySet(),
                     photo = photo,
                     suggestion = suggestion.takeIf { it.garment != null || it.color != null || it.material != null },

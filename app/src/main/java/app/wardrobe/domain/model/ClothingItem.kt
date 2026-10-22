@@ -20,22 +20,23 @@ data class ClothingItem(
 enum class Category { TOP, BOTTOM, FOOTWEAR, OUTERWEAR }
 
 /**
- * The kind of garment. It decides the category and the illustration shown until real photos exist.
+ * The kind of garment. It decides the category and the illustration shown when an item has no photo.
  *
  * @param defaultMaterial what a new item of this garment starts with in the form.
+ * @param defaultWarmth the same for warmth.
  */
-enum class Garment(val category: Category, val defaultMaterial: Material) {
-    T_SHIRT(Category.TOP, Material.COTTON),
-    SHIRT(Category.TOP, Material.COTTON),
-    SWEATER(Category.TOP, Material.WOOL),
-    JEANS(Category.BOTTOM, Material.DENIM),
-    TROUSERS(Category.BOTTOM, Material.COTTON),
-    SHORTS(Category.BOTTOM, Material.COTTON),
-    SKIRT(Category.BOTTOM, Material.COTTON),
-    SNEAKERS(Category.FOOTWEAR, Material.SYNTHETIC),
-    BOOTS(Category.FOOTWEAR, Material.LEATHER),
-    JACKET(Category.OUTERWEAR, Material.SYNTHETIC),
-    COAT(Category.OUTERWEAR, Material.WOOL),
+enum class Garment(val category: Category, val defaultMaterial: Material, val defaultWarmth: Warmth) {
+    T_SHIRT(Category.TOP, Material.COTTON, Warmth.LIGHT),
+    SHIRT(Category.TOP, Material.COTTON, Warmth.MEDIUM),
+    SWEATER(Category.TOP, Material.WOOL, Warmth.WARM),
+    JEANS(Category.BOTTOM, Material.DENIM, Warmth.MEDIUM),
+    TROUSERS(Category.BOTTOM, Material.COTTON, Warmth.MEDIUM),
+    SHORTS(Category.BOTTOM, Material.COTTON, Warmth.LIGHT),
+    SKIRT(Category.BOTTOM, Material.COTTON, Warmth.LIGHT),
+    SNEAKERS(Category.FOOTWEAR, Material.SYNTHETIC, Warmth.LIGHT),
+    BOOTS(Category.FOOTWEAR, Material.LEATHER, Warmth.WARM),
+    JACKET(Category.OUTERWEAR, Material.SYNTHETIC, Warmth.MEDIUM),
+    COAT(Category.OUTERWEAR, Material.WOOL, Warmth.WARM),
 }
 
 /** The main fabric. The user sets it, since recognition doesn't guess it. */
