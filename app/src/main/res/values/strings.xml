@@ -68,6 +68,7 @@
     <string name="form_suggestion_hint">Suggested from your photo. Change anything that is wrong.</string>
     <string name="form_name">Name</string>
     <string name="form_name_error">Enter a name</string>
+    <string name="form_type_error">Pick a type</string>
     <string name="form_seasons_error">Pick at least one season</string>
 
     <string name="outfits_day">Day</string>

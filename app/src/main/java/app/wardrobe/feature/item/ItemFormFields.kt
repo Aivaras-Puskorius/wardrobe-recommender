@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -21,6 +23,8 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -101,18 +105,34 @@ fun ItemFormFields(
             ),
         )
 
-        Section(stringResource(R.string.item_type)) {
-            Garment.entries.forEach { garment ->
-                val selected = garment == form.garment
-                FilterChip(
-                    selected = selected,
-                    onClick = { onChange(ItemFormChange.SetGarment(garment)) },
-                    label = { Text(stringResource(garment.label())) },
-                    leadingIcon = when {
-                        selected -> chipIcon(R.drawable.ic_check)
-                        garment == form.suggestion?.garment -> chipIcon(R.drawable.ic_auto_awesome)
-                        else -> null
-                    },
+        // The type is near the top, so a failed save scrolls it back into view to show its error.
+        val typeError = form.showErrors && form.garmentError
+        val typeRequester = remember { BringIntoViewRequester() }
+        LaunchedEffect(typeError) { if (typeError) typeRequester.bringIntoView() }
+        Column(
+            modifier = Modifier.bringIntoViewRequester(typeRequester),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Section(stringResource(R.string.item_type)) {
+                Garment.entries.forEach { garment ->
+                    val selected = garment == form.garment
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onChange(ItemFormChange.SetGarment(garment)) },
+                        label = { Text(stringResource(garment.label())) },
+                        leadingIcon = when {
+                            selected -> chipIcon(R.drawable.ic_check)
+                            garment == form.suggestion?.garment -> chipIcon(R.drawable.ic_auto_awesome)
+                            else -> null
+                        },
+                    )
+                }
+            }
+            if (typeError) {
+                Text(
+                    text = stringResource(R.string.form_type_error),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
         }
@@ -141,7 +161,7 @@ fun ItemFormFields(
         }
 
         // Footwear has no fit, so the row goes away while shoes are picked.
-        if (form.garment.category != Category.FOOTWEAR) {
+        if (form.garment?.category != Category.FOOTWEAR) {
             Section(stringResource(R.string.item_fit)) {
                 Fit.entries.forEach { fit ->
                     FilterChip(

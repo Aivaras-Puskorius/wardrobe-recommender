@@ -69,12 +69,12 @@ fun ItemImage(
 
 /**
  * Fills its parent with the item's photo, cropped to fit, or with the garment illustration
- * inset by [illustrationPadding] when there is no photo or it fails to load.
+ * inset by [illustrationPadding] when there is no photo or it fails to load. Without a [garment] there is no illustration.
  */
 @Composable
 fun ItemPicture(
     photo: String?,
-    garment: Garment,
+    garment: Garment?,
     color: ItemColor,
     illustrationPadding: Dp,
     contentDescription: String?,
@@ -89,7 +89,7 @@ fun ItemPicture(
             contentScale = ContentScale.Crop,
             onError = { failed = true },
         )
-    } else {
+    } else if (garment != null) {
         GarmentImage(
             garment = garment,
             color = color,

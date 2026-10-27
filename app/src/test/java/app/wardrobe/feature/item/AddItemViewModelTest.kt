@@ -145,14 +145,42 @@ class AddItemViewModelTest {
         assertEquals(listOf(photoStore.file(PHOTO)), recognizedFiles)
     }
 
+    /** A preselected first type looked like a guess on the S25, so an unknown type stays unpicked. */
     @Test
-    fun aColorOnlySuggestionLeavesTheTypeToTheUser() {
+    fun aColorOnlySuggestionLeavesTheTypeUnpicked() {
         nextSuggestion = ItemSuggestion(garment = null, color = ItemColor.NAVY)
         viewModel.recognizePhoto(PHOTO)
-        assertEquals(Garment.T_SHIRT, form().garment)
+        assertNull(form().garment)
+        assertNull(form().material)
+        assertNull(form().warmth)
+        assertEquals("", form().name)
         assertEquals(ItemColor.NAVY, form().color)
-        assertEquals("NAVY T_SHIRT", form().name)
         assertEquals(nextSuggestion, form().suggestion)
+    }
+
+    @Test
+    fun pickingTheTypeFillsInTheNameMaterialAndWarmth() {
+        nextSuggestion = ItemSuggestion(garment = null, color = ItemColor.NAVY)
+        viewModel.recognizePhoto(PHOTO)
+        viewModel.update(ItemFormChange.SetColor(ItemColor.GREY))
+        assertEquals("", form().name)
+        viewModel.update(ItemFormChange.SetGarment(Garment.SHORTS))
+        assertEquals("GREY SHORTS", form().name)
+        assertEquals(Material.COTTON, form().material)
+        assertEquals(Warmth.LIGHT, form().warmth)
+    }
+
+    @Test
+    fun saveRejectsAnItemWithoutAType() = runTest {
+        nextSuggestion = ItemSuggestion(garment = null, color = ItemColor.NAVY)
+        viewModel.recognizePhoto(PHOTO)
+        viewModel.update(ItemFormChange.ToggleSeason(Season.SUMMER))
+        assertNull(viewModel.save())
+        assertTrue(form().showErrors)
+        assertTrue(form().garmentError)
+        // The name fills in once a type is picked, so its error would only add noise.
+        assertTrue(!form().nameError)
+        assertTrue(repository.items.first().isEmpty())
     }
 
     @Test
@@ -168,6 +196,14 @@ class AddItemViewModelTest {
         viewModel.recognizePhoto(PHOTO)
         assertEquals(Material.DENIM, form().material)
         assertTrue(!form().materialEditedByUser)
+    }
+
+    @Test
+    fun changingTheColorKeepsASuggestedMaterial() {
+        nextSuggestion = ItemSuggestion(Garment.JACKET, ItemColor.BLUE, Material.WOOL)
+        viewModel.recognizePhoto(PHOTO)
+        viewModel.update(ItemFormChange.SetColor(ItemColor.BLACK))
+        assertEquals(Material.WOOL, form().material)
     }
 
     @Test

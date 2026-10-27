@@ -89,19 +89,20 @@ class AddItemViewModel(
         _step.value = AddItemStep.Analyzing
         viewModelScope.launch {
             val suggestion = recognize(photoStore.file(photo))
-            // What recognition can't tell starts at the first choice, with no suggestion mark.
-            val garment = suggestion.garment ?: Garment.entries.first()
+            // A type picked for the user looked like a guess, so an unknown type stays unpicked. An unknown color,
+            // which only a photo that can't be read gives, starts at the first choice with no suggestion mark.
+            val garment = suggestion.garment
             val color = suggestion.color ?: ItemColor.entries.first()
             _step.value = AddItemStep.Details(
                 ItemForm(
-                    name = defaultName(garment, color),
+                    name = garment?.let { defaultName(it, color) } ?: "",
                     nameEditedByUser = false,
                     garment = garment,
                     color = color,
-                    material = suggestion.material ?: garment.defaultMaterial,
+                    material = suggestion.material ?: garment?.defaultMaterial,
                     materialEditedByUser = false,
                     fit = Fit.REGULAR,
-                    warmth = garment.defaultWarmth,
+                    warmth = garment?.defaultWarmth,
                     warmthEditedByUser = false,
                     seasons = emptySet(),
                     photo = photo,

@@ -9,18 +9,23 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.FileProvider
 import app.wardrobe.AppContainer
 import app.wardrobe.data.PhotoStore
 import app.wardrobe.data.SampleData
-import app.wardrobe.data.SampleRecognizer
+import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.ItemSuggestion
 import app.wardrobe.ui.theme.WardrobeTheme
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import java.io.File
@@ -49,10 +54,10 @@ class AddItemFlowTest {
 
     private val app = RuntimeEnvironment.getApplication()
     private val photoStore = PhotoStore(app.filesDir)
-    private val container = AppContainer(
-        recognizer = SampleRecognizer(SampleData.photoSuggestions, delayMillis = 0),
-        photoStore = photoStore,
-    )
+    /** What recognition returns for every photo. */
+    private var suggestion = SampleData.photoSuggestions.first()
+
+    private val container = AppContainer(recognizer = { suggestion }, photoStore = photoStore)
 
     /** What the camera app reports: true when it saved a photo. */
     private var cameraSaves = true
@@ -136,6 +141,23 @@ class AddItemFlowTest {
         composeRule.onNodeWithText("Take a photo").performClick()
         composeRule.onNodeWithText("Save to wardrobe").performClick()
         composeRule.onNodeWithText("Pick at least one season").performScrollTo().assertIsDisplayed()
+    }
+
+    /** The type is near the top of the form, so a failed save scrolls back up to its chips and error. */
+    @Test
+    fun saveWithoutATypeShowsTheTypeError() {
+        suggestion = ItemSuggestion(garment = null, color = ItemColor.NAVY)
+        composeRule.onNodeWithText("Take a photo").performClick()
+        composeRule.onNodeWithText("Autumn").performScrollTo().performClick()
+        composeRule.onNode(hasScrollAction()).performTouchInput { repeat(3) { swipeUp() } }
+        composeRule.onNodeWithText("Type").assertIsNotDisplayed()
+        composeRule.onNodeWithText("Save to wardrobe").performClick()
+
+        composeRule.onNodeWithText("Type").assertIsDisplayed()
+        composeRule.onNodeWithText("Pick a type").assertIsDisplayed()
+        composeRule.onNodeWithText("Shorts").performClick()
+        composeRule.onNodeWithText("Save to wardrobe").performClick()
+        composeRule.onNodeWithText("Navy shorts added").assertIsDisplayed()
     }
 
     @Test
