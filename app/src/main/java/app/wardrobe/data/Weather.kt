@@ -36,6 +36,6 @@ interface Weather {
     /** Places whose name starts with [name]. Throws [java.io.IOException] when the search fails. */
     suspend fun search(name: String): List<Place>
 
-    /** Makes [place] the forecast's place and fetches its forecast. */
-    suspend fun choose(place: Place)
+    /** Makes [place] the forecast's place and starts fetching its forecast, which outlives the caller. */
+    fun choose(place: Place)
 }

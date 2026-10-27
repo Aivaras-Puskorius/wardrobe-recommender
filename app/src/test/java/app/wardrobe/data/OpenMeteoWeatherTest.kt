@@ -6,6 +6,11 @@ import java.io.IOException
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -25,7 +30,8 @@ class OpenMeteoWeatherTest {
     /** What Open-Meteo answers. Throw IOException to act offline. */
     private var respond: (url: String) -> String = { url -> if ("geocoding" in url) SEARCH_RESPONSE else KAUNAS_RESPONSE }
 
-    private fun weather() = OpenMeteoWeather(prefs, fetch = { url -> requests += url; respond(url) }, now = { now })
+    private fun TestScope.weather() =
+        OpenMeteoWeather(prefs, scope = this, fetch = { url -> requests += url; respond(url) }, now = { now })
 
     private fun offline() {
         respond = { throw IOException("offline") }
@@ -166,8 +172,10 @@ class OpenMeteoWeatherTest {
         weather.refresh()
         respond = { VILNIUS_RESPONSE }
         weather.choose(VILNIUS)
-
         assertEquals(VILNIUS, weather.place.value)
+        assertEquals(WeatherState.Loading, weather.state.value)
+        advanceUntilIdle()
+
         assertEquals("Vilnius", ready(weather).forecast.location)
         assertTrue("latitude=54.68916&longitude=25.2798" in requests.last())
         assertEquals(VILNIUS, weather().place.value)
@@ -179,6 +187,26 @@ class OpenMeteoWeatherTest {
         weather.refresh()
         offline()
         weather.choose(VILNIUS)
+        advanceUntilIdle()
+        assertEquals(WeatherState.Unavailable, weather.state.value)
+    }
+
+    /** Kaunas's forecast arrives after Vilnius was chosen, and fetching Vilnius's fails. */
+    @Test
+    fun aForecastForThePreviousPlaceIsDropped() = runTest {
+        val kaunasArrives = CompletableDeferred<Unit>()
+        respond = { url -> if ("23.90909" in url) KAUNAS_RESPONSE else throw IOException("offline") }
+        val weather = OpenMeteoWeather(
+            prefs,
+            scope = this,
+            fetch = { url -> if ("23.90909" in url) kaunasArrives.await(); respond(url) },
+            now = { now },
+        )
+        launch { weather.refresh() }
+        runCurrent()
+        weather.choose(VILNIUS)
+        kaunasArrives.complete(Unit)
+        advanceUntilIdle()
         assertEquals(WeatherState.Unavailable, weather.state.value)
     }
 

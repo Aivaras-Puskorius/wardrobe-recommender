@@ -15,12 +15,15 @@ import kotlinx.coroutines.launch
 class WardrobeApplication : Application() {
     private val recognizer by lazy { MlKitRecognizer(this) }
 
+    /** For work that outlives any screen. */
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     val container: AppContainer by lazy {
         AppContainer(
             wardrobeRepository = RoomWardrobeRepository(WardrobeDatabase.build(this).items()),
             recognizer = recognizer,
             photoStore = PhotoStore(filesDir),
-            weather = OpenMeteoWeather(getSharedPreferences("weather", MODE_PRIVATE)),
+            weather = OpenMeteoWeather(getSharedPreferences("weather", MODE_PRIVATE), scope),
         )
     }
 
@@ -30,7 +33,6 @@ class WardrobeApplication : Application() {
         val startedAt = System.currentTimeMillis()
         // Photos of deleted items and discarded adds. A delete can still be undone while the app runs, so
         // the files wait for the next start.
-        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         scope.launch {
             val used = container.wardrobeRepository.items.first().mapNotNull { it.photo }.toSet()
             container.photoStore.deleteUnused(used, olderThan = startedAt)

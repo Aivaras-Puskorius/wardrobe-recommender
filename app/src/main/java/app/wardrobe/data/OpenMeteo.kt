@@ -17,10 +17,12 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -34,11 +36,13 @@ import org.json.JSONObject
  * The forecast from Open-Meteo for the chosen place, Kaunas until the user picks another. The place and the last
  * forecast are saved in [prefs], so the forecast shows offline and right away at the next start.
  *
+ * @param scope runs the fetch that [choose] starts, so leaving the screen that chose doesn't cancel it.
  * @param fetch returns the body of a GET request, or throws [IOException].
  * @param now the current time in the phone's time zone.
  */
 class OpenMeteoWeather(
     private val prefs: SharedPreferences,
+    private val scope: CoroutineScope,
     private val fetch: suspend (url: String) -> String = ::httpGet,
     private val now: () -> ZonedDateTime = ZonedDateTime::now,
 ) : Weather {
@@ -60,8 +64,11 @@ class OpenMeteoWeather(
             return@withLock
         }
         if (saved == null) _state.value = WeatherState.Loading
+        val place = _place.value
         _state.value = try {
-            val json = fetch(forecastUrl(_place.value))
+            val json = fetch(forecastUrl(place))
+            // A place chosen during the fetch has its own fetch waiting, and this forecast isn't for it.
+            if (_place.value != place) return@withLock
             // Parsed before saving, so the saved forecast is always readable.
             parseForecastDays(json)
             prefs.edit {
@@ -93,22 +100,20 @@ class OpenMeteoWeather(
         }
     }
 
-    override suspend fun choose(place: Place) {
-        mutex.withLock {
-            val saved = JSONObject()
-                .put("name", place.name)
-                .put("detail", place.detail)
-                .put("latitude", place.latitude)
-                .put("longitude", place.longitude)
-            prefs.edit {
-                putString(KEY_PLACE, saved.toString())
-                remove(KEY_FORECAST)
-                remove(KEY_UPDATED_AT)
-            }
-            _place.value = place
-            _state.value = WeatherState.Loading
+    override fun choose(place: Place) {
+        val saved = JSONObject()
+            .put("name", place.name)
+            .put("detail", place.detail)
+            .put("latitude", place.latitude)
+            .put("longitude", place.longitude)
+        prefs.edit {
+            putString(KEY_PLACE, saved.toString())
+            remove(KEY_FORECAST)
+            remove(KEY_UPDATED_AT)
         }
-        refresh(force = true)
+        _place.value = place
+        _state.value = WeatherState.Loading
+        scope.launch { refresh(force = true) }
     }
 
     private fun failed(saved: WeatherState.Ready?, e: Exception): WeatherState {

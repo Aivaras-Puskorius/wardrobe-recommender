@@ -30,7 +30,7 @@ class SampleWeather(private val today: () -> LocalDate = LocalDate::now) : Weath
         return SampleData.places.filter { it.name.startsWith(query, ignoreCase = true) }
     }
 
-    override suspend fun choose(place: Place) {
+    override fun choose(place: Place) {
         _place.value = place
         _state.value = ready(place)
     }

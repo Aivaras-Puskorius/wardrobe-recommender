@@ -4,6 +4,7 @@ import app.wardrobe.data.SampleData
 import app.wardrobe.data.Weather
 import app.wardrobe.data.WeatherState
 import app.wardrobe.domain.model.Place
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** A [Weather] whose state a test sets, for the states the sample can't show: no forecast, or an old one. */
@@ -22,9 +23,13 @@ class FakeWeather(initial: WeatherState) : Weather {
         afterRefresh?.let { state.value = it }
     }
 
-    override suspend fun search(name: String): List<Place> = emptyList()
+    /** True to make every search fail as it would offline. */
+    var searchFails = false
 
-    override suspend fun choose(place: Place) {
+    override suspend fun search(name: String): List<Place> =
+        if (searchFails) throw IOException("offline") else emptyList()
+
+    override fun choose(place: Place) {
         this.place.value = place
     }
 }
