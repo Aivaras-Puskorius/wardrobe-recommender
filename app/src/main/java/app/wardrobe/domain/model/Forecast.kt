@@ -2,6 +2,9 @@ package app.wardrobe.domain.model
 
 import java.time.LocalDate
 
+/** A place to get the forecast for. [detail] tells places with the same name apart, such as "Kaunas, Lithuania". */
+data class Place(val name: String, val detail: String, val latitude: Double, val longitude: Double)
+
 /** Daily forecast for the user's chosen location. */
 data class Forecast(
     val location: String,
