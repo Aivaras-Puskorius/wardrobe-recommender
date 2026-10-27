@@ -158,7 +158,7 @@ class OpenMeteoWeather(
 /** A week of daily weather at [place], with dates in the place's own time zone. */
 private fun forecastUrl(place: Place) =
     "https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}" +
-        "&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max" +
+        "&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,precipitation_sum" +
         "&timezone=auto&forecast_days=7"
 
 /** The places in a search response. A search with no matches has no results array. */
@@ -191,8 +191,9 @@ private suspend fun httpGet(url: String): String = withContext(Dispatchers.IO) {
 }
 
 /**
- * The days of a forecast response that asked for the daily temperature_2m_max, temperature_2m_min, weather_code
- * and precipitation_probability_max. A day without a rain chance gets 0, and its weather code still says if it rains.
+ * The days of a forecast response that asked for the daily temperature_2m_max, temperature_2m_min, weather_code,
+ * precipitation_probability_max and precipitation_sum. A day without a rain chance gets 0, and its weather code still
+ * says if it rains. precipitation_sum may be missing, as in forecasts saved before the app asked for it.
  */
 fun parseForecastDays(json: String): List<DayForecast> {
     val daily = JSONObject(json).getJSONObject("daily")
@@ -201,23 +202,35 @@ fun parseForecastDays(json: String): List<DayForecast> {
     val min = daily.getJSONArray("temperature_2m_min")
     val codes = daily.getJSONArray("weather_code")
     val rainChance = daily.getJSONArray("precipitation_probability_max")
+    val rainMm = daily.optJSONArray("precipitation_sum")
     return List(dates.length()) { i ->
         DayForecast(
             date = LocalDate.parse(dates.getString(i)),
             minTemperatureC = min.getDouble(i).roundToInt(),
             maxTemperatureC = max.getDouble(i).roundToInt(),
-            condition = conditionOf(codes.getInt(i)),
+            condition = conditionOf(codes.getInt(i), rainMm?.optDouble(i)?.takeUnless { it.isNaN() }),
             precipitationChancePercent = rainChance.optInt(i, 0),
         )
     }
 }
 
-/** The app's condition for a WMO weather code, as listed in Open-Meteo's documentation. */
-fun conditionOf(wmoCode: Int): WeatherCondition = when (wmoCode) {
+/** Drizzle counts as rain from this much in a day. Below it, the day is cloudy. */
+private const val DRIZZLE_RAIN_MM = 1.0
+
+/**
+ * The app's condition for a WMO weather code, as listed in Open-Meteo's documentation.
+ *
+ * @param rainMm the day's rain and snow in millimetres, or null if unknown. Open-Meteo gave light drizzle on days
+ *   with a 0% rain chance and 0.1 mm (Vilnius, 2026-10-27), so drizzle is rain only from [DRIZZLE_RAIN_MM].
+ *   Without an amount, drizzle stays rain.
+ */
+fun conditionOf(wmoCode: Int, rainMm: Double? = null): WeatherCondition = when (wmoCode) {
     0, 1 -> WeatherCondition.CLEAR
     2 -> WeatherCondition.PARTLY_CLOUDY
-    // Drizzle, rain and freezing rain, rain showers, thunderstorms.
-    in 51..67, in 80..82, in 95..99 -> WeatherCondition.RAIN
+    // Drizzle and freezing drizzle.
+    in 51..57 -> if (rainMm != null && rainMm < DRIZZLE_RAIN_MM) WeatherCondition.CLOUDY else WeatherCondition.RAIN
+    // Rain and freezing rain, rain showers, thunderstorms.
+    in 61..67, in 80..82, in 95..99 -> WeatherCondition.RAIN
     // Snowfall, snow grains, snow showers.
     in 71..77, 85, 86 -> WeatherCondition.SNOW
     // Overcast, fog, and any code added later.

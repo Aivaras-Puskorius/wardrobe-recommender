@@ -51,6 +51,7 @@ class OpenMeteoWeatherTest {
         assertEquals(now.toInstant(), state.updatedAt)
         assertEquals(false, state.refreshFailed)
         assertTrue(requests.single().startsWith("https://api.open-meteo.com/v1/forecast?latitude=54.90156&longitude=23.90909"))
+        assertTrue("precipitation_sum" in requests.single())
     }
 
     @Test

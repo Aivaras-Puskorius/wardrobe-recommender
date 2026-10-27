@@ -37,6 +37,28 @@ class OpenMeteoTest {
         assertEquals(WeatherCondition.RAIN, days.single().condition)
     }
 
+    /** Vilnius on 2026-10-27: light drizzle on days with a 0% to 16% rain chance and 0.1 to 1 mm of rain. */
+    @Test
+    fun drizzleIsRainOnlyFromOneMillimetre() {
+        val days = parseForecastDays(
+            """{"daily": {"time": ["2026-10-27", "2026-10-30", "2026-10-31", "2026-11-01"],
+                "temperature_2m_max": [11.1, 9.5, 8.4, 7.1], "temperature_2m_min": [6.8, 5.4, 5.7, 3.1],
+                "weather_code": [51, 53, 51, 61], "precipitation_probability_max": [0, 16, 16, 6],
+                "precipitation_sum": [0.1, 0.33, 1.0, 0.2]}}""",
+        )
+        assertEquals(
+            listOf(WeatherCondition.CLOUDY, WeatherCondition.CLOUDY, WeatherCondition.RAIN, WeatherCondition.RAIN),
+            days.map { it.condition },
+        )
+    }
+
+    /** Forecasts saved before the app asked for the amount, and days Open-Meteo has no amount for. */
+    @Test
+    fun drizzleWithoutAnAmountStaysRain() {
+        assertEquals(WeatherCondition.RAIN, conditionOf(51, rainMm = null))
+        assertEquals(WeatherCondition.RAIN, parseForecastDays(KAUNAS_RESPONSE)[4].condition)
+    }
+
     @Test
     fun weatherCodesBecomeTheAppsConditions() {
         val expected = mapOf(
