@@ -21,7 +21,7 @@ class OpenMeteoTest {
             days.first(),
         )
         assertEquals(
-            DayForecast(LocalDate.of(2026, 10, 31), 6, 10, WeatherCondition.RAIN, precipitationChancePercent = 18),
+            DayForecast(LocalDate.of(2026, 10, 31), 6, 10, WeatherCondition.RAIN, 18, drizzle = true),
             days[4],
         )
         assertEquals(LocalDate.of(2026, 11, 2), days.last().date)
@@ -50,6 +50,8 @@ class OpenMeteoTest {
             listOf(WeatherCondition.CLOUDY, WeatherCondition.CLOUDY, WeatherCondition.RAIN, WeatherCondition.RAIN),
             days.map { it.condition },
         )
+        // The engine still keeps wool covered on drizzle days that count as cloudy.
+        assertEquals(listOf(true, true, true, false), days.map { it.drizzle })
     }
 
     /** Forecasts saved before the app asked for the amount, and days Open-Meteo has no amount for. */

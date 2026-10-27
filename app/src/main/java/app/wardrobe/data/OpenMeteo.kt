@@ -204,18 +204,23 @@ fun parseForecastDays(json: String): List<DayForecast> {
     val rainChance = daily.getJSONArray("precipitation_probability_max")
     val rainMm = daily.optJSONArray("precipitation_sum")
     return List(dates.length()) { i ->
+        val code = codes.getInt(i)
         DayForecast(
             date = LocalDate.parse(dates.getString(i)),
             minTemperatureC = min.getDouble(i).roundToInt(),
             maxTemperatureC = max.getDouble(i).roundToInt(),
-            condition = conditionOf(codes.getInt(i), rainMm?.optDouble(i)?.takeUnless { it.isNaN() }),
+            condition = conditionOf(code, rainMm?.optDouble(i)?.takeUnless { it.isNaN() }),
             precipitationChancePercent = rainChance.optInt(i, 0),
+            drizzle = code in DRIZZLE_CODES,
         )
     }
 }
 
 /** Drizzle counts as rain from this much in a day. Below it, the day is cloudy. */
 private const val DRIZZLE_RAIN_MM = 1.0
+
+/** Drizzle and freezing drizzle. */
+private val DRIZZLE_CODES = 51..57
 
 /**
  * The app's condition for a WMO weather code, as listed in Open-Meteo's documentation.
@@ -227,8 +232,7 @@ private const val DRIZZLE_RAIN_MM = 1.0
 fun conditionOf(wmoCode: Int, rainMm: Double? = null): WeatherCondition = when (wmoCode) {
     0, 1 -> WeatherCondition.CLEAR
     2 -> WeatherCondition.PARTLY_CLOUDY
-    // Drizzle and freezing drizzle.
-    in 51..57 -> if (rainMm != null && rainMm < DRIZZLE_RAIN_MM) WeatherCondition.CLOUDY else WeatherCondition.RAIN
+    in DRIZZLE_CODES -> if (rainMm != null && rainMm < DRIZZLE_RAIN_MM) WeatherCondition.CLOUDY else WeatherCondition.RAIN
     // Rain and freezing rain, rain showers, thunderstorms.
     in 61..67, in 80..82, in 95..99 -> WeatherCondition.RAIN
     // Snowfall, snow grains, snow showers.

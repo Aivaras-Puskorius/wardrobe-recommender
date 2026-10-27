@@ -403,6 +403,35 @@ class OutfitEngineTest {
         assertEquals(6, outfit.score)
     }
 
+    /** Light drizzle counts as cloudy, but wool stays under a jacket (user, 2026-10-27). */
+    @Test
+    fun t27OnADrizzleDayAWoolTopNeedsAJacketOverIt() {
+        val dry = day(13, 19, CLOUDY, 10)
+        val drizzle = dry.copy(drizzle = true)
+
+        val sweater = listOf(item("cream-knit"), item("dark-jeans"), item("black-sneakers"), item("denim-jacket"))
+        assertEquals(
+            listOf("cream-knit", "dark-jeans", "black-sneakers"),
+            suggest(sweater, "cream-knit", dry).outfits().single().items.map { it.id },
+        )
+        // The denim jacket over the warm sweater is too warm for 13°, so nothing is left.
+        assertEquals(EngineResult.NothingFits, suggest(sweater, "cream-knit", drizzle))
+
+        val woolShirt = item("oxford-shirt").copy(material = Material.WOOL)
+        val shell = ClothingItem(
+            "rain-shell", "Rain shell", Garment.JACKET, ItemColor.BLACK, Material.WATERPROOF, Fit.REGULAR, Warmth.LIGHT,
+            setOf(Season.AUTUMN), photo = null,
+        )
+        val shirt = listOf(woolShirt, item("dark-jeans"), item("black-sneakers"), shell)
+        assertEquals(
+            listOf("oxford-shirt", "dark-jeans", "black-sneakers", "rain-shell"),
+            suggest(shirt, "oxford-shirt", drizzle).outfits().single().items.map { it.id },
+        )
+        // A cotton top may still go without the jacket.
+        val cotton = suggest(shirt - woolShirt + item("oxford-shirt"), "oxford-shirt", drizzle).outfits()
+        assertTrue(cotton.any { outfit -> outfit.items.none { it.category == Category.OUTERWEAR } })
+    }
+
     @Test
     fun t26ARoomyPieceWithAFittedOneIsBalanced() {
         val day = day(13, 20, CLEAR, 0, july)

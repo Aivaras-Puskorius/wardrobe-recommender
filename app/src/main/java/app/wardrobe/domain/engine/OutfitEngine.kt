@@ -134,6 +134,8 @@ object OutfitEngine {
         if (warmthGap > 1) return null
         if (items.accents().size > MAX_ACCENTS) return null
         if (outer?.fit == Fit.FITTED && top.fit in ROOMY) return null
+        // Light drizzle counts as cloudy, but a wool top still shouldn't get wet.
+        if (day.drizzle && outer == null && top.material == Material.WOOL) return null
         // Outerwear comes off indoors, so the color rules judge the indoor look. The outerwear only adds OUTDOOR_HOLDS.
         val indoor = listOf(top, bottom, footwear)
         val accents = indoor.accents()
