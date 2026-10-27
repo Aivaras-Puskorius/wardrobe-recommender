@@ -10,7 +10,8 @@ data class PhotoLabel(val text: String, val confidence: Float)
 // Label texts are matched exactly, because ImageNet has both "cardigan" (the sweater) and "Cardigan" (the dog).
 // The thresholds come from 12 photos of the user's own clothes on the S25 (2026-10-22). A second test with 16 photos
 // (2026-10-27) showed the standard model's Denim tag at 75% to 80% on sweatpants and a navy shirt, Jeans at 88% on the
-// sweatpants, and Denim at 60% at most on denim shorts. Neither tag tells denim apart, so neither is used.
+// sweatpants, and Denim at 60% at most on denim shorts. Neither tag tells denim apart, so neither is used. Leather
+// scored 79% on a nylon jacket, which it also called leather in the first test, so Leather is not used either.
 // INFO(limit): 12 photos is a small sample. Retune when more photos show a pattern.
 
 /**
@@ -22,10 +23,7 @@ private const val STANDARD_GARMENT_MIN = 0.9f
 /** "Shoe" scored 67% and more only on footwear, and "Outerwear" appeared only on outerwear. */
 private const val STANDARD_GENERIC_MIN = 0.6f
 
-/**
- * In the first test, Wool and Leather were right at 70% and more, and wrong below. In the second, Leather scored 79%
- * on a nylon jacket and 57% on faux-leather boots.
- */
+/** In the first test, Wool was right at 70% and more, and wrong below. */
 private const val STANDARD_MATERIAL_MIN = 0.7f
 
 /** The ImageNet model's right answers scored 50% and more. */
@@ -62,7 +60,7 @@ private val imageNetGarments = mapOf(
     "suit" to Garment.JACKET,
 )
 
-private val standardMaterials = mapOf("Wool" to Material.WOOL, "Leather" to Material.LEATHER)
+private val standardMaterials = mapOf("Wool" to Material.WOOL)
 private val imageNetMaterials = mapOf("wool" to Material.WOOL)
 
 /** The garment named by the most confident label above its threshold, or null if none names one. */

@@ -77,6 +77,13 @@ class PhotoLabelsTest {
         assertEquals(null, garment(standard = labels("Jeans" to 0.95f)))
     }
 
+    /** The black nylon jacket: Leather 79% in the second S25 test, and leather in the first test too. */
+    @Test
+    fun theStandardModelsLeatherTagIsIgnored() {
+        assertEquals(null, material(standard = labels("Leather" to 0.79f)))
+        assertEquals(Material.WOOL, material(standard = labels("Leather" to 0.9f, "Wool" to 0.72f)))
+    }
+
     /** Light grey sweatpants on the S25: the usual Jeans and Denim tags don't make them jeans. */
     @Test
     fun weakDenimTagsLeaveTrousersAsTrousers() {
