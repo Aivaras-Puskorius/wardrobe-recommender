@@ -114,7 +114,7 @@ private fun WeatherCard(location: String, dayLabel: String, day: DayForecast, of
                 )
                 if (offlineSince != null) {
                     Text(
-                        // INFO(limit): English day names, as in dayLabel.
+                        // INFO(limit): English day names, as in dayLabel. Use the app locale once translations exist.
                         text = stringResource(
                             R.string.weather_offline,
                             offlineSince.format(DateTimeFormatter.ofPattern("EEE d, HH:mm", Locale.ENGLISH)),
