@@ -3,6 +3,7 @@ package app.wardrobe.feature.outfits
 import androidx.compose.ui.test.junit4.createComposeRule
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.data.SampleWeather
 import app.wardrobe.testing.captureInTheme
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import java.time.LocalDate
@@ -28,7 +29,7 @@ class OutfitResultsScreenshotTest {
         itemId = itemId,
         date = today.plusDays(1),
         repository = InMemoryWardrobeRepository(SampleData.items),
-        forecast = SampleData.forecast(today),
+        weather = SampleWeather { today },
     )
 
     private fun OutfitResultsViewModel.ready(): OutfitResultsUiState.Ready =
@@ -44,22 +45,22 @@ class OutfitResultsScreenshotTest {
 
     @Test
     fun outfits() = composeRule.captureInTheme {
-        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> })
+        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> }, onRetry = {})
     }
 
     @Test
     fun outfitsDark() = composeRule.captureInTheme(darkTheme = true) {
-        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> })
+        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> }, onRetry = {})
     }
 
     @Test
     fun rated() = composeRule.captureInTheme {
         val state = state("dark-jeans", likeFirst = true)
-        OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> })
+        OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onRetry = {})
     }
 
     @Test
     fun noOutfitsForThisItem() = composeRule.captureInTheme {
-        OutfitResultsContent(state("khaki-shorts"), onBack = {}, onRate = { _, _ -> })
+        OutfitResultsContent(state("khaki-shorts"), onBack = {}, onRate = { _, _ -> }, onRetry = {})
     }
 }

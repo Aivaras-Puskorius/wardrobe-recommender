@@ -3,6 +3,7 @@ package app.wardrobe.testing
 import androidx.compose.ui.test.junit4.createComposeRule
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.data.SampleWeather
 import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -103,16 +104,17 @@ class LargeFontScreenshotTest {
             onSelectItem = {},
             onSelectDay = {},
             onShowOutfits = { _, _ -> },
+            onRetry = {},
         )
     }
 
     @Test
     fun outfitResults() {
         val state = runBlocking {
-            OutfitResultsViewModel("dark-jeans", today, InMemoryWardrobeRepository(SampleData.items), forecast)
+            OutfitResultsViewModel("dark-jeans", today, InMemoryWardrobeRepository(SampleData.items), SampleWeather { today })
                 .uiState.first { it is OutfitResultsUiState.Ready }
         }
-        composeRule.captureInTheme(fontScale = LARGE) { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }) }
+        composeRule.captureInTheme(fontScale = LARGE) { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onRetry = {}) }
     }
 
     @Test

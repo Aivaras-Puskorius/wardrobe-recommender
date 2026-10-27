@@ -50,6 +50,7 @@ import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.ui.components.BottomActionBar
 import app.wardrobe.ui.components.GarmentBackdrop
 import app.wardrobe.ui.components.ItemPicture
+import app.wardrobe.ui.components.NoForecast
 import app.wardrobe.ui.components.WeatherSummary
 import app.wardrobe.ui.components.dayLabel
 import app.wardrobe.ui.components.icon
@@ -67,6 +68,7 @@ fun OutfitGeneratorScreen(
         onSelectItem = viewModel::selectItem,
         onSelectDay = viewModel::selectDay,
         onShowOutfits = onShowOutfits,
+        onRetry = viewModel::retry,
     )
 }
 
@@ -77,6 +79,7 @@ fun OutfitGeneratorContent(
     onSelectItem: (itemId: String) -> Unit,
     onSelectDay: (LocalDate) -> Unit,
     onShowOutfits: (itemId: String, date: LocalDate) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -105,6 +108,8 @@ fun OutfitGeneratorContent(
                 CircularProgressIndicator()
             }
 
+            OutfitGeneratorUiState.NoForecast -> NoForecast(onRetry, Modifier.padding(padding))
+
             is OutfitGeneratorUiState.Ready -> Generator(state, onSelectItem, onSelectDay, Modifier.padding(padding))
         }
     }
@@ -130,6 +135,7 @@ private fun Generator(
                 location = state.forecast.location,
                 dayLabel = dayLabel(state.selectedDay.date, today),
                 day = state.selectedDay,
+                offlineSince = state.offlineSince,
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {

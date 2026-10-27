@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.data.SampleWeather
 import app.wardrobe.feature.outfits.OutfitGeneratorContent
 import app.wardrobe.feature.outfits.OutfitGeneratorUiState
 import app.wardrobe.feature.outfits.OutfitResultsContent
@@ -39,10 +40,10 @@ class AccessibilityTest {
     @Test
     fun outfitTitlesAreHeadings() {
         val state = runBlocking {
-            OutfitResultsViewModel("dark-jeans", today, InMemoryWardrobeRepository(SampleData.items), forecast)
+            OutfitResultsViewModel("dark-jeans", today, InMemoryWardrobeRepository(SampleData.items), SampleWeather { today })
                 .uiState.first { it is OutfitResultsUiState.Ready }
         }
-        composeRule.setContent { WardrobeTheme { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }) } }
+        composeRule.setContent { WardrobeTheme { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onRetry = {}) } }
         composeRule.onNodeWithText("All neutrals").assert(isHeading())
     }
 
@@ -65,6 +66,7 @@ class AccessibilityTest {
                     onSelectItem = {},
                     onSelectDay = {},
                     onShowOutfits = { _, _ -> },
+                    onRetry = {},
                 )
             }
         }

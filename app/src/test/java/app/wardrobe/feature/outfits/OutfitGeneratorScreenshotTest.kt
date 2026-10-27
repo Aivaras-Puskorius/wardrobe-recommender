@@ -6,6 +6,7 @@ import app.wardrobe.data.SampleData
 import app.wardrobe.testing.captureInTheme
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import java.time.LocalDate
+import java.time.LocalDateTime
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,8 +42,17 @@ class OutfitGeneratorScreenshotTest {
     @Test
     fun itemAndDayChosenDark() = composeRule.captureInTheme(darkTheme = true) { Generator(jeansTomorrow) }
 
+    /** Fetching a newer forecast failed, so the card says when the shown one is from. */
+    @Test
+    fun offline() = composeRule.captureInTheme {
+        Generator(nothingChosen.copy(offlineSince = LocalDateTime.of(2026, 10, 7, 18, 30)))
+    }
+
+    @Test
+    fun noForecast() = composeRule.captureInTheme { Generator(OutfitGeneratorUiState.NoForecast) }
+
     @Composable
     private fun Generator(state: OutfitGeneratorUiState) {
-        OutfitGeneratorContent(state, onSelectItem = {}, onSelectDay = {}, onShowOutfits = { _, _ -> })
+        OutfitGeneratorContent(state, onSelectItem = {}, onSelectDay = {}, onShowOutfits = { _, _ -> }, onRetry = {})
     }
 }

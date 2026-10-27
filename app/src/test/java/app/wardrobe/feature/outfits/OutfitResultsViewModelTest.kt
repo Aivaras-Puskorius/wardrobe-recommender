@@ -2,11 +2,15 @@ package app.wardrobe.feature.outfits
 
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.data.SampleWeather
+import app.wardrobe.data.WeatherState
 import app.wardrobe.domain.engine.Reason
 import app.wardrobe.domain.engine.ScoreTerm
 import app.wardrobe.domain.engine.ScoredOutfit
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.testing.FakeWeather
+import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,7 +30,7 @@ import org.junit.Test
 class OutfitResultsViewModelTest {
 
     private val today = LocalDate.of(2026, 10, 8)
-    private val forecast = SampleData.forecast(today)
+    private val weather = SampleWeather { today }
     private lateinit var repository: InMemoryWardrobeRepository
 
     @Before
@@ -41,7 +45,7 @@ class OutfitResultsViewModelTest {
     }
 
     private fun viewModel(itemId: String, date: LocalDate = today) =
-        OutfitResultsViewModel(itemId, date, repository, forecast)
+        OutfitResultsViewModel(itemId, date, repository, weather)
 
     private suspend fun OutfitResultsViewModel.settled() = uiState.first { it != OutfitResultsUiState.Loading }
 
@@ -101,6 +105,23 @@ class OutfitResultsViewModelTest {
     @Test
     fun showsTheWeatherOfTheChosenDay() = runTest {
         assertEquals(today.plusDays(1), viewModel("dark-jeans", today.plusDays(1)).ready().day.date)
+    }
+
+    @Test
+    fun withoutAForecastThereAreNoOutfitsAndRetryFetchesOne() = runTest {
+        val weather = FakeWeather(WeatherState.Unavailable)
+        val viewModel = OutfitResultsViewModel("dark-jeans", today, repository, weather)
+        assertEquals(OutfitResultsUiState.NoForecast, viewModel.settled())
+
+        weather.afterRefresh = WeatherState.Ready(SampleData.forecast(today), Instant.EPOCH, refreshFailed = false)
+        viewModel.retry()
+        assertEquals(listOf(true), weather.refreshes)
+        assertTrue(viewModel.ready().outfits.isNotEmpty())
+    }
+
+    @Test
+    fun aDayThatLeftTheForecastFallsBackToItsFirstDay() = runTest {
+        assertEquals(today, viewModel("dark-jeans", today.minusDays(1)).ready().day.date)
     }
 
     @Test

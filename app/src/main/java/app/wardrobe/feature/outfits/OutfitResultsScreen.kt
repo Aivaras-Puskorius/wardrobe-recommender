@@ -47,6 +47,7 @@ import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.ui.components.EmptyState
 import app.wardrobe.ui.components.GarmentBackdrop
 import app.wardrobe.ui.components.ItemPicture
+import app.wardrobe.ui.components.NoForecast
 import app.wardrobe.ui.components.WeatherSummary
 import app.wardrobe.ui.components.dayLabel
 import app.wardrobe.ui.pluralLabel
@@ -54,7 +55,7 @@ import app.wardrobe.ui.pluralLabel
 @Composable
 fun OutfitResultsScreen(viewModel: OutfitResultsViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    OutfitResultsContent(state = state, onBack = onBack, onRate = viewModel::rate)
+    OutfitResultsContent(state = state, onBack = onBack, onRate = viewModel::rate, onRetry = viewModel::retry)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +64,7 @@ fun OutfitResultsContent(
     state: OutfitResultsUiState,
     onBack: () -> Unit,
     onRate: (outfitId: String, Rating) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -87,6 +89,8 @@ fun OutfitResultsContent(
             ) {
                 CircularProgressIndicator()
             }
+
+            OutfitResultsUiState.NoForecast -> NoForecast(onRetry, Modifier.padding(padding))
 
             OutfitResultsUiState.NotFound -> EmptyState(
                 icon = R.drawable.ic_checkroom,
@@ -159,6 +163,7 @@ private fun Header(state: OutfitResultsUiState.Ready, modifier: Modifier = Modif
             location = state.location,
             dayLabel = dayLabel(state.day.date, state.today),
             day = state.day,
+            offlineSince = state.offlineSince,
             modifier = Modifier.fillMaxWidth(),
         )
     }

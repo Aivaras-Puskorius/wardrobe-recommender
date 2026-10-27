@@ -126,10 +126,7 @@ fun WardrobeApp(container: AppContainer) {
                     viewModel = viewModel { ItemDetailViewModel(route.itemId, container.wardrobeRepository) },
                     onBack = navigator::goBack,
                     onEdit = { navigator.navigate(EditItemRoute(route.itemId)) },
-                    onStyle = {
-                        val today = container.forecast().days.first().date
-                        navigator.navigate(OutfitResultsRoute(route.itemId, today.toEpochDay()))
-                    },
+                    onStyle = { navigator.navigate(OutfitResultsRoute(route.itemId, LocalDate.now().toEpochDay())) },
                     onDeleted = { item ->
                         navigator.goBack()
                         showMessage(
@@ -152,7 +149,7 @@ fun WardrobeApp(container: AppContainer) {
         }
         entry<OutfitsRoute> {
             OutfitGeneratorScreen(
-                viewModel = viewModel { OutfitGeneratorViewModel(container.wardrobeRepository, container.forecast()) },
+                viewModel = viewModel { OutfitGeneratorViewModel(container.wardrobeRepository, container.weather) },
                 onShowOutfits = { itemId, date -> navigator.navigate(OutfitResultsRoute(itemId, date.toEpochDay())) },
             )
         }
@@ -163,7 +160,7 @@ fun WardrobeApp(container: AppContainer) {
                         itemId = route.itemId,
                         date = LocalDate.ofEpochDay(route.epochDay),
                         repository = container.wardrobeRepository,
-                        forecast = container.forecast(),
+                        weather = container.weather,
                     )
                 },
                 onBack = navigator::goBack,

@@ -2,7 +2,7 @@
 
 Android app. Catalog of the clothes you own, outfit suggestions built from it.
 
-Status: milestone 2 in progress. Items are stored on the phone, starting with 17 sample items. Photo recognition runs on the phone. Weather is still a sample week.
+Status: milestone 2 in progress. Items are stored on the phone, starting with 17 sample items. Photo recognition runs on the phone. The forecast comes from Open-Meteo.
 
 | Wardrobe | Item | Add item | Outfit ideas |
 |---|---|---|---|
@@ -41,8 +41,8 @@ The build makes one APK per processor type, and the install tasks pick the devic
 | Storage | Room database on the phone. The first launch adds the 17 sample items. |
 | Photos | Taken with the phone's camera app or picked from the gallery, kept at full size in app storage. Sample items show drawings. |
 | Photo recognition | On the phone. A clothes model trained for the app (`tools/train_garment_model.py`) suggests the type. An ImageNet model splits its pants, shoes and outerwear classes. ML Kit's standard labels (Google Play services downloads that model on first use) suggest wool, and decide the type when the clothes model is unsure. They don't tell denim apart, so jeans need ImageNet's "jean" label and usually come out as trousers. When no model is sure of the type, the form leaves it for you to pick. The clothes model's boots class learned from 55 hand-sorted photos, so it finds some boots and calls some dark leather shoes boots. The color comes from the middle of the photo, so a plain background works best. `adb logcat -s MlKitRecognizer` shows the raw labels. |
-| Outfits | Built by rules from the wardrobe and the day's sample weather, up to three per item. No memory of past suggestions yet. |
-| Weather | Fixed sample week for Kaunas, starting today. Celsius only. |
+| Outfits | Built by rules from the wardrobe and the day's forecast, up to three per item. No memory of past suggestions yet. |
+| Weather | 7-day forecast for Kaunas from [Open-Meteo](https://open-meteo.com/) (free for non-commercial use, data CC BY 4.0). Fetched at app start and on the Outfits tab when the saved one is over an hour old. The last forecast stays on the phone for offline use. Without one, the Outfits screens ask to retry. Celsius only. |
 | Likes | Kept until the results screen closes. |
 | Theme | Kept until the app restarts. |
 

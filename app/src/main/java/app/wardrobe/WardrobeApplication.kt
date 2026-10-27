@@ -2,6 +2,7 @@ package app.wardrobe
 
 import android.app.Application
 import app.wardrobe.data.MlKitRecognizer
+import app.wardrobe.data.OpenMeteoWeather
 import app.wardrobe.data.PhotoStore
 import app.wardrobe.data.RoomWardrobeRepository
 import app.wardrobe.data.WardrobeDatabase
@@ -19,6 +20,7 @@ class WardrobeApplication : Application() {
             wardrobeRepository = RoomWardrobeRepository(WardrobeDatabase.build(this).items()),
             recognizer = recognizer,
             photoStore = PhotoStore(filesDir),
+            weather = OpenMeteoWeather(getSharedPreferences("weather", MODE_PRIVATE)),
         )
     }
 
@@ -28,9 +30,11 @@ class WardrobeApplication : Application() {
         val startedAt = System.currentTimeMillis()
         // Photos of deleted items and discarded adds. A delete can still be undone while the app runs, so
         // the files wait for the next start.
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        scope.launch {
             val used = container.wardrobeRepository.items.first().mapNotNull { it.photo }.toSet()
             container.photoStore.deleteUnused(used, olderThan = startedAt)
         }
+        scope.launch { container.weather.refresh() }
     }
 }

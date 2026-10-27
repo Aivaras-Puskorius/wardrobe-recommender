@@ -3,6 +3,8 @@ package app.wardrobe.feature.outfits
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.wardrobe.data.WardrobeRepository
+import app.wardrobe.data.Weather
+import app.wardrobe.data.WeatherState
 import app.wardrobe.domain.engine.EngineResult
 import app.wardrobe.domain.engine.OutfitEngine
 import app.wardrobe.domain.engine.Reason
@@ -11,15 +13,16 @@ import app.wardrobe.domain.engine.ScoredOutfit
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
-import app.wardrobe.domain.model.Forecast
 import app.wardrobe.domain.model.ItemColor
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 enum class Rating { LIKED, DISLIKED }
 
@@ -42,9 +45,13 @@ sealed interface OutfitResultsUiState {
     data object Loading : OutfitResultsUiState
     data object NotFound : OutfitResultsUiState
 
+    /** No forecast was saved and fetching one failed. */
+    data object NoForecast : OutfitResultsUiState
+
     /**
      * @param outfits empty when no outfit fits [anchor] on [day].
      * @param missing the category the wardrobe lacks when that is why [outfits] is empty, else null.
+     * @param offlineSince when the forecast was fetched, if fetching a newer one failed. Null otherwise.
      */
     data class Ready(
         val anchor: ClothingItem,
@@ -53,11 +60,13 @@ sealed interface OutfitResultsUiState {
         val day: DayForecast,
         val outfits: List<OutfitCard>,
         val missing: Category? = null,
+        val offlineSince: LocalDateTime? = null,
     ) : OutfitResultsUiState
 }
 
 /**
- * Outfits built around one item for one forecast day, by [OutfitEngine].
+ * Outfits built around one item for one forecast day, by [OutfitEngine]. A [date] the forecast doesn't have, such as
+ * yesterday after midnight, falls back to the forecast's first day.
  *
  * INFO(limit): ratings live only as long as this screen, and the engine gets no history of shown
  * outfits. Feedback storage (milestone 2, step 5) adds both.
@@ -66,15 +75,21 @@ class OutfitResultsViewModel(
     itemId: String,
     date: LocalDate,
     repository: WardrobeRepository,
-    forecast: Forecast,
+    private val weather: Weather,
 ) : ViewModel() {
 
     private val ratings = MutableStateFlow<Map<String, Rating>>(emptyMap())
-    private val day = forecast.days.firstOrNull { it.date == date } ?: forecast.days.first()
 
     val uiState: StateFlow<OutfitResultsUiState> =
-        combine(repository.items, ratings) { items, ratings ->
+        combine(repository.items, ratings, weather.state) { items, ratings, weatherState ->
+            val ready = when (weatherState) {
+                WeatherState.Loading -> return@combine OutfitResultsUiState.Loading
+                WeatherState.Unavailable -> return@combine OutfitResultsUiState.NoForecast
+                is WeatherState.Ready -> weatherState
+            }
+            val forecast = ready.forecast
             val anchor = items.firstOrNull { it.id == itemId } ?: return@combine OutfitResultsUiState.NotFound
+            val day = forecast.days.firstOrNull { it.date == date } ?: forecast.days.first()
             val result = OutfitEngine.suggest(items, anchor, day)
             OutfitResultsUiState.Ready(
                 anchor = anchor,
@@ -83,8 +98,14 @@ class OutfitResultsViewModel(
                 day = day,
                 outfits = (result as? EngineResult.Outfits)?.outfits?.let { outfitCards(it, ratings) }.orEmpty(),
                 missing = (result as? EngineResult.Missing)?.category,
+                offlineSince = ready.offlineSince,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OutfitResultsUiState.Loading)
+
+    /** Fetches the forecast again after it failed. */
+    fun retry() {
+        viewModelScope.launch { weather.refresh(force = true) }
+    }
 
     /** Sets [rating] on the outfit, or clears it if the outfit already has that rating. */
     fun rate(outfitId: String, rating: Rating) {

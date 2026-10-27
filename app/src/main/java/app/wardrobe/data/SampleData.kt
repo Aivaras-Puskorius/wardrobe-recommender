@@ -8,6 +8,7 @@ import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.ItemSuggestion
 import app.wardrobe.domain.model.Material
+import app.wardrobe.domain.model.Place
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Season.AUTUMN
 import app.wardrobe.domain.model.Season.SPRING
@@ -56,8 +57,15 @@ object SampleData {
         ItemSuggestion(Garment.COAT, ItemColor.NAVY),
     )
 
+    /** Places for the sample place search, with coordinates from Open-Meteo's search. Kaunas comes first. */
+    val places: List<Place> = listOf(
+        Place("Kaunas", "Kaunas, Lithuania", 54.90156, 23.90909),
+        Place("Vilnius", "Vilnius, Lithuania", 54.68916, 25.2798),
+        Place("Klaipėda", "Klaipėda County, Lithuania", 55.7068, 21.13912),
+    )
+
     /** A week of autumn weather in Kaunas, starting on [today], so the demo always shows current dates. */
-    fun forecast(today: LocalDate): Forecast {
+    fun forecast(today: LocalDate, location: String = "Kaunas"): Forecast {
         val days = listOf(
             Triple(7 to 14, WeatherCondition.PARTLY_CLOUDY, 10),
             Triple(5 to 11, WeatherCondition.RAIN, 80),
@@ -75,7 +83,7 @@ object SampleData {
                 precipitationChancePercent = precipitation,
             )
         }
-        return Forecast(location = "Kaunas", days = days)
+        return Forecast(location = location, days = days)
     }
 
     private fun item(
