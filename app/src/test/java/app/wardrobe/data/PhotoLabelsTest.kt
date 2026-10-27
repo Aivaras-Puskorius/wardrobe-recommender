@@ -57,12 +57,24 @@ class PhotoLabelsTest {
 
     @Test
     fun theOtherModelsSplitTheClassifiersBroadClasses() {
-        assertEquals(Garment.JEANS, classified(labels("pants" to 0.8f), standard = labels("Denim" to 0.78f)))
         assertEquals(Garment.JEANS, classified(labels("pants" to 0.8f), imageNet = labels("jean" to 0.6f)))
         assertEquals(Garment.COAT, classified(labels("outerwear" to 0.8f), imageNet = labels("trench coat" to 0.55f)))
         assertEquals(Garment.JACKET, classified(labels("outerwear" to 0.8f)))
         assertEquals(Garment.BOOTS, classified(labels("shoes" to 0.8f), imageNet = labels("cowboy boot" to 0.55f)))
         assertEquals(Garment.SNEAKERS, classified(labels("shoes" to 0.8f)))
+    }
+
+    /**
+     * Second S25 test (2026-10-27): the standard model gave Denim 75% to 80% on sweatpants and a navy shirt,
+     * Jeans 88% on the sweatpants, and Denim 60% at most on denim shorts. So neither tag counts.
+     */
+    @Test
+    fun theStandardModelsDenimAndJeansTagsAreIgnored() {
+        val sweatpants = labels("Jeans" to 0.88f, "Outerwear" to 0.87f, "Denim" to 0.8f)
+        assertEquals(Garment.TROUSERS, classified(labels("pants" to 0.99f), standard = sweatpants))
+        assertEquals(Garment.TROUSERS, classified(labels("pants" to 0.8f), standard = labels("Jeans" to 0.95f)))
+        assertEquals(null, material(standard = labels("Denim" to 0.78f)))
+        assertEquals(null, garment(standard = labels("Jeans" to 0.95f)))
     }
 
     /** Light grey sweatpants on the S25: the usual Jeans and Denim tags don't make them jeans. */
@@ -90,7 +102,7 @@ class PhotoLabelsTest {
 
     @Test
     fun labelsBelowTheThresholdAreIgnored() {
-        assertEquals(null, garment(standard = labels("Jeans" to 0.89f), imageNet = labels("jersey" to 0.49f)))
+        assertEquals(null, garment(standard = labels("Jacket" to 0.89f), imageNet = labels("jersey" to 0.49f)))
     }
 
     @Test
@@ -117,7 +129,6 @@ class PhotoLabelsTest {
 
     @Test
     fun theMostConfidentMaterialWins() {
-        assertEquals(Material.DENIM, material(standard = labels("Denim" to 0.78f)))
         assertEquals(Material.WOOL, material(standard = labels("Wool" to 0.76f, "Leather" to 0.7f)))
         assertEquals(null, material(standard = labels("Wool" to 0.69f)))
         assertEquals(Material.WOOL, material(imageNet = labels("wool" to 0.5f)))

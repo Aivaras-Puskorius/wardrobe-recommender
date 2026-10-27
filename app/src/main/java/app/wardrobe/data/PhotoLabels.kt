@@ -8,7 +8,9 @@ data class PhotoLabel(val text: String, val confidence: Float)
 
 // Turns the labels of ML Kit's standard model and of the ImageNet model into app values.
 // Label texts are matched exactly, because ImageNet has both "cardigan" (the sweater) and "Cardigan" (the dog).
-// The thresholds come from 12 photos of the user's own clothes on the S25 (2026-10-22).
+// The thresholds come from 12 photos of the user's own clothes on the S25 (2026-10-22). A second test with 16 photos
+// (2026-10-27) showed the standard model's Denim tag at 75% to 80% on sweatpants and a navy shirt, Jeans at 88% on the
+// sweatpants, and Denim at 60% at most on denim shorts. Neither tag tells denim apart, so neither is used.
 // INFO(limit): 12 photos is a small sample. Retune when more photos show a pattern.
 
 /**
@@ -20,7 +22,10 @@ private const val STANDARD_GARMENT_MIN = 0.9f
 /** "Shoe" scored 67% and more only on footwear, and "Outerwear" appeared only on outerwear. */
 private const val STANDARD_GENERIC_MIN = 0.6f
 
-/** Wool, Denim and Leather were right at 70% and more, and wrong below. */
+/**
+ * In the first test, Wool and Leather were right at 70% and more, and wrong below. In the second, Leather scored 79%
+ * on a nylon jacket and 57% on faux-leather boots.
+ */
 private const val STANDARD_MATERIAL_MIN = 0.7f
 
 /** The ImageNet model's right answers scored 50% and more. */
@@ -28,7 +33,6 @@ private const val IMAGENET_MIN = 0.5f
 
 private val standardGarments = mapOf(
     "Jersey" to Garment.T_SHIRT,
-    "Jeans" to Garment.JEANS,
     "Shorts" to Garment.SHORTS,
     "Sneakers" to Garment.SNEAKERS,
     "Jacket" to Garment.JACKET,
@@ -58,7 +62,7 @@ private val imageNetGarments = mapOf(
     "suit" to Garment.JACKET,
 )
 
-private val standardMaterials = mapOf("Denim" to Material.DENIM, "Wool" to Material.WOOL, "Leather" to Material.LEATHER)
+private val standardMaterials = mapOf("Wool" to Material.WOOL, "Leather" to Material.LEATHER)
 private val imageNetMaterials = mapOf("wool" to Material.WOOL)
 
 /** The garment named by the most confident label above its threshold, or null if none names one. */
@@ -89,7 +93,7 @@ private fun <T> mostConfident(
 private const val CLASSIFIER_MIN = 0.6f
 
 /**
- * The garment for a photo. The clothes classifier decides, and the other two models split its broad classes:
+ * The garment for a photo. The clothes classifier decides, and the ImageNet model splits its broad classes:
  * pants into jeans or trousers, other shoes into sneakers or boots, outerwear into jacket or coat. When the classifier
  * is unsure, the other models decide alone. When it is sure the photo shows something else, such as a dress or
  * a hat, nothing is suggested.
@@ -99,7 +103,6 @@ private const val CLASSIFIER_MIN = 0.6f
 fun garmentFor(classifier: List<PhotoLabel>, standard: List<PhotoLabel>, imageNet: List<PhotoLabel>): Garment? {
     val top = classifier.maxByOrNull { it.confidence }
     if (top == null || top.confidence < CLASSIFIER_MIN) return garmentFromLabels(standard, imageNet)
-    fun standardSays(vararg texts: String, min: Float) = standard.any { it.text in texts && it.confidence >= min }
     fun imageNetSays(vararg texts: String) = imageNet.any { it.text in texts && it.confidence >= IMAGENET_MIN }
     return when (top.text) {
         "t_shirt" -> Garment.T_SHIRT
@@ -107,12 +110,7 @@ fun garmentFor(classifier: List<PhotoLabel>, standard: List<PhotoLabel>, imageNe
         "sweater" -> Garment.SWEATER
         "shorts" -> Garment.SHORTS
         "skirt" -> Garment.SKIRT
-        "pants" -> {
-            val denim = standardSays("Denim", min = STANDARD_MATERIAL_MIN) ||
-                standardSays("Jeans", min = STANDARD_GARMENT_MIN) ||
-                imageNetSays("jean")
-            if (denim) Garment.JEANS else Garment.TROUSERS
-        }
+        "pants" -> if (imageNetSays("jean")) Garment.JEANS else Garment.TROUSERS
         "boots" -> Garment.BOOTS
         "shoes" -> if (imageNetSays("cowboy boot")) Garment.BOOTS else Garment.SNEAKERS
         "outerwear" -> if (imageNetSays("trench coat", "fur coat", "lab coat")) Garment.COAT else Garment.JACKET
