@@ -25,5 +25,9 @@ data class EditItemRoute(val itemId: String) : NavKey
 @Serializable
 data class OutfitResultsRoute(val itemId: String, val epochDay: Long) : NavKey
 
+/** The place search for the forecast, from Settings. */
+@Serializable
+data object LocationRoute : NavKey
+
 /** Bottom bar destinations in display order. Each one keeps its own back stack. */
 val TopLevelRoutes: List<NavKey> = listOf(WardrobeRoute, OutfitsRoute, SettingsRoute)

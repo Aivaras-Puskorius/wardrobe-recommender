@@ -80,6 +80,13 @@
     <string name="day_today">Today</string>
     <string name="day_tomorrow">Tomorrow</string>
     <string name="weather_place_day">%1$s · %2$s</string>
+    <string name="location_title">Location</string>
+    <string name="location_search_label">City</string>
+    <string name="location_current">The forecast is for %1$s.</string>
+    <string name="location_hint">Type at least two letters of a city name.</string>
+    <string name="location_no_matches">No places match “%1$s”.</string>
+    <string name="location_failed">The search failed. Check the connection and try again.</string>
+    <string name="location_chosen">Chosen</string>
     <string name="weather_offline">Offline. Forecast from %1$s</string>
     <string name="weather_credit">Weather data by Open-Meteo.com</string>
     <string name="weather_unavailable_title">No forecast</string>
@@ -137,6 +144,7 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="settings_weather">Weather</string>
     <string name="settings_coming_later">Coming later</string>
     <string name="settings_taste_profile">Taste profile</string>
     <string name="settings_taste_profile_body">What your likes and dislikes teach the app about your style.</string>

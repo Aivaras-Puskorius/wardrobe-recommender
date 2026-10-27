@@ -54,6 +54,8 @@ import app.wardrobe.feature.outfits.OutfitGeneratorScreen
 import app.wardrobe.feature.outfits.OutfitGeneratorViewModel
 import app.wardrobe.feature.outfits.OutfitResultsScreen
 import app.wardrobe.feature.outfits.OutfitResultsViewModel
+import app.wardrobe.feature.settings.LocationScreen
+import app.wardrobe.feature.settings.LocationViewModel
 import app.wardrobe.feature.settings.SettingsScreen
 import app.wardrobe.feature.wardrobe.WardrobeScreen
 import app.wardrobe.feature.wardrobe.WardrobeViewModel
@@ -168,11 +170,17 @@ fun WardrobeApp(container: AppContainer) {
         }
         entry<SettingsRoute> {
             val themeMode by container.themeMode.collectAsStateWithLifecycle()
+            val place by container.weather.place.collectAsStateWithLifecycle()
             SettingsScreen(
                 themeMode = themeMode,
                 onThemeModeChange = { container.themeMode.value = it },
+                place = place,
+                onOpenLocation = { navigator.navigate(LocationRoute) },
                 versionName = versionName,
             )
+        }
+        entry<LocationRoute> {
+            LocationScreen(viewModel = viewModel { LocationViewModel(container.weather) }, onBack = navigator::goBack)
         }
     }
 

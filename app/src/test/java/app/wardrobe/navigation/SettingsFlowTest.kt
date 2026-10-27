@@ -1,9 +1,12 @@
 package app.wardrobe.navigation
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import app.wardrobe.AppContainer
 import app.wardrobe.ui.theme.ThemeMode
 import app.wardrobe.ui.theme.WardrobeTheme
@@ -33,5 +36,22 @@ class SettingsFlowTest {
 
         composeRule.onNodeWithText("Dark").assertIsSelected()
         assertEquals(ThemeMode.DARK, container.themeMode.value)
+    }
+
+    @Test
+    fun aChosenPlaceIsWhereTheOutfitsForecastIsFor() {
+        composeRule.setContent { WardrobeTheme { WardrobeApp(AppContainer()) } }
+        composeRule.onNodeWithText("Settings").performClick()
+        composeRule.onNodeWithText("Location").performClick()
+        composeRule.onNodeWithText("City").performTextInput("Vil")
+        // The search waits for typing to pause.
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("Vilnius, Lithuania").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Vilnius").performClick()
+
+        composeRule.onNodeWithText("Vilnius").assertIsDisplayed()
+        composeRule.onNodeWithText("Outfits").performClick()
+        composeRule.onNodeWithText("Vilnius · Today").assertIsDisplayed()
     }
 }

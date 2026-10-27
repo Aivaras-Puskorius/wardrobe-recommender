@@ -1,6 +1,7 @@
 package app.wardrobe.feature.settings
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,14 +32,17 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.wardrobe.R
+import app.wardrobe.domain.model.Place
 import app.wardrobe.ui.theme.ThemeMode
 
-/** The Settings tab: theme choice, features that come later and app information. */
+/** The Settings tab: theme choice, the forecast's place, features that come later and app information. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
+    place: Place,
+    onOpenLocation: () -> Unit,
     versionName: String,
     modifier: Modifier = Modifier,
 ) {
@@ -77,6 +81,16 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+            Section(stringResource(R.string.settings_weather)) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.location_title)) },
+                    supportingContent = { Text(place.name) },
+                    leadingContent = { Icon(painterResource(R.drawable.ic_location_on), contentDescription = null) },
+                    trailingContent = { Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null) },
+                    modifier = Modifier.clickable(onClick = onOpenLocation),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                )
             }
             Section(stringResource(R.string.settings_coming_later)) {
                 InfoRow(

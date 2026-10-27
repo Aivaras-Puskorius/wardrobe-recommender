@@ -32,7 +32,7 @@ The build makes one APK per processor type, and the install tasks pick the devic
 | Item | Edit. Delete, with Undo on the snackbar. Style it: outfit ideas for this item, today. |
 | Add item | Take a photo or Choose from gallery, then confirm the suggested type and color, set material, fit, warmth and seasons, Save. |
 | Outfits tab | Pick a day and an item, Show outfits. Like or dislike each outfit. |
-| Settings tab | Theme: System, Light, Dark. |
+| Settings tab | Theme: System, Light, Dark. Location: search for the forecast's city with Open-Meteo's place search. |
 
 ## Prototype limits
 
@@ -42,7 +42,7 @@ The build makes one APK per processor type, and the install tasks pick the devic
 | Photos | Taken with the phone's camera app or picked from the gallery, kept at full size in app storage. Sample items show drawings. |
 | Photo recognition | On the phone. A clothes model trained for the app (`tools/train_garment_model.py`) suggests the type. An ImageNet model splits its pants, shoes and outerwear classes. ML Kit's standard labels (Google Play services downloads that model on first use) suggest wool, and decide the type when the clothes model is unsure. They don't tell denim apart, so jeans need ImageNet's "jean" label and usually come out as trousers. When no model is sure of the type, the form leaves it for you to pick. The clothes model's boots class learned from 55 hand-sorted photos, so it finds some boots and calls some dark leather shoes boots. The color comes from the middle of the photo, so a plain background works best. `adb logcat -s MlKitRecognizer` shows the raw labels. |
 | Outfits | Built by rules from the wardrobe and the day's forecast, up to three per item. No memory of past suggestions yet. |
-| Weather | 7-day forecast for Kaunas from [Open-Meteo](https://open-meteo.com/) (free for non-commercial use, data CC BY 4.0). Fetched at app start and on the Outfits tab when the saved one is over an hour old. The last forecast stays on the phone for offline use. Without one, the Outfits screens ask to retry. Celsius only. |
+| Weather | 7-day forecast for the chosen city, Kaunas by default, from [Open-Meteo](https://open-meteo.com/) (free for non-commercial use, data CC BY 4.0). Fetched at app start and on the Outfits tab when the saved one is over an hour old. The last forecast stays on the phone for offline use. Without one, the Outfits screens ask to retry. Celsius only. |
 | Likes | Kept until the results screen closes. |
 | Theme | Kept until the app restarts. |
 
@@ -70,7 +70,7 @@ app/src/main/java/app/wardrobe/
   feature/wardrobe/       grid and filters
   feature/item/           detail, add, edit
   feature/outfits/        generator, results, outfit titles and reason sentences
-  feature/settings/       settings
+  feature/settings/       settings, location search
   navigation/             routes, back stacks per tab, app shell
   ui/                     theme, shared components, labels
 tools/
@@ -78,7 +78,7 @@ tools/
   install_icon.py         imports a Material Symbols icon into res/drawable
 ```
 
-Screens with data: a ViewModel exposing one `StateFlow` of UI state, and a stateless `...Content` composable that the screenshot tests render. Settings reads the theme from `AppContainer`.
+Screens with data: a ViewModel exposing one `StateFlow` of UI state, and a stateless `...Content` composable that the screenshot tests render. Settings reads the theme and the forecast's place from `AppContainer`.
 
 ## Stack
 

@@ -1,6 +1,7 @@
 package app.wardrobe.feature.settings
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import app.wardrobe.data.SampleData
 import app.wardrobe.testing.captureInTheme
 import app.wardrobe.ui.theme.ThemeMode
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
@@ -19,11 +20,11 @@ class SettingsScreenshotTest {
 
     @Test
     fun systemTheme() = composeRule.captureInTheme {
-        SettingsScreen(themeMode = ThemeMode.SYSTEM, onThemeModeChange = {}, versionName = "0.1.0")
+        SettingsScreen(themeMode = ThemeMode.SYSTEM, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, versionName = "0.1.0")
     }
 
     @Test
     fun darkTheme() = composeRule.captureInTheme(darkTheme = true) {
-        SettingsScreen(themeMode = ThemeMode.DARK, onThemeModeChange = {}, versionName = "0.1.0")
+        SettingsScreen(themeMode = ThemeMode.DARK, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, versionName = "0.1.0")
     }
 }
