@@ -4,6 +4,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
 import app.wardrobe.data.SampleWeather
+import app.wardrobe.domain.model.Rating
 import app.wardrobe.testing.captureInTheme
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import java.time.LocalDate

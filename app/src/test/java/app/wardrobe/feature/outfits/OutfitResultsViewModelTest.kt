@@ -9,6 +9,7 @@ import app.wardrobe.domain.engine.ScoreTerm
 import app.wardrobe.domain.engine.ScoredOutfit
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Rating
 import app.wardrobe.testing.FakeWeather
 import java.time.Instant
 import java.time.LocalDate

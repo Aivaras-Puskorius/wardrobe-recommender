@@ -44,6 +44,7 @@ import app.wardrobe.R
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
+import app.wardrobe.domain.model.Rating
 import app.wardrobe.ui.components.EmptyState
 import app.wardrobe.ui.components.GarmentBackdrop
 import app.wardrobe.ui.components.ItemPicture

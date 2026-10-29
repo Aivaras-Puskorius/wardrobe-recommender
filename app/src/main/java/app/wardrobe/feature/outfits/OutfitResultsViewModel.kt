@@ -14,6 +14,7 @@ import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Rating
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,8 +24,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-enum class Rating { LIKED, DISLIKED }
 
 /** How an outfit's colors work together. It names the outfit. */
 enum class ColorStory { ALL_NEUTRALS, ACCENT, TONAL, NEIGHBORING, OPPOSITE, MIXED }
