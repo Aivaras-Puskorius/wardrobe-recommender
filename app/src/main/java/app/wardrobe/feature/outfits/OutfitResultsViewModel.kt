@@ -69,8 +69,8 @@ sealed interface OutfitResultsUiState {
  * Outfits built around one item for one forecast day, by [OutfitEngine]. A [date] the forecast doesn't have, such as
  * yesterday after midnight, falls back to the forecast's first day.
  *
- * INFO(limit): ratings live only as long as this screen, and the engine gets no history of shown
- * outfits. Feedback storage (milestone 2, step 5) adds both.
+ * INFO(limit): ratings are saved but don't change the suggestions yet, and the engine gets no history of shown
+ * outfits. Milestone 3's taste learning will use the ratings.
  */
 class OutfitResultsViewModel(
     itemId: String,
