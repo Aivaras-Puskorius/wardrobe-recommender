@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -56,7 +57,13 @@ import app.wardrobe.ui.pluralLabel
 @Composable
 fun OutfitResultsScreen(viewModel: OutfitResultsViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    OutfitResultsContent(state = state, onBack = onBack, onRate = viewModel::rate, onRetry = viewModel::retry)
+    OutfitResultsContent(
+        state = state,
+        onBack = onBack,
+        onRate = viewModel::rate,
+        onShowMore = viewModel::showMore,
+        onRetry = viewModel::retry,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +72,7 @@ fun OutfitResultsContent(
     state: OutfitResultsUiState,
     onBack: () -> Unit,
     onRate: (outfitId: String, Rating) -> Unit,
+    onShowMore: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -122,6 +130,13 @@ fun OutfitResultsContent(
                     item { Header(state) }
                     items(state.outfits, key = { it.id }) { outfit ->
                         OutfitCardView(outfit, anchorId = state.anchor.id, day = state.day, onRate = onRate)
+                    }
+                    if (state.canShowMore) {
+                        item {
+                            OutlinedButton(onClick = onShowMore, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.results_more))
+                            }
+                        }
                     }
                 }
             }

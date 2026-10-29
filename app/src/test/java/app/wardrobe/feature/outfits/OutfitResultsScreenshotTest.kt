@@ -48,22 +48,35 @@ class OutfitResultsScreenshotTest {
 
     @Test
     fun outfits() = composeRule.captureInTheme {
-        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> }, onRetry = {})
+        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> }, onShowMore = {}, onRetry = {})
     }
 
     @Test
     fun outfitsDark() = composeRule.captureInTheme(darkTheme = true) {
-        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> }, onRetry = {})
+        OutfitResultsContent(state("dark-jeans"), onBack = {}, onRate = { _, _ -> }, onShowMore = {}, onRetry = {})
     }
 
     @Test
     fun rated() = composeRule.captureInTheme {
         val state = state("dark-jeans", likeFirst = true)
-        OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onRetry = {})
+        OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onShowMore = {}, onRetry = {})
+    }
+
+    /** The More outfits button closes the list. One outfit here, so the button fits on the screen. */
+    @Test
+    fun moreOutfitsButton() = composeRule.captureInTheme {
+        val ready = state("dark-jeans") as OutfitResultsUiState.Ready
+        OutfitResultsContent(
+            ready.copy(outfits = ready.outfits.take(1)),
+            onBack = {},
+            onRate = { _, _ -> },
+            onShowMore = {},
+            onRetry = {},
+        )
     }
 
     @Test
     fun noOutfitsForThisItem() = composeRule.captureInTheme {
-        OutfitResultsContent(state("khaki-shorts"), onBack = {}, onRate = { _, _ -> }, onRetry = {})
+        OutfitResultsContent(state("khaki-shorts"), onBack = {}, onRate = { _, _ -> }, onShowMore = {}, onRetry = {})
     }
 }

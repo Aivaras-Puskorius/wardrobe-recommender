@@ -20,11 +20,13 @@ import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Rating
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** How an outfit's colors work together. It names the outfit. */
@@ -53,6 +55,7 @@ sealed interface OutfitResultsUiState {
      * @param outfits empty when no outfit fits [anchor] on [day].
      * @param missing the category the wardrobe lacks when that is why [outfits] is empty, else null.
      * @param offlineSince when the forecast was fetched, if fetching a newer one failed. Null otherwise.
+     * @param canShowMore the engine has more outfits than [outfits] shows.
      */
     data class Ready(
         val anchor: ClothingItem,
@@ -62,6 +65,7 @@ sealed interface OutfitResultsUiState {
         val outfits: List<OutfitCard>,
         val missing: Category? = null,
         val offlineSince: LocalDateTime? = null,
+        val canShowMore: Boolean = false,
     ) : OutfitResultsUiState
 }
 
@@ -80,8 +84,11 @@ class OutfitResultsViewModel(
     private val ratings: RatingRepository,
 ) : ViewModel() {
 
+    /** How many outfits to show. More outfits adds [MORE_OUTFITS]. */
+    private val shown = MutableStateFlow(MORE_OUTFITS)
+
     val uiState: StateFlow<OutfitResultsUiState> =
-        combine(repository.items, ratings.ratings, weather.state) { items, rated, weatherState ->
+        combine(repository.items, ratings.ratings, weather.state, shown) { items, rated, weatherState, count ->
             val ready = when (weatherState) {
                 WeatherState.Loading -> return@combine OutfitResultsUiState.Loading
                 WeatherState.Unavailable -> return@combine OutfitResultsUiState.NoForecast
@@ -90,19 +97,25 @@ class OutfitResultsViewModel(
             val forecast = ready.forecast
             val anchor = items.firstOrNull { it.id == itemId } ?: return@combine OutfitResultsUiState.NotFound
             val day = forecast.days.firstOrNull { it.date == date } ?: forecast.days.first()
-            val result = OutfitEngine.suggest(items, anchor, day)
+            // One more than shown, to know whether More outfits has anything to add.
+            val result = OutfitEngine.suggest(items, anchor, day, limit = count + 1)
+            val outfits = (result as? EngineResult.Outfits)?.outfits.orEmpty()
             OutfitResultsUiState.Ready(
                 anchor = anchor,
                 location = forecast.location,
                 today = forecast.days.first().date,
                 day = day,
-                outfits = (result as? EngineResult.Outfits)?.outfits
-                    ?.let { outfits -> outfitCards(outfits, rated.associate { outfitKey(it.itemIds) to it.rating }) }
-                    .orEmpty(),
+                outfits = outfitCards(outfits.take(count), rated.associate { outfitKey(it.itemIds) to it.rating }),
                 missing = (result as? EngineResult.Missing)?.category,
                 offlineSince = ready.offlineSince,
+                canShowMore = outfits.size > count,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OutfitResultsUiState.Loading)
+
+    /** Adds the next outfits after the ones shown. */
+    fun showMore() {
+        shown.update { it + MORE_OUTFITS }
+    }
 
     /** Fetches the forecast again after it failed. */
     fun retry() {
@@ -123,6 +136,11 @@ class OutfitResultsViewModel(
             val id = outfitKey(outfit.items.map { it.id }.toSet())
             OutfitCard(id = id, title = title, items = outfit.items, why = outfit.why, rating = ratings[id])
         }
+
+    private companion object {
+        /** Outfits shown at first and added by each More outfits. */
+        const val MORE_OUTFITS = 3
+    }
 }
 
 /** Names each outfit by its color story. A name used by an earlier outfit gets a number, from 2. */

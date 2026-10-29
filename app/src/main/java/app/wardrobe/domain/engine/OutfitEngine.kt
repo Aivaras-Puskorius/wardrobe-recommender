@@ -57,7 +57,8 @@ sealed interface EngineResult {
 object OutfitEngine {
 
     /**
-     * Outfits around [anchor] for [day]. [recent] holds the item ids of outfits shown in the last 7 days.
+     * Outfits around [anchor] for [day], at most [limit], best first. [recent] holds the item ids of outfits shown in
+     * the last 7 days. A higher [limit] keeps the order and adds the next outfits after the first ones.
      *
      * INFO(limit): tries every combination, about 360 for the sample wardrobe. At a few hundred items,
      * filter each slot by the hard rules before combining.
@@ -67,6 +68,7 @@ object OutfitEngine {
         anchor: ClothingItem,
         day: DayForecast,
         recent: List<Set<String>> = emptyList(),
+        limit: Int = DEFAULT_LIMIT,
     ): EngineResult {
         val items = (wardrobe + anchor).distinctBy { it.id }
         for (category in listOf(Category.TOP, Category.BOTTOM, Category.FOOTWEAR)) {
@@ -108,7 +110,7 @@ object OutfitEngine {
             if (picked.all { (others - it.items.map { item -> item.id }.toSet()).size >= MIN_DIFFERENT_ITEMS }) {
                 picked += outfit
             }
-            if (picked.size == MAX_OUTFITS) break
+            if (picked.size == limit) break
         }
         return EngineResult.Outfits(picked)
     }
@@ -208,7 +210,7 @@ object OutfitEngine {
         return a.size - b.size
     }
 
-    private const val MAX_OUTFITS = 3
+    private const val DEFAULT_LIMIT = 3
     private const val MIN_DIFFERENT_ITEMS = 2
     private const val MAX_ACCENTS = 2
     private const val WET_CHANCE_PERCENT = 50

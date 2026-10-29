@@ -117,7 +117,7 @@ class LargeFontScreenshotTest {
                 InMemoryRatingRepository(),
             ).uiState.first { it is OutfitResultsUiState.Ready }
         }
-        composeRule.captureInTheme(fontScale = LARGE) { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onRetry = {}) }
+        composeRule.captureInTheme(fontScale = LARGE) { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onShowMore = {}, onRetry = {}) }
     }
 
     @Test

@@ -51,7 +51,8 @@ class OutfitEngineTest {
         anchor: String,
         day: DayForecast,
         recent: List<Set<String>> = emptyList(),
-    ) = OutfitEngine.suggest(wardrobe, wardrobe.first { it.id == anchor }, day, recent)
+        limit: Int = 3,
+    ) = OutfitEngine.suggest(wardrobe, wardrobe.first { it.id == anchor }, day, recent, limit)
 
     private fun EngineResult.outfits() = (this as EngineResult.Outfits).outfits
 
@@ -401,6 +402,20 @@ class OutfitEngineTest {
         val outfit = suggest(wardrobe + item("camel-coat"), "dark-jeans", coolDay).outfits().single()
         assertEquals(listOf("olive-overshirt", "dark-jeans", "black-sneakers", "camel-coat"), outfit.items.map { it.id })
         assertEquals(6, outfit.score)
+    }
+
+    /** "More outfits" asks for more than three, and the ranking goes on where it stopped (user, 2026-10-29). */
+    @Test
+    fun t28AHigherLimitContinuesTheRanking() {
+        val three = suggest(sample, "dark-jeans", coolDay).itemIds()
+        val six = suggest(sample, "dark-jeans", coolDay, limit = 6).itemIds()
+        assertEquals(6, six.size)
+        assertEquals(three, six.take(3))
+        six.forEachIndexed { index, later ->
+            six.take(index).forEach { earlier ->
+                assertTrue("$later vs $earlier", (later.toSet() - "dark-jeans" - earlier.toSet()).size >= 2)
+            }
+        }
     }
 
     /** Light drizzle counts as cloudy, but wool stays under a jacket (user, 2026-10-27). */

@@ -101,6 +101,7 @@
 
     <string name="results_title">Outfit ideas</string>
     <string name="results_built_around">Built around</string>
+    <string name="results_more">More outfits</string>
     <string name="results_why">Why it works</string>
     <string name="results_rate_prompt">How do you like it?</string>
     <string name="results_like">Like this outfit</string>

@@ -46,7 +46,7 @@ class AccessibilityTest {
                 InMemoryRatingRepository(),
             ).uiState.first { it is OutfitResultsUiState.Ready }
         }
-        composeRule.setContent { WardrobeTheme { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onRetry = {}) } }
+        composeRule.setContent { WardrobeTheme { OutfitResultsContent(state, onBack = {}, onRate = { _, _ -> }, onShowMore = {}, onRetry = {}) } }
         composeRule.onNodeWithText("All neutrals").assert(isHeading())
     }
 

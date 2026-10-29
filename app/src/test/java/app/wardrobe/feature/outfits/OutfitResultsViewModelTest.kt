@@ -23,6 +23,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -147,6 +148,28 @@ class OutfitResultsViewModelTest {
 
         viewModel.rate(id, Rating.DISLIKED)
         assertNull(viewModel.ready().outfits.first { it.id == id }.rating)
+    }
+
+    @Test
+    fun moreOutfitsAddsTheNextThree() = runTest {
+        val viewModel = viewModel("dark-jeans")
+        val first = viewModel.ready()
+        assertEquals(3, first.outfits.size)
+        assertTrue(first.canShowMore)
+
+        viewModel.showMore()
+        val more = viewModel.ready().outfits
+        assertEquals(6, more.size)
+        assertEquals(first.outfits.map { it.id }, more.take(3).map { it.id })
+    }
+
+    @Test
+    fun theButtonGoesAwayWhenNoOutfitIsLeft() = runTest {
+        val kept = setOf("black-tee", "dark-jeans", "black-sneakers", "camel-coat")
+        SampleData.items.filterNot { it.id in kept }.forEach { repository.delete(it.id) }
+        val state = viewModel("dark-jeans").ready()
+        assertEquals(1, state.outfits.size)
+        assertFalse(state.canShowMore)
     }
 
     @Test
