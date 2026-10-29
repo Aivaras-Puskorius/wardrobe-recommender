@@ -4,6 +4,7 @@ import android.app.Application
 import app.wardrobe.data.MlKitRecognizer
 import app.wardrobe.data.OpenMeteoWeather
 import app.wardrobe.data.PhotoStore
+import app.wardrobe.data.RoomRatingRepository
 import app.wardrobe.data.RoomWardrobeRepository
 import app.wardrobe.data.WardrobeDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -19,11 +20,13 @@ class WardrobeApplication : Application() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val container: AppContainer by lazy {
+        val database = WardrobeDatabase.build(this)
         AppContainer(
-            wardrobeRepository = RoomWardrobeRepository(WardrobeDatabase.build(this).items()),
+            wardrobeRepository = RoomWardrobeRepository(database.items()),
             recognizer = recognizer,
             photoStore = PhotoStore(filesDir),
             weather = OpenMeteoWeather(getSharedPreferences("weather", MODE_PRIVATE), scope),
+            ratingRepository = RoomRatingRepository(database.ratings()),
         )
     }
 

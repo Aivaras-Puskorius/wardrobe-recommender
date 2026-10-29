@@ -1,6 +1,7 @@
 package app.wardrobe.feature.outfits
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import app.wardrobe.data.InMemoryRatingRepository
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
 import app.wardrobe.data.SampleWeather
@@ -31,6 +32,7 @@ class OutfitResultsScreenshotTest {
         date = today.plusDays(1),
         repository = InMemoryWardrobeRepository(SampleData.items),
         weather = SampleWeather { today },
+        ratings = InMemoryRatingRepository(),
     )
 
     private fun OutfitResultsViewModel.ready(): OutfitResultsUiState.Ready =

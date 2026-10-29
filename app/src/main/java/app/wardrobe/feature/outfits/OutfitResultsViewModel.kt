@@ -2,9 +2,12 @@ package app.wardrobe.feature.outfits
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wardrobe.data.RatingRepository
 import app.wardrobe.data.WardrobeRepository
 import app.wardrobe.data.Weather
 import app.wardrobe.data.WeatherState
+import app.wardrobe.data.itemIdsOf
+import app.wardrobe.data.outfitKey
 import app.wardrobe.domain.engine.EngineResult
 import app.wardrobe.domain.engine.OutfitEngine
 import app.wardrobe.domain.engine.Reason
@@ -17,12 +20,11 @@ import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Rating
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** How an outfit's colors work together. It names the outfit. */
@@ -75,12 +77,11 @@ class OutfitResultsViewModel(
     date: LocalDate,
     repository: WardrobeRepository,
     private val weather: Weather,
+    private val ratings: RatingRepository,
 ) : ViewModel() {
 
-    private val ratings = MutableStateFlow<Map<String, Rating>>(emptyMap())
-
     val uiState: StateFlow<OutfitResultsUiState> =
-        combine(repository.items, ratings, weather.state) { items, ratings, weatherState ->
+        combine(repository.items, ratings.ratings, weather.state) { items, rated, weatherState ->
             val ready = when (weatherState) {
                 WeatherState.Loading -> return@combine OutfitResultsUiState.Loading
                 WeatherState.Unavailable -> return@combine OutfitResultsUiState.NoForecast
@@ -95,7 +96,9 @@ class OutfitResultsViewModel(
                 location = forecast.location,
                 today = forecast.days.first().date,
                 day = day,
-                outfits = (result as? EngineResult.Outfits)?.outfits?.let { outfitCards(it, ratings) }.orEmpty(),
+                outfits = (result as? EngineResult.Outfits)?.outfits
+                    ?.let { outfits -> outfitCards(outfits, rated.associate { outfitKey(it.itemIds) to it.rating }) }
+                    .orEmpty(),
                 missing = (result as? EngineResult.Missing)?.category,
                 offlineSince = ready.offlineSince,
             )
@@ -108,14 +111,16 @@ class OutfitResultsViewModel(
 
     /** Sets [rating] on the outfit, or clears it if the outfit already has that rating. */
     fun rate(outfitId: String, rating: Rating) {
-        ratings.update { current ->
-            if (current[outfitId] == rating) current - outfitId else current + (outfitId to rating)
+        val itemIds = itemIdsOf(outfitId)
+        viewModelScope.launch {
+            val current = ratings.ratings.first().firstOrNull { it.itemIds == itemIds }?.rating
+            if (current == rating) ratings.clear(itemIds) else ratings.rate(itemIds, rating)
         }
     }
 
     private fun outfitCards(outfits: List<ScoredOutfit>, ratings: Map<String, Rating>): List<OutfitCard> =
         outfits.zip(outfitTitles(outfits)) { outfit, title ->
-            val id = outfit.items.map { it.id }.sorted().joinToString("+")
+            val id = outfitKey(outfit.items.map { it.id }.toSet())
             OutfitCard(id = id, title = title, items = outfit.items, why = outfit.why, rating = ratings[id])
         }
 }

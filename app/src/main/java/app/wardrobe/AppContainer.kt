@@ -1,7 +1,9 @@
 package app.wardrobe
 
+import app.wardrobe.data.InMemoryRatingRepository
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.PhotoStore
+import app.wardrobe.data.RatingRepository
 import app.wardrobe.data.Recognizer
 import app.wardrobe.data.SampleData
 import app.wardrobe.data.SampleRecognizer
@@ -21,6 +23,7 @@ class AppContainer(
     val recognizer: Recognizer = SampleRecognizer(SampleData.photoSuggestions),
     val photoStore: PhotoStore = PhotoStore(File(System.getProperty("java.io.tmpdir"), "wardrobe-test-files")),
     val weather: Weather = SampleWeather(),
+    val ratingRepository: RatingRepository = InMemoryRatingRepository(),
 ) {
     /**
      * The theme picked in Settings.

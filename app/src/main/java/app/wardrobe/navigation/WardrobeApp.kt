@@ -163,6 +163,7 @@ fun WardrobeApp(container: AppContainer) {
                         date = LocalDate.ofEpochDay(route.epochDay),
                         repository = container.wardrobeRepository,
                         weather = container.weather,
+                        ratings = container.ratingRepository,
                     )
                 },
                 onBack = navigator::goBack,

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
@@ -67,6 +68,17 @@ class OutfitsFlowTest {
 
         composeRule.onNodeWithText("No outfit ideas yet").assertIsDisplayed()
         composeRule.onNodeWithText("Nothing in your wardrobe goes with this item", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun aLikeIsStillThereAfterLeavingTheResults() {
+        clickInLazyGrid("Dark jeans")
+        composeRule.onNodeWithText("Style it").performClick()
+        composeRule.onAllNodesWithContentDescription("Like this outfit").onFirst().performClick()
+        composeRule.onNodeWithContentDescription("Back").performClick()
+
+        composeRule.onNodeWithText("Style it").performClick()
+        composeRule.onAllNodesWithContentDescription("Like this outfit").onFirst().assertIsOn()
     }
 
     /** Lazy grids compose only visible items, so scroll the grid to the item before clicking it. */

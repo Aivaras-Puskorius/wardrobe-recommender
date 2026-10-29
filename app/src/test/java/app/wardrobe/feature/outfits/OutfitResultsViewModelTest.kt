@@ -1,5 +1,6 @@
 package app.wardrobe.feature.outfits
 
+import app.wardrobe.data.InMemoryRatingRepository
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
 import app.wardrobe.data.SampleWeather
@@ -32,6 +33,7 @@ class OutfitResultsViewModelTest {
 
     private val today = LocalDate.of(2026, 10, 8)
     private val weather = SampleWeather { today }
+    private val ratings = InMemoryRatingRepository()
     private lateinit var repository: InMemoryWardrobeRepository
 
     @Before
@@ -46,7 +48,7 @@ class OutfitResultsViewModelTest {
     }
 
     private fun viewModel(itemId: String, date: LocalDate = today) =
-        OutfitResultsViewModel(itemId, date, repository, weather)
+        OutfitResultsViewModel(itemId, date, repository, weather, ratings)
 
     private suspend fun OutfitResultsViewModel.settled() = uiState.first { it != OutfitResultsUiState.Loading }
 
@@ -111,7 +113,7 @@ class OutfitResultsViewModelTest {
     @Test
     fun withoutAForecastThereAreNoOutfitsAndRetryFetchesOne() = runTest {
         val weather = FakeWeather(WeatherState.Unavailable)
-        val viewModel = OutfitResultsViewModel("dark-jeans", today, repository, weather)
+        val viewModel = OutfitResultsViewModel("dark-jeans", today, repository, weather, ratings)
         assertEquals(OutfitResultsUiState.NoForecast, viewModel.settled())
 
         weather.afterRefresh = WeatherState.Ready(SampleData.forecast(today), Instant.EPOCH, refreshFailed = false)
@@ -145,6 +147,15 @@ class OutfitResultsViewModelTest {
 
         viewModel.rate(id, Rating.DISLIKED)
         assertNull(viewModel.ready().outfits.first { it.id == id }.rating)
+    }
+
+    @Test
+    fun aRatingOutlivesTheScreen() = runTest {
+        val id = viewModel("dark-jeans").let { first ->
+            first.ready().outfits[0].id.also { first.rate(it, Rating.LIKED) }
+        }
+        assertEquals(Rating.LIKED, viewModel("dark-jeans").ready().outfits.first { it.id == id }.rating)
+        assertEquals(listOf(id.split("+").toSet()), ratings.ratings.first().map { it.itemIds })
     }
 
     @Test

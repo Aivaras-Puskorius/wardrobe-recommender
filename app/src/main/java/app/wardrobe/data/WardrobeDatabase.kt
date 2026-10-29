@@ -210,7 +210,10 @@ private object SeedSampleItems : RoomDatabase.Callback() {
  */
 fun outfitKey(itemIds: Set<String>): String = itemIds.sorted().joinToString("+")
 
-fun RatingEntity.toDomain() = OutfitRating(outfit.split("+").toSet(), rating, Instant.ofEpochMilli(ratedAt))
+/** The item ids in an [outfitKey]. */
+fun itemIdsOf(outfitKey: String): Set<String> = outfitKey.split("+").toSet()
+
+fun RatingEntity.toDomain() = OutfitRating(itemIdsOf(outfit), rating, Instant.ofEpochMilli(ratedAt))
 
 fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, material, fit, warmth, seasons, photo)
 
