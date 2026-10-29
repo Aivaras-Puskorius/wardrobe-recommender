@@ -22,8 +22,11 @@ import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
+import app.wardrobe.domain.model.OutfitRating
+import app.wardrobe.domain.model.Rating
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
+import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 
 /** One row of the `items` table. Enums are stored by name. */
@@ -61,6 +64,32 @@ interface ItemDao {
     suspend fun delete(id: String)
 }
 
+/**
+ * One row of the `ratings` table: the rating of the outfit whose sorted item ids [outfit] joins with "+".
+ *
+ * @param ratedAt milliseconds since 1970.
+ */
+@Entity(tableName = "ratings")
+data class RatingEntity(
+    @PrimaryKey val outfit: String,
+    val rating: Rating,
+    val ratedAt: Long,
+)
+
+@Dao
+interface RatingDao {
+    /** All ratings, the newest first. */
+    @Query("SELECT * FROM ratings ORDER BY ratedAt DESC, rowid DESC")
+    fun observeAll(): Flow<List<RatingEntity>>
+
+    /** Saves [rating], replacing an earlier one for the same outfit. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(rating: RatingEntity)
+
+    @Query("DELETE FROM ratings WHERE outfit = :outfit")
+    suspend fun delete(outfit: String)
+}
+
 /** Seasons as one column, such as "AUTUMN,WINTER". */
 class Converters {
     @TypeConverter
@@ -72,10 +101,12 @@ class Converters {
 }
 
 /** The wardrobe on the phone. Room creates it on first launch and adds the sample items then. */
-@Database(entities = [ItemEntity::class], version = 4)
+@Database(entities = [ItemEntity::class, RatingEntity::class], version = 5)
 @TypeConverters(Converters::class)
 abstract class WardrobeDatabase : RoomDatabase() {
     abstract fun items(): ItemDao
+
+    abstract fun ratings(): RatingDao
 
     companion object {
         /**
@@ -130,9 +161,19 @@ abstract class WardrobeDatabase : RoomDatabase() {
             }
         }
 
+        /** Version 5 adds the outfit ratings, which earlier versions kept only while the results screen was open. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `ratings` (`outfit` TEXT NOT NULL, `rating` TEXT NOT NULL, " +
+                        "`ratedAt` INTEGER NOT NULL, PRIMARY KEY(`outfit`))",
+                )
+            }
+        }
+
         fun build(context: Context, name: String = "wardrobe.db"): WardrobeDatabase =
             Room.databaseBuilder(context, WardrobeDatabase::class.java, name)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .addCallback(SeedSampleItems)
                 .build()
     }
@@ -161,6 +202,15 @@ private object SeedSampleItems : RoomDatabase.Callback() {
         }
     }
 }
+
+/**
+ * The key of the outfit made of [itemIds], the same whatever their order.
+ *
+ * WARN: item ids must not contain "+", or two outfits could share a key. Sample ids use "-", new ones are UUIDs.
+ */
+fun outfitKey(itemIds: Set<String>): String = itemIds.sorted().joinToString("+")
+
+fun RatingEntity.toDomain() = OutfitRating(outfit.split("+").toSet(), rating, Instant.ofEpochMilli(ratedAt))
 
 fun ItemEntity.toDomain() = ClothingItem(id, name, garment, color, material, fit, warmth, seasons, photo)
 

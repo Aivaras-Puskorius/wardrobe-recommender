@@ -7,8 +7,11 @@ import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
+import app.wardrobe.domain.model.OutfitRating
+import app.wardrobe.domain.model.Rating
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
+import java.time.Instant
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -131,6 +134,30 @@ class WardrobeMigrationTest {
             ),
             items,
         )
+    }
+
+    @Test
+    fun version4ItemsStayAndRatingsCanBeSaved() {
+        helper.createDatabase(NAME, 4).apply {
+            execSQL(
+                "INSERT INTO items (id, name, garment, color, material, fit, warmth, seasons, photo) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                arrayOf("jeans", "Jeans", "JEANS", "DENIM", "DENIM", "FITTED", "MEDIUM", "AUTUMN", "jeans.jpg"),
+            )
+            close()
+        }
+
+        helper.runMigrationsAndValidate(NAME, 5, true, WardrobeDatabase.MIGRATION_4_5).close()
+
+        val database = WardrobeDatabase.build(RuntimeEnvironment.getApplication(), NAME)
+        val ratings = RoomRatingRepository(database.ratings()) { Instant.EPOCH }
+        val (items, saved) = runBlocking {
+            ratings.rate(setOf("jeans", "tee"), Rating.LIKED)
+            RoomWardrobeRepository(database.items()).items.first() to ratings.ratings.first()
+        }
+        database.close()
+        assertEquals(listOf("jeans.jpg"), items.map { it.photo })
+        assertEquals(listOf(OutfitRating(setOf("jeans", "tee"), Rating.LIKED, Instant.EPOCH)), saved)
     }
 
     private companion object {
