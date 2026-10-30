@@ -45,6 +45,21 @@ class PhotoStoreTest {
     }
 
     @Test
+    fun aCutOutStaysWithItsPhoto() {
+        val used = store.newFile().apply { writeText("used"); setLastModified(1_000) }
+        val unused = store.newFile().apply { writeText("unused"); setLastModified(1_000) }
+        val usedCutout = cutoutOf(used).apply { writeText("cut"); setLastModified(1_000) }
+        val unusedCutout = cutoutOf(unused).apply { writeText("cut"); setLastModified(1_000) }
+
+        store.deleteUnused(used = setOf(used.name), olderThan = 2_000)
+
+        assertTrue(usedCutout.exists())
+        assertTrue(!unusedCutout.exists())
+        assertEquals(used.parentFile, usedCutout.parentFile)
+        assertNotEquals(used.name, usedCutout.name)
+    }
+
+    @Test
     fun deleteUnusedWithoutAPhotoFolderDoesNothing() {
         store.deleteUnused(used = emptySet(), olderThan = Long.MAX_VALUE)
     }

@@ -48,3 +48,27 @@ private val swatches = ItemColor.entries.associateWith { Lab.of(it.argb) }
 private fun nearestColor(lab: Lab): ItemColor = swatches.minBy { (_, swatch) ->
     sqrt(((lab.l - swatch.l) / 2).pow(2) + (lab.a - swatch.a).pow(2) + (lab.b - swatch.b).pow(2))
 }.key
+
+/**
+ * The app color that best matches a cut-out item: each pixel at least half opaque votes for its nearest app color.
+ * Null when none is.
+ *
+ * @param pixels ARGB pixels of the cut-out, transparent where the background was.
+ */
+fun cutoutColor(pixels: IntArray): ItemColor? =
+    pixels.filter { it ushr 24 >= OPAQUE_ALPHA }
+        .groupingBy { nearestColor(Lab.of(it.toLong() or 0xFF000000)) }
+        .eachCount()
+        .maxByOrNull { it.value }
+        ?.key
+
+/** A pixel this opaque or more belongs to the item. Softer edge pixels are left out. */
+private const val OPAQUE_ALPHA = 128
+
+/** [pixels] laid over white, fully opaque, for models that take no transparency. */
+fun onWhite(pixels: IntArray): IntArray = IntArray(pixels.size) { i ->
+    val pixel = pixels[i]
+    val alpha = pixel ushr 24
+    fun channel(shift: Int) = (((pixel shr shift) and 0xFF) * alpha + 0xFF * (0xFF - alpha)) / 0xFF
+    (0xFF shl 24) or (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
+}

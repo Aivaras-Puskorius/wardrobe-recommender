@@ -30,12 +30,16 @@ class PhotoStore(filesDir: File) {
     }
 
     /**
-     * Deletes photos that no item in [used] names and that were last changed before [olderThan].
+     * Deletes photos that no item in [used] names, and their cut-outs, when they were last changed before [olderThan].
      * Photos from the current run are newer, so an add in progress keeps its photo.
      */
     fun deleteUnused(used: Set<String>, olderThan: Long) {
+        val keep = used + used.map { cutoutOf(file(it)).name }
         dir.listFiles()
-            ?.filter { it.name !in used && it.lastModified() < olderThan }
+            ?.filter { it.name !in keep && it.lastModified() < olderThan }
             ?.forEach { it.delete() }
     }
 }
+
+/** Where the cut-out of [photo] goes: the item without its background, as a PNG next to the photo. */
+fun cutoutOf(photo: File): File = File(photo.parentFile, "${photo.nameWithoutExtension}.cutout.png")

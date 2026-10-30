@@ -57,6 +57,38 @@ class PhotoColorTest {
         assertEquals(ItemColor.OLIVE, colorOf(photo(background = olive, item = olive)))
     }
 
+    /** A cut-out: the item's pixels are opaque, the rest is transparent and may hold any color. */
+    private fun cutout(item: Int, hidden: Int = 0x00FAFAFA, edge: Int? = null): IntArray =
+        photo(background = hidden, item = item, speckle = edge)
+
+    @Test
+    fun aCutOutsColorComesFromItsOpaquePixels() {
+        assertEquals(ItemColor.NAVY, cutoutColor(cutout(item = 0xFF1F2A44.toInt())))
+        // Transparent pixels don't count, whatever color they hold.
+        assertEquals(ItemColor.RED, cutoutColor(cutout(item = 0xFFC0392B.toInt(), hidden = 0x001F2A44)))
+    }
+
+    @Test
+    fun halfTransparentEdgesDoNotCount() {
+        val olive = 0xFF556B2F.toInt()
+        assertEquals(ItemColor.OLIVE, cutoutColor(cutout(item = olive, edge = 0x40FAFAFA)))
+    }
+
+    @Test
+    fun aCutOutWithNothingInItHasNoColor() {
+        assertNull(cutoutColor(IntArray(size * size)))
+    }
+
+    @Test
+    fun onWhitePutsTheItemOnAWhiteBackground() {
+        val pixels = intArrayOf(0x00000000, 0xFF1F2A44.toInt(), 0x80000000.toInt())
+        val white = onWhite(pixels)
+        assertEquals(0xFFFFFFFF.toInt(), white[0])
+        assertEquals(0xFF1F2A44.toInt(), white[1])
+        // Half-transparent black on white is mid grey.
+        assertEquals(0xFF7F7F7F.toInt(), white[2])
+    }
+
     @Test
     fun anEmptyPhotoHasNoColor() {
         assertNull(dominantColor(IntArray(0), 0, 0))
