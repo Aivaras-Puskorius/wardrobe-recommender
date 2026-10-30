@@ -53,6 +53,13 @@ class OutfitGeneratorScreenshotTest {
 
     @Composable
     private fun Generator(state: OutfitGeneratorUiState) {
-        OutfitGeneratorContent(state, onSelectItem = {}, onSelectDay = {}, onShowOutfits = { _, _ -> }, onRetry = {})
+        OutfitGeneratorContent(
+            state,
+            onSelectItem = {},
+            onSelectDay = {},
+            onShowOutfits = { _, _ -> },
+            onOpenHistory = {},
+            onRetry = {},
+        )
     }
 }

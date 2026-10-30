@@ -44,6 +44,8 @@ import app.wardrobe.ui.components.LocalSharedTransitionScope
 import app.wardrobe.ui.label
 import java.time.LocalDate
 import kotlinx.coroutines.launch
+import app.wardrobe.feature.history.HistoryScreen
+import app.wardrobe.feature.history.HistoryViewModel
 import app.wardrobe.feature.item.AddItemScreen
 import app.wardrobe.feature.item.AddItemViewModel
 import app.wardrobe.feature.item.EditItemScreen
@@ -153,6 +155,13 @@ fun WardrobeApp(container: AppContainer) {
             OutfitGeneratorScreen(
                 viewModel = viewModel { OutfitGeneratorViewModel(container.wardrobeRepository, container.weather) },
                 onShowOutfits = { itemId, date -> navigator.navigate(OutfitResultsRoute(itemId, date.toEpochDay())) },
+                onOpenHistory = { navigator.navigate(HistoryRoute) },
+            )
+        }
+        entry<HistoryRoute> {
+            HistoryScreen(
+                viewModel = viewModel { HistoryViewModel(container.wardrobeRepository, container.ratingRepository) },
+                onBack = navigator::goBack,
             )
         }
         entry<OutfitResultsRoute> { route ->

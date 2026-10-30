@@ -69,6 +69,7 @@ class AccessibilityTest {
                     onSelectItem = {},
                     onSelectDay = {},
                     onShowOutfits = { _, _ -> },
+                    onOpenHistory = {},
                     onRetry = {},
                 )
             }

@@ -25,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -61,6 +62,7 @@ import java.time.LocalDate
 fun OutfitGeneratorScreen(
     viewModel: OutfitGeneratorViewModel,
     onShowOutfits: (itemId: String, date: LocalDate) -> Unit,
+    onOpenHistory: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     OutfitGeneratorContent(
@@ -68,6 +70,7 @@ fun OutfitGeneratorScreen(
         onSelectItem = viewModel::selectItem,
         onSelectDay = viewModel::selectDay,
         onShowOutfits = onShowOutfits,
+        onOpenHistory = onOpenHistory,
         onRetry = viewModel::retry,
     )
 }
@@ -79,6 +82,7 @@ fun OutfitGeneratorContent(
     onSelectItem: (itemId: String) -> Unit,
     onSelectDay: (LocalDate) -> Unit,
     onShowOutfits: (itemId: String, date: LocalDate) -> Unit,
+    onOpenHistory: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -86,7 +90,15 @@ fun OutfitGeneratorContent(
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(title = { Text(stringResource(R.string.tab_outfits)) }, scrollBehavior = scrollBehavior)
+            LargeTopAppBar(
+                title = { Text(stringResource(R.string.tab_outfits)) },
+                actions = {
+                    IconButton(onClick = onOpenHistory) {
+                        Icon(painterResource(R.drawable.ic_history), stringResource(R.string.history_title))
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+            )
         },
         bottomBar = {
             if (state is OutfitGeneratorUiState.Ready) {

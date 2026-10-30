@@ -31,7 +31,7 @@ The build makes one APK per processor type, and the install tasks pick the devic
 | Wardrobe tab | Category chips. Filter icon: colors, seasons. Tap a card for details. Add item button. |
 | Item | Edit. Delete, with Undo on the snackbar. Style it: outfit ideas for this item, today. |
 | Add item | Take a photo or Choose from gallery, then confirm the suggested type and color, set material, fit, warmth and seasons, Save. |
-| Outfits tab | Pick a day and an item, Show outfits. Like or dislike each outfit. |
+| Outfits tab | Pick a day and an item, Show outfits. Like or dislike each outfit. The History button lists rated outfits, or the liked ones as a gallery. |
 | Settings tab | Theme: System, Light, Dark. Location: search for the forecast's city with Open-Meteo's place search. |
 
 ## Prototype limits
@@ -70,6 +70,7 @@ app/src/main/java/app/wardrobe/
   feature/wardrobe/       grid and filters
   feature/item/           detail, add, edit
   feature/outfits/        generator, results, outfit titles and reason sentences
+  feature/history/        rated outfits and the liked gallery
   feature/settings/       settings, location search
   navigation/             routes, back stacks per tab, app shell
   ui/                     theme, shared components, labels

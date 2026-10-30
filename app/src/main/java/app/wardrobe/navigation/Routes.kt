@@ -25,6 +25,10 @@ data class EditItemRoute(val itemId: String) : NavKey
 @Serializable
 data class OutfitResultsRoute(val itemId: String, val epochDay: Long) : NavKey
 
+/** The rated outfits, from the Outfits tab. */
+@Serializable
+data object HistoryRoute : NavKey
+
 /** The place search for the forecast, from Settings. */
 @Serializable
 data object LocationRoute : NavKey

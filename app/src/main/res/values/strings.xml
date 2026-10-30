@@ -102,6 +102,15 @@
     <string name="results_title">Outfit ideas</string>
     <string name="results_built_around">Built around</string>
     <string name="results_more">More outfits</string>
+
+    <string name="history_title">History</string>
+    <string name="history_all">All</string>
+    <string name="history_liked">Liked</string>
+    <string name="history_rated_on">Rated %1$s</string>
+    <string name="history_empty_title">No rated outfits yet</string>
+    <string name="history_empty_body">Like or dislike an outfit on the outfit ideas screen, and it shows up here.</string>
+    <string name="history_liked_empty_title">No liked outfits yet</string>
+    <string name="history_liked_empty_body">Tap the thumbs up on an outfit you like, and it shows up here.</string>
     <string name="results_why">Why it works</string>
     <string name="results_rate_prompt">How do you like it?</string>
     <string name="results_like">Like this outfit</string>
