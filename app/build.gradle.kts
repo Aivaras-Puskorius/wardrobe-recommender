@@ -94,6 +94,9 @@ dependencies {
     // the bundled custom pipeline, because the Play services version of that pipeline is still in beta.
     implementation(libs.mlkit.image.labeling)
     implementation(libs.mlkit.image.labeling.custom)
+    implementation(libs.mlkit.subject.segmentation)
+    // Already on the classpath through other libraries, declared because the recognizer reads EXIF itself.
+    implementation(libs.androidx.exifinterface)
     ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
