@@ -1,14 +1,11 @@
 package app.wardrobe.feature.outfits
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -37,13 +33,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.wardrobe.R
 import app.wardrobe.domain.model.Category
-import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.domain.model.Rating
 import app.wardrobe.ui.components.EmptyState
@@ -197,13 +190,7 @@ private fun OutfitCardView(outfit: OutfitCard, anchorId: String, day: DayForecas
                 modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                outfit.items.forEach { item ->
-                    OutfitItemTile(item, isAnchor = item.id == anchorId, modifier = Modifier.weight(1f))
-                }
-                // Four slots in every card, so tiles line up between outfits of three and four items.
-                repeat(MAX_ITEMS - outfit.items.size) { Spacer(Modifier.weight(1f)) }
-            }
+            OutfitItemsRow(outfit.items, anchorId)
             Text(
                 text = stringResource(R.string.results_why),
                 style = MaterialTheme.typography.labelLarge,
@@ -228,63 +215,8 @@ private fun OutfitCardView(outfit: OutfitCard, anchorId: String, day: DayForecas
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
                 )
-                RatingButton(
-                    checked = outfit.rating == Rating.LIKED,
-                    onClick = { onRate(outfit.id, Rating.LIKED) },
-                    icon = R.drawable.ic_thumb_up,
-                    checkedIcon = R.drawable.ic_thumb_up_filled,
-                    description = stringResource(R.string.results_like),
-                )
-                RatingButton(
-                    checked = outfit.rating == Rating.DISLIKED,
-                    onClick = { onRate(outfit.id, Rating.DISLIKED) },
-                    icon = R.drawable.ic_thumb_down,
-                    checkedIcon = R.drawable.ic_thumb_down_filled,
-                    description = stringResource(R.string.results_dislike),
-                )
+                RatingButtons(outfit.rating) { rating -> onRate(outfit.id, rating) }
             }
         }
     }
 }
-
-@Composable
-private fun RatingButton(checked: Boolean, onClick: () -> Unit, icon: Int, checkedIcon: Int, description: String) {
-    IconToggleButton(checked = checked, onCheckedChange = { onClick() }) {
-        Icon(painterResource(if (checked) checkedIcon else icon), contentDescription = description)
-    }
-}
-
-@Composable
-private fun OutfitItemTile(item: ClothingItem, isAnchor: Boolean, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(MaterialTheme.shapes.medium)
-                .background(GarmentBackdrop)
-                .then(
-                    if (isAnchor) {
-                        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
-                    } else {
-                        Modifier
-                    },
-                ),
-        ) {
-            ItemPicture(item, illustrationPadding = 8.dp, contentDescription = null)
-        }
-        Text(
-            text = item.name,
-            style = MaterialTheme.typography.labelSmall,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-private const val MAX_ITEMS = 4

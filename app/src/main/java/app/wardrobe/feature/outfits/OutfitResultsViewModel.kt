@@ -8,6 +8,7 @@ import app.wardrobe.data.Weather
 import app.wardrobe.data.WeatherState
 import app.wardrobe.data.itemIdsOf
 import app.wardrobe.data.outfitKey
+import app.wardrobe.data.toggle
 import app.wardrobe.domain.engine.EngineResult
 import app.wardrobe.domain.engine.OutfitEngine
 import app.wardrobe.domain.engine.Reason
@@ -24,7 +25,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -124,11 +124,7 @@ class OutfitResultsViewModel(
 
     /** Sets [rating] on the outfit, or clears it if the outfit already has that rating. */
     fun rate(outfitId: String, rating: Rating) {
-        val itemIds = itemIdsOf(outfitId)
-        viewModelScope.launch {
-            val current = ratings.ratings.first().firstOrNull { it.itemIds == itemIds }?.rating
-            if (current == rating) ratings.clear(itemIds) else ratings.rate(itemIds, rating)
-        }
+        viewModelScope.launch { ratings.toggle(itemIdsOf(outfitId), rating) }
     }
 
     private fun outfitCards(outfits: List<ScoredOutfit>, ratings: Map<String, Rating>): List<OutfitCard> =
