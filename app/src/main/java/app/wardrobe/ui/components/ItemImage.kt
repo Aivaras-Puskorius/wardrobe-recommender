@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import app.wardrobe.data.PhotoStore
+import app.wardrobe.data.cutoutOf
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -68,8 +69,9 @@ fun ItemImage(
 }
 
 /**
- * Fills its parent with the item's photo, cropped to fit, or with the garment illustration
- * inset by [illustrationPadding] when there is no photo or it fails to load. Without a [garment] there is no illustration.
+ * Fills its parent with the item's picture: the cut-out of its photo, inset by [illustrationPadding] like the drawings,
+ * or else the photo itself, cropped to fit, or else the garment illustration. Photos taken before background removal
+ * have no cut-out, and a photo can fail to load. Without a [garment] there is no illustration.
  */
 @Composable
 fun ItemPicture(
@@ -80,14 +82,24 @@ fun ItemPicture(
     contentDescription: String?,
 ) {
     val file = photo?.let { LocalPhotoStore.current?.file(it) }
-    var failed by remember(file) { mutableStateOf(false) }
-    if (file != null && !failed) {
+    // Each failed load moves on to the next picture.
+    var fallbacks by remember(file) { mutableIntStateOf(0) }
+    if (file != null && fallbacks == 0) {
+        AsyncImage(
+            model = cutoutOf(file),
+            contentDescription = contentDescription,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(illustrationPadding),
+            onError = { fallbacks = 1 },
+        )
+    } else if (file != null && fallbacks == 1) {
         AsyncImage(
             model = file,
             contentDescription = contentDescription,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
-            onError = { failed = true },
+            onError = { fallbacks = 2 },
         )
     } else if (garment != null) {
         GarmentImage(

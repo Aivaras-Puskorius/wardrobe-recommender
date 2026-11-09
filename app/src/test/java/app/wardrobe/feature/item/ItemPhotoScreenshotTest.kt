@@ -43,6 +43,8 @@ class ItemPhotoScreenshotTest {
     fun fakeImages() {
         val engine = FakeImageLoaderEngine.Builder()
             .intercept({ it is File && it.name == PHOTO }, ColorImage(PHOTO_COLOR))
+            .intercept({ it is File && it.name == WITH_CUTOUT }, ColorImage(PHOTO_COLOR))
+            .intercept({ it is File && it.name == CUTOUT }, ColorImage(CUTOUT_COLOR, width = 60, height = 100))
             .intercept({ it is File && it.name == MISSING }) { chain ->
                 ErrorResult(null, chain.request, FileNotFoundException(MISSING))
             }
@@ -69,8 +71,13 @@ class ItemPhotoScreenshotTest {
         }
     }
 
+    /** A photo without a cut-out, as photos from before background removal are. */
     @Test
     fun detailShowsThePhoto() = detail(PHOTO)
+
+    /** The cut-out sits inside the backdrop with the drawings' padding, instead of the photo filling it. */
+    @Test
+    fun detailShowsTheCutOut() = detail(WITH_CUTOUT)
 
     @Test
     fun detailFallsBackToTheIllustration() = detail(MISSING)
@@ -79,5 +86,8 @@ class ItemPhotoScreenshotTest {
         const val PHOTO = "photo.jpg"
         const val MISSING = "missing.jpg"
         const val PHOTO_COLOR = 0xFF6F8A9C.toInt()
+        const val WITH_CUTOUT = "with-cutout.jpg"
+        const val CUTOUT = "with-cutout.cutout.webp"
+        const val CUTOUT_COLOR = 0xFF55602F.toInt()
     }
 }
