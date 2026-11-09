@@ -87,6 +87,19 @@ private fun <T> mostConfident(
     return candidates.maxByOrNull { it.second }?.first
 }
 
+/**
+ * The clothes model's labels for whichever of the photo and its cut-out it is surer about. On the third S25 test
+ * (2026-11-09) the cut-out fixed boots the photo left unsure, and the photo kept a white T-shirt the cut-out called
+ * a shirt. Taking the surer one got 8 of 10 items right, either alone 7.
+ *
+ * @param cutout empty when there is no cut-out.
+ */
+fun moreConfident(photo: List<PhotoLabel>, cutout: List<PhotoLabel>): List<PhotoLabel> {
+    val photoTop = photo.maxOfOrNull { it.confidence } ?: 0f
+    val cutoutTop = cutout.maxOfOrNull { it.confidence } ?: 0f
+    return if (cutoutTop > photoTop) cutout else photo
+}
+
 /** The clothes classifier's top class counts from this confidence. */
 private const val CLASSIFIER_MIN = 0.6f
 

@@ -51,16 +51,18 @@ private fun nearestColor(lab: Lab): ItemColor = swatches.minBy { (_, swatch) ->
 
 /**
  * The app color that best matches a cut-out item: each pixel at least half opaque votes for its nearest app color.
- * Null when none is.
+ * Null when less than [MIN_ITEM_SHARE] of the pixels are, which is a failed cut rather than an item.
  *
  * @param pixels ARGB pixels of the cut-out, transparent where the background was.
  */
-fun cutoutColor(pixels: IntArray): ItemColor? =
-    pixels.filter { it ushr 24 >= OPAQUE_ALPHA }
-        .groupingBy { nearestColor(Lab.of(it.toLong() or 0xFF000000)) }
-        .eachCount()
-        .maxByOrNull { it.value }
-        ?.key
+fun cutoutColor(pixels: IntArray): ItemColor? {
+    val item = pixels.filter { it ushr 24 >= OPAQUE_ALPHA }
+    if (item.size < pixels.size * MIN_ITEM_SHARE) return null
+    return item.groupingBy { nearestColor(Lab.of(it.toLong() or 0xFF000000)) }.eachCount().maxByOrNull { it.value }?.key
+}
+
+/** The items in the third S25 test filled 39% to 70% of their cut-outs. */
+private const val MIN_ITEM_SHARE = 0.05
 
 /** A pixel this opaque or more belongs to the item. Softer edge pixels are left out. */
 private const val OPAQUE_ALPHA = 128

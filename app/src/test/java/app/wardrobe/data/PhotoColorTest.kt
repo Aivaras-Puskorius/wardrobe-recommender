@@ -79,6 +79,13 @@ class PhotoColorTest {
         assertNull(cutoutColor(IntArray(size * size)))
     }
 
+    /** A few stray pixels are a failed cut, not an item, so the photo's own color is used instead. */
+    @Test
+    fun aCutOutWithAlmostNothingInItHasNoColor() {
+        val pixels = IntArray(size * size).also { it[0] = 0xFFC0392B.toInt() }
+        assertNull(cutoutColor(pixels))
+    }
+
     @Test
     fun onWhitePutsTheItemOnAWhiteBackground() {
         val pixels = intArrayOf(0x00000000, 0xFF1F2A44.toInt(), 0x80000000.toInt())

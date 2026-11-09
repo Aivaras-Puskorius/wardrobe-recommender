@@ -41,5 +41,5 @@ class PhotoStore(filesDir: File) {
     }
 }
 
-/** Where the cut-out of [photo] goes: the item without its background, as a PNG next to the photo. */
-fun cutoutOf(photo: File): File = File(photo.parentFile, "${photo.nameWithoutExtension}.cutout.png")
+/** Where the cut-out of [photo] goes: the item without its background, as a WebP image next to the photo. */
+fun cutoutOf(photo: File): File = File(photo.parentFile, "${photo.nameWithoutExtension}.cutout.webp")

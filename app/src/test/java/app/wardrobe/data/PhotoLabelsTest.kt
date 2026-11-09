@@ -102,6 +102,25 @@ class PhotoLabelsTest {
         assertEquals(null, classified(emptyList()))
     }
 
+    /** Third S25 test (2026-11-09): the clothes model on the photo and on the cut-out of the same item. */
+    @Test
+    fun theMoreConfidentOfPhotoAndCutOutDecides() {
+        val whiteTeePhoto = labels("t_shirt" to 0.67f, "shirt" to 0.28f)
+        val whiteTeeCutout = labels("shirt" to 0.64f, "t_shirt" to 0.33f)
+        assertEquals(whiteTeePhoto, moreConfident(whiteTeePhoto, whiteTeeCutout))
+
+        val bootsPhoto = labels("boots" to 0.34f, "shoes" to 0.34f, "other" to 0.31f)
+        val bootsCutout = labels("boots" to 0.77f, "shoes" to 0.21f)
+        assertEquals(bootsCutout, moreConfident(bootsPhoto, bootsCutout))
+        assertEquals(Garment.BOOTS, classified(moreConfident(bootsPhoto, bootsCutout), standard = labels("Shoe" to 0.93f)))
+    }
+
+    @Test
+    fun withoutACutOutThePhotoDecides() {
+        val photo = labels("sweater" to 0.84f)
+        assertEquals(photo, moreConfident(photo, emptyList()))
+    }
+
     @Test
     fun theDogBreedCardiganIsNotASweater() {
         assertEquals(null, garment(imageNet = labels("Cardigan" to 0.9f)))

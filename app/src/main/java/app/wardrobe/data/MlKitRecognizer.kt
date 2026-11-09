@@ -6,6 +6,7 @@ import android.graphics.Bitmap.Config.ARGB_8888
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
+import android.os.Build
 import android.os.SystemClock
 import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
@@ -90,45 +91,48 @@ class MlKitRecognizer(private val context: Context) : Recognizer {
         val standardLabels = labels(standard, image)
         val imageNetLabels = labels(imageNet, image)
         // The raw labels, for tuning the thresholds in PhotoLabels.kt: adb logcat -s MlKitRecognizer
-        Log.d(TAG, "clothes $clothesLabels, standard $standardLabels, ImageNet $imageNetLabels")
-        val color = colorOf(photo)
-        cutOut(photo, color)
+        val cutout = cutOut(photo)
+        Log.d(
+            TAG,
+            "clothes $clothesLabels, on the cut-out ${cutout?.clothes}, " +
+                "standard $standardLabels, ImageNet $imageNetLabels",
+        )
+        val classifier = moreConfident(clothesLabels, cutout?.clothes.orEmpty())
         ItemSuggestion(
-            garment = garmentFor(clothesLabels, standardLabels, imageNetLabels),
-            color = color,
+            garment = garmentFor(classifier, standardLabels, imageNetLabels),
+            color = cutout?.color ?: colorOf(photo),
             material = materialFromLabels(standardLabels, imageNetLabels),
         )
     }
 
+    /** What a photo's cut-out shows: its color, null when too little of it is item, and the clothes model's labels. */
+    private class Cutout(val color: ItemColor?, val clothes: List<PhotoLabel>)
+
     /**
-     * Cuts the item out of [photo], saves it as [cutoutOf] the photo, and logs what the cut-out would suggest.
-     * TODO: suggest the color and type from the cut-out and show it, once a test on the S25 shows it works on
-     * the user's clothes (user's choice, 2026-10-30).
+     * Cuts the item out of [photo] and saves it as [cutoutOf] the photo, which the item's pictures then show.
+     * Null when the segmenter fails, as it does until Play services has downloaded its model.
      */
-    private suspend fun cutOut(photo: File, photoColor: ItemColor?) {
+    private suspend fun cutOut(photo: File): Cutout? {
         val started = SystemClock.elapsedRealtime()
-        val upright = uprightBitmap(photo, CUTOUT_SIZE) ?: return
+        val upright = uprightBitmap(photo, CUTOUT_SIZE) ?: return null
         val foreground = try {
             segmenter.process(InputImage.fromBitmap(upright, 0)).await().foregroundBitmap
         } catch (e: MlKitException) {
             Log.w(TAG, "Segmenter failed: ${e.message}")
             null
-        } ?: return
-        val segmentedIn = SystemClock.elapsedRealtime() - started
-        cutoutOf(photo).outputStream().use { foreground.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+        upright.recycle()
+        foreground ?: return null
+        cutoutOf(photo).outputStream().use { foreground.compress(WEBP_WITH_ALPHA, CUTOUT_QUALITY, it) }
 
         // The color from a copy 128 pixels wide, as many pixels as the photo's own color reads.
         val small = foreground.scale(COLOR_SIZE * 2, COLOR_SIZE * 2 * foreground.height / foreground.width)
-        val pixels = small.pixels()
-        val itemShare = pixels.count { it ushr 24 >= 128 } * 100 / pixels.size
         val onWhite = Bitmap.createBitmap(onWhite(foreground.pixels()), foreground.width, foreground.height, ARGB_8888)
         val clothesOnCutout = labels(clothes, InputImage.fromBitmap(onWhite, 0), ::clothesName)
-        Log.d(
-            TAG,
-            "cutout in $segmentedIn ms, ${itemShare}% item, color $photoColor from the photo and " +
-                "${cutoutColor(pixels)} from the cut-out, clothes on the cut-out $clothesOnCutout",
-        )
-        listOf(upright, foreground, small, onWhite).forEach { it.recycle() }
+        val cutout = Cutout(cutoutColor(small.pixels()), clothesOnCutout)
+        Log.d(TAG, "cut out in ${SystemClock.elapsedRealtime() - started} ms, color ${cutout.color}")
+        listOf(foreground, small, onWhite).forEach { it.recycle() }
+        return cutout
     }
 
     /** The photo turned the way its camera says, about [size] to twice that across, or null if it can't be read. */
@@ -188,6 +192,18 @@ class MlKitRecognizer(private val context: Context) : Recognizer {
 
         /** Google asks for at least 512 by 512 pixels for the segmenter. */
         const val CUTOUT_SIZE = 1024
+
+        /** Lossy WebP keeps transparency. The PNGs of the third S25 test took 0.9 to 3.5 MB each. */
+        const val CUTOUT_QUALITY = 90
+
+        val WEBP_WITH_ALPHA: Bitmap.CompressFormat =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Bitmap.CompressFormat.WEBP_LOSSY
+            } else {
+                // Lossy below quality 100 on the Android versions before WEBP_LOSSY.
+                @Suppress("DEPRECATION")
+                Bitmap.CompressFormat.WEBP
+            }
     }
 }
 
