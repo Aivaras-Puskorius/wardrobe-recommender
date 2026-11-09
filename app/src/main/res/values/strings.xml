@@ -168,6 +168,7 @@
     <string name="category_outerwear">Outerwear</string>
 
     <string name="garment_t_shirt">T-shirt</string>
+    <string name="garment_long_sleeve">Long-sleeve top</string>
     <string name="garment_shirt">Shirt</string>
     <string name="garment_sweater">Sweater</string>
     <string name="garment_jeans">Jeans</string>

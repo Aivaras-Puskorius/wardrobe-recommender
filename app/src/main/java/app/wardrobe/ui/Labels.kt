@@ -24,6 +24,7 @@ fun Category.pluralLabel(): Int = when (this) {
 @StringRes
 fun Garment.label(): Int = when (this) {
     Garment.T_SHIRT -> R.string.garment_t_shirt
+    Garment.LONG_SLEEVE -> R.string.garment_long_sleeve
     Garment.SHIRT -> R.string.garment_shirt
     Garment.SWEATER -> R.string.garment_sweater
     Garment.JEANS -> R.string.garment_jeans

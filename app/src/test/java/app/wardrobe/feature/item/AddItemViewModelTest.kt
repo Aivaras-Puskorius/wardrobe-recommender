@@ -183,6 +183,17 @@ class AddItemViewModelTest {
         assertEquals(Category.BOTTOM, Garment.SWEATPANTS.category)
     }
 
+    /** Plain long-sleeve tops left the sweaters after the third S25 test (user, 2026-11-09). */
+    @Test
+    fun aLongSleeveTopIsCottonAndMediumWarmth() {
+        viewModel.recognizePhoto(PHOTO)
+        viewModel.update(ItemFormChange.SetGarment(Garment.LONG_SLEEVE))
+        assertEquals("GREEN LONG_SLEEVE", form().name)
+        assertEquals(Material.COTTON, form().material)
+        assertEquals(Warmth.MEDIUM, form().warmth)
+        assertEquals(Category.TOP, Garment.LONG_SLEEVE.category)
+    }
+
     @Test
     fun saveRejectsAnItemWithoutAType() = runTest {
         nextSuggestion = ItemSuggestion(garment = null, color = ItemColor.NAVY)

@@ -49,6 +49,7 @@ fun GarmentImage(
 @DrawableRes
 private fun Garment.drawableRes(): Int = when (this) {
     Garment.T_SHIRT -> R.drawable.garment_t_shirt
+    Garment.LONG_SLEEVE -> R.drawable.garment_long_sleeve
     Garment.SHIRT -> R.drawable.garment_shirt
     Garment.SWEATER -> R.drawable.garment_sweater
     Garment.JEANS -> R.drawable.garment_jeans

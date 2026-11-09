@@ -117,6 +117,7 @@ fun garmentFor(classifier: List<PhotoLabel>, standard: List<PhotoLabel>, imageNe
     fun imageNetSays(vararg texts: String) = imageNet.any { it.text in texts && it.confidence >= IMAGENET_MIN }
     return when (top.text) {
         "t_shirt" -> Garment.T_SHIRT
+        "longsleeve" -> Garment.LONG_SLEEVE
         "shirt" -> Garment.SHIRT
         "sweater" -> Garment.SWEATER
         "shorts" -> Garment.SHORTS

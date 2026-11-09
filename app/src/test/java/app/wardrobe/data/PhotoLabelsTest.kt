@@ -53,6 +53,7 @@ class PhotoLabelsTest {
         assertEquals(Garment.SWEATER, classified(labels("sweater" to 0.8f)))
         assertEquals(Garment.SKIRT, classified(labels("skirt" to 0.8f)))
         assertEquals(Garment.BOOTS, classified(labels("boots" to 0.8f)))
+        assertEquals(Garment.LONG_SLEEVE, classified(labels("longsleeve" to 0.8f)))
     }
 
     @Test

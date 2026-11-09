@@ -27,6 +27,7 @@ enum class Category { TOP, BOTTOM, FOOTWEAR, OUTERWEAR }
  */
 enum class Garment(val category: Category, val defaultMaterial: Material, val defaultWarmth: Warmth) {
     T_SHIRT(Category.TOP, Material.COTTON, Warmth.LIGHT),
+    LONG_SLEEVE(Category.TOP, Material.COTTON, Warmth.MEDIUM),
     SHIRT(Category.TOP, Material.COTTON, Warmth.MEDIUM),
     SWEATER(Category.TOP, Material.WOOL, Warmth.WARM),
     JEANS(Category.BOTTOM, Material.DENIM, Warmth.MEDIUM),
