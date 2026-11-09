@@ -53,6 +53,7 @@ private fun Garment.drawableRes(): Int = when (this) {
     Garment.SWEATER -> R.drawable.garment_sweater
     Garment.JEANS -> R.drawable.garment_jeans
     Garment.TROUSERS -> R.drawable.garment_trousers
+    Garment.SWEATPANTS -> R.drawable.garment_sweatpants
     Garment.SHORTS -> R.drawable.garment_shorts
     Garment.SKIRT -> R.drawable.garment_skirt
     Garment.SNEAKERS -> R.drawable.garment_sneakers

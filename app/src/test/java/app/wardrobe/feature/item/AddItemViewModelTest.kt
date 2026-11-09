@@ -2,6 +2,7 @@ package app.wardrobe.feature.item
 
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.PhotoStore
+import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -168,6 +169,18 @@ class AddItemViewModelTest {
         assertEquals("GREY SHORTS", form().name)
         assertEquals(Material.COTTON, form().material)
         assertEquals(Warmth.LIGHT, form().warmth)
+    }
+
+    /** Sweatpants are a type of their own since the third S25 test (user, 2026-11-09). Recognition can't tell them. */
+    @Test
+    fun sweatpantsAreCottonAndMediumWarmth() {
+        nextSuggestion = ItemSuggestion(Garment.TROUSERS, ItemColor.GREY)
+        viewModel.recognizePhoto(PHOTO)
+        viewModel.update(ItemFormChange.SetGarment(Garment.SWEATPANTS))
+        assertEquals("GREY SWEATPANTS", form().name)
+        assertEquals(Material.COTTON, form().material)
+        assertEquals(Warmth.MEDIUM, form().warmth)
+        assertEquals(Category.BOTTOM, Garment.SWEATPANTS.category)
     }
 
     @Test

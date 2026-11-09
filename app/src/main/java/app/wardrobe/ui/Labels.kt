@@ -28,6 +28,7 @@ fun Garment.label(): Int = when (this) {
     Garment.SWEATER -> R.string.garment_sweater
     Garment.JEANS -> R.string.garment_jeans
     Garment.TROUSERS -> R.string.garment_trousers
+    Garment.SWEATPANTS -> R.string.garment_sweatpants
     Garment.SHORTS -> R.string.garment_shorts
     Garment.SKIRT -> R.string.garment_skirt
     Garment.SNEAKERS -> R.string.garment_sneakers

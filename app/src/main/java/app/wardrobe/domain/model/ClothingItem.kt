@@ -31,6 +31,7 @@ enum class Garment(val category: Category, val defaultMaterial: Material, val de
     SWEATER(Category.TOP, Material.WOOL, Warmth.WARM),
     JEANS(Category.BOTTOM, Material.DENIM, Warmth.MEDIUM),
     TROUSERS(Category.BOTTOM, Material.COTTON, Warmth.MEDIUM),
+    SWEATPANTS(Category.BOTTOM, Material.COTTON, Warmth.MEDIUM),
     SHORTS(Category.BOTTOM, Material.COTTON, Warmth.LIGHT),
     SKIRT(Category.BOTTOM, Material.COTTON, Warmth.LIGHT),
     SNEAKERS(Category.FOOTWEAR, Material.SYNTHETIC, Warmth.LIGHT),
