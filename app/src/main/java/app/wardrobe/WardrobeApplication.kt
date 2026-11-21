@@ -6,6 +6,7 @@ import app.wardrobe.data.OpenMeteoWeather
 import app.wardrobe.data.PhotoStore
 import app.wardrobe.data.RoomRatingRepository
 import app.wardrobe.data.RoomWardrobeRepository
+import app.wardrobe.data.ThemeSetting
 import app.wardrobe.data.WardrobeDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ class WardrobeApplication : Application() {
             photoStore = PhotoStore(filesDir),
             weather = OpenMeteoWeather(getSharedPreferences("weather", MODE_PRIVATE), scope),
             ratingRepository = RoomRatingRepository(database.ratings(), getSharedPreferences("taste", MODE_PRIVATE)),
+            theme = ThemeSetting(getSharedPreferences("settings", MODE_PRIVATE)),
         )
     }
 

@@ -181,11 +181,11 @@ fun WardrobeApp(container: AppContainer) {
             )
         }
         entry<SettingsRoute> {
-            val themeMode by container.themeMode.collectAsStateWithLifecycle()
+            val themeMode by container.theme.mode.collectAsStateWithLifecycle()
             val place by container.weather.place.collectAsStateWithLifecycle()
             SettingsScreen(
                 themeMode = themeMode,
-                onThemeModeChange = { container.themeMode.value = it },
+                onThemeModeChange = container.theme::choose,
                 place = place,
                 onOpenLocation = { navigator.navigate(LocationRoute) },
                 onOpenTasteProfile = { navigator.navigate(TasteProfileRoute) },

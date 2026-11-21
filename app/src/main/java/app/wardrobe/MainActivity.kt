@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val container = (application as WardrobeApplication).container
         setContent {
-            val themeMode by container.themeMode.collectAsStateWithLifecycle()
+            val themeMode by container.theme.mode.collectAsStateWithLifecycle()
             val darkTheme = themeMode.isDark(isSystemInDarkTheme())
 
             // The system bar icons must follow the app's theme, which can differ from the system's.

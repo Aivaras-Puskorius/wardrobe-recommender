@@ -35,7 +35,7 @@ class SettingsFlowTest {
         composeRule.onNodeWithText("Dark").performClick()
 
         composeRule.onNodeWithText("Dark").assertIsSelected()
-        assertEquals(ThemeMode.DARK, container.themeMode.value)
+        assertEquals(ThemeMode.DARK, container.theme.mode.value)
     }
 
     @Test
