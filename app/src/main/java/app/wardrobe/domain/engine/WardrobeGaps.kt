@@ -27,9 +27,7 @@ object WardrobeGaps {
      * result per wardrobe when that gets slow on the phone.
      */
     fun find(wardrobe: List<ClothingItem>): List<Gap> {
-        // Seasons play no part (user, 2026-11-21): a new item would otherwise get a head start over the user's own,
-        // which only count in the seasons marked on them.
-        val allYear = wardrobe.map { it.copy(seasons = Season.entries.toSet()) }
+        val allYear = allYear(wardrobe)
         val scored = candidates(wardrobe).map { it to score(allYear, it) }
             .sortedWith(
                 compareByDescending<Pair<ClothingItem, Score>> { it.second.goesWith }
@@ -52,16 +50,28 @@ object WardrobeGaps {
             val owned = wardrobe.filter { it.garment == garment }.map { Lab.of(it.color.argb) }
             ItemColor.entries
                 .filter { color -> owned.none { it.distanceTo(Lab.of(color.argb)) < NEAR_COLOR } }
-                .map { color -> candidate(garment, color) }
+                .map { color -> newItem(garment, color) }
         }
 
-    private data class Score(val goesWith: Int, val itemDays: Int)
+    /**
+     * Seasons play no part (user, 2026-11-21): a new item would otherwise get a head start over the user's own,
+     * which only count in the seasons marked on them.
+     */
+    internal fun allYear(items: List<ClothingItem>) = items.map { it.copy(seasons = Season.entries.toSet()) }
 
-    /** The items whose three outfits include [new] on at least one reference day, and on how many item-days. */
-    private fun score(wardrobe: List<ClothingItem>, new: ClothingItem): Score {
+    /** Two colors closer than [NEAR_COLOR] count as the same. */
+    internal fun near(a: ItemColor, b: ItemColor) = Lab.of(a.argb).distanceTo(Lab.of(b.argb)) < NEAR_COLOR
+
+    internal data class Score(val goesWith: Int, val itemDays: Int)
+
+    /**
+     * The items of an [allYear] [wardrobe] whose three outfits include [new] on at least one reference day, and on
+     * how many item-days.
+     */
+    internal fun score(wardrobe: List<ClothingItem>, new: ClothingItem): Score {
         var itemDays = 0
         val goesWith = wardrobe.count { anchor ->
-            val days = REFERENCE_DAYS.count { day ->
+            val days = REFERENCE_DAYS.values.count { day ->
                 val result = OutfitEngine.suggest(wardrobe + new, anchor, day)
                 result is EngineResult.Outfits && result.outfits.any { outfit -> new in outfit.items }
             }
@@ -71,12 +81,8 @@ object WardrobeGaps {
         return Score(goesWith, itemDays)
     }
 
-    /**
-     * WARN: the id sorts after every real id on purpose. Where outfits tie on score, the engine orders them by item
-     * id, so the user's own outfits come first and a new item counts only where it does better.
-     */
-    private fun candidate(garment: Garment, color: ItemColor) = ClothingItem(
-        id = "\uFFFF${garment.name}-${color.name}",
+    private fun newItem(garment: Garment, color: ItemColor) = ClothingItem(
+        id = newItemId(garment, color),
         name = "",
         garment = garment,
         color = color,
@@ -90,11 +96,17 @@ object WardrobeGaps {
     /** Colors closer than this in CIELAB count as the same: white and cream are 12.3 apart, white and beige 26.7. */
     private const val NEAR_COLOR = 15.0
 
-    /** One dry day per temperature band, so the result doesn't change with this week's forecast. */
-    private val REFERENCE_DAYS = listOf(
-        DayForecast(LocalDate.of(2026, 7, 15), 18, 26, WeatherCondition.CLEAR, 0),
-        DayForecast(LocalDate.of(2026, 5, 15), 12, 19, WeatherCondition.PARTLY_CLOUDY, 10),
-        DayForecast(LocalDate.of(2026, 10, 15), 7, 14, WeatherCondition.PARTLY_CLOUDY, 10),
-        DayForecast(LocalDate.of(2026, 1, 15), -3, 3, WeatherCondition.CLOUDY, 20),
+    /**
+     * WARN: the id sorts after every real id on purpose. Where outfits tie on score, the engine orders them by item
+     * id, so the user's own outfits come first and a new item counts only where it does better.
+     */
+    internal fun newItemId(garment: Garment, color: ItemColor) = "\uFFFF${garment.name}-${color.name}"
+
+    /** One dry day per band, so the result doesn't change with this week's forecast. */
+    internal val REFERENCE_DAYS = mapOf(
+        DayBand.HOT to DayForecast(LocalDate.of(2026, 7, 15), 18, 26, WeatherCondition.CLEAR, 0),
+        DayBand.MILD to DayForecast(LocalDate.of(2026, 5, 15), 12, 19, WeatherCondition.PARTLY_CLOUDY, 10),
+        DayBand.COOL to DayForecast(LocalDate.of(2026, 10, 15), 7, 14, WeatherCondition.PARTLY_CLOUDY, 10),
+        DayBand.COLD to DayForecast(LocalDate.of(2026, 1, 15), -3, 3, WeatherCondition.CLOUDY, 20),
     )
 }
