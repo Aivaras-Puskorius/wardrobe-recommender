@@ -25,6 +25,10 @@ object WardrobeGaps {
      *
      * INFO(limit): tries every candidate with every item and day, about 240 × items × 4 engine runs. Cache the
      * result per wardrobe when that gets slow on the phone.
+     *
+     * PERF: 1.9 s for 17 items, 21 s for 34 and 101 s for 51 on the desktop JVM (2026-11-21), and likely slower on
+     * the phone. Each engine run ranks every outfit for the item again, though only the outfits with the new piece
+     * differ between candidates, so twice the items take about 11 times as long.
      */
     fun find(wardrobe: List<ClothingItem>): List<Gap> {
         val allYear = allYear(wardrobe)
