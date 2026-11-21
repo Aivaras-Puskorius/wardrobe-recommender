@@ -57,7 +57,7 @@ class TasteTest {
         assertEquals(-1 / 3.0, PairTaste(colors(ItemColor.BLACK, ItemColor.DENIM), 0, 1).weight, 1e-9)
     }
 
-    /** T28, first part. */
+    /** T29, first part. */
     @Test
     fun aLikeTeachesTheSixPairsOfItsIndoorLook() {
         val taste = taste(rated(LIKED, outfit3))
@@ -65,7 +65,7 @@ class TasteTest {
         assertEquals(1, taste.ratingCount)
     }
 
-    /** T28, second part. */
+    /** T29, second part. */
     @Test
     fun example3TeachesTwelvePairs() {
         val expected = setOf(
@@ -86,7 +86,7 @@ class TasteTest {
         assertEquals(3, example3().ratingCount)
     }
 
-    /** T41, the order of the profile's lists. */
+    /** T42, the order of the profile's lists. */
     @Test
     fun likedAndAvoidedPairsAreSortedForTheProfile() {
         val taste = example3()
@@ -122,7 +122,7 @@ class TasteTest {
         assertEquals(ScoreTerm(Reason.TASTE_OUTFIT, -2, items(*outfit1.toTypedArray())), disliked.term(items(*outfit1.toTypedArray())))
     }
 
-    /** T33: one like of outfit 3, then indoor looks that share 3 and 2 of its pairs. */
+    /** T34: one like of outfit 3, then indoor looks that share 3 and 2 of its pairs. */
     @Test
     fun pairSumsRoundTowardZero() {
         val taste = taste(rated(LIKED, outfit3))
@@ -135,7 +135,7 @@ class TasteTest {
         assertNull(taste.term(items("black-tee", "dark-jeans", "black-sneakers")))
     }
 
-    /** T34: the liked indoor look with another jacket is not the rated outfit, but has all six pairs. */
+    /** T35: the liked indoor look with another jacket is not the rated outfit, but has all six pairs. */
     @Test
     fun theSameIndoorLookWithOtherOuterwearGetsTwoPoints() {
         val taste = taste(rated(LIKED, outfit3))
@@ -155,7 +155,7 @@ class TasteTest {
         )
     }
 
-    /** T35. */
+    /** T36. */
     @Test
     fun pointsAreCappedAtTwo() {
         val taste = taste(
@@ -178,7 +178,7 @@ class TasteTest {
         assertEquals(-2, tastePoints(-3.2))
     }
 
-    /** T36, the taste part: only the dislike after Start over counts. */
+    /** T37, the taste part: only the dislike after Start over counts. */
     @Test
     fun ratingsBeforeStartOverDoNotCount() {
         val like = rated(LIKED, outfit3)
@@ -196,7 +196,7 @@ class TasteTest {
         assertEquals(1, taste(like, since = like.ratedAt).ratingCount)
     }
 
-    /** T37. */
+    /** T38. */
     @Test
     fun aRatingWithADeletedItemTeachesNothing() {
         val wardrobe = SampleData.items.filterNot { it.id == "olive-rain-jacket" }
@@ -213,7 +213,7 @@ class TasteTest {
         assertEquals(0, taste.ratingCount)
     }
 
-    /** T39. */
+    /** T40. */
     @Test
     fun anEditedColorChangesWhatTheRatingTeaches() {
         val wardrobe = SampleData.items.map { if (it.id == "olive-overshirt") it.copy(color = ItemColor.GREEN) else it }
