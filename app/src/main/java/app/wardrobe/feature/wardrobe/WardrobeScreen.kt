@@ -69,6 +69,7 @@ fun WardrobeScreen(
     snackbarHostState: SnackbarHostState,
     onItemClick: (itemId: String) -> Unit,
     onAddItem: () -> Unit,
+    onOpenGaps: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     WardrobeContent(
@@ -76,6 +77,7 @@ fun WardrobeScreen(
         snackbarHostState = snackbarHostState,
         onItemClick = onItemClick,
         onAddItem = onAddItem,
+        onOpenGaps = onOpenGaps,
         onSelectCategory = viewModel::selectCategory,
         onToggleColor = viewModel::toggleColor,
         onToggleSeason = viewModel::toggleSeason,
@@ -90,6 +92,7 @@ fun WardrobeContent(
     state: WardrobeUiState,
     onItemClick: (itemId: String) -> Unit,
     onAddItem: () -> Unit,
+    onOpenGaps: () -> Unit,
     onSelectCategory: (Category?) -> Unit,
     onToggleColor: (ItemColor) -> Unit,
     onToggleSeason: (Season) -> Unit,
@@ -123,6 +126,9 @@ fun WardrobeContent(
                 title = { Text(stringResource(R.string.tab_wardrobe)) },
                 actions = {
                     if (state is WardrobeUiState.Loaded && state.hasAnyItems) {
+                        IconButton(onClick = onOpenGaps) {
+                            Icon(painterResource(R.drawable.ic_lightbulb), stringResource(R.string.gaps_title))
+                        }
                         FilterButton(active = state.filter.hasSheetFilters, onClick = { showFilters = true })
                     }
                 },

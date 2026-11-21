@@ -76,6 +76,7 @@ class WardrobeScreenshotTest {
             state = state,
             onItemClick = {},
             onAddItem = {},
+            onOpenGaps = {},
             onSelectCategory = {},
             onToggleColor = {},
             onToggleSeason = {},

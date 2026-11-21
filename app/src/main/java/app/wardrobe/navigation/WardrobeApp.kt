@@ -44,6 +44,8 @@ import app.wardrobe.ui.components.LocalSharedTransitionScope
 import app.wardrobe.ui.label
 import java.time.LocalDate
 import kotlinx.coroutines.launch
+import app.wardrobe.feature.gaps.GapsScreen
+import app.wardrobe.feature.gaps.GapsViewModel
 import app.wardrobe.feature.history.HistoryScreen
 import app.wardrobe.feature.history.HistoryViewModel
 import app.wardrobe.feature.item.AddItemScreen
@@ -106,8 +108,12 @@ fun WardrobeApp(container: AppContainer) {
                     snackbarHostState = snackbarHostState,
                     onItemClick = { navigator.navigate(ItemDetailRoute(it)) },
                     onAddItem = { navigator.navigate(AddItemRoute) },
+                    onOpenGaps = { navigator.navigate(GapsRoute) },
                 )
             }
+        }
+        entry<GapsRoute> {
+            GapsScreen(viewModel = viewModel { GapsViewModel(container.wardrobeRepository) }, onBack = navigator::goBack)
         }
         entry<AddItemRoute> {
             AddItemScreen(

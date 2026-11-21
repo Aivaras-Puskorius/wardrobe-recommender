@@ -54,6 +54,7 @@ class LargeFontScreenshotTest {
             state = WardrobeUiState.Loaded(items, WardrobeFilter(), hasAnyItems = true, availableColors = emptyList()),
             onItemClick = {},
             onAddItem = {},
+            onOpenGaps = {},
             onSelectCategory = {},
             onToggleColor = {},
             onToggleSeason = {},

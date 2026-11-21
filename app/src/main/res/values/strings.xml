@@ -150,6 +150,7 @@
     <string name="why_taste_outfit">You liked this outfit before.</string>
     <string name="why_taste_pair">You liked %1$s with %2$s before.</string>
     <string name="list_and">%1$s and %2$s</string>
+    <string name="list_or">%1$s or %2$s</string>
 
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme">Theme</string>
@@ -219,6 +220,13 @@
     <string name="taste_start_over">Start over</string>
     <string name="taste_start_over_title">Start over?</string>
     <string name="taste_start_over_body">Outfit ideas will ignore your ratings so far. They stay in History.</string>
+    <string name="gaps_title">What to add</string>
+    <string name="gaps_intro">Pieces that would go into outfit ideas with the most of your items, across a hot, mild, cool and cold day.</string>
+    <string name="gaps_working">Trying new pieces with your wardrobe…</string>
+    <string name="gaps_goes_with">Goes with %1$d of your %2$d items</string>
+    <string name="gaps_colors_more">%1$s or %2$d more</string>
+    <string name="gaps_empty_title">Add a few more items first</string>
+    <string name="gaps_empty_body">No single new piece makes an outfit with what you have yet. A top, bottoms and shoes are the start.</string>
 
     <string name="color_white">White</string>
     <string name="color_cream">Cream</string>

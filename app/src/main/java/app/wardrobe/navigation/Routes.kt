@@ -33,6 +33,10 @@ data object HistoryRoute : NavKey
 @Serializable
 data object LocationRoute : NavKey
 
+/** The garments and colors that would widen the wardrobe, from the Wardrobe tab. */
+@Serializable
+data object GapsRoute : NavKey
+
 /** What the ratings taught about the user's taste, from Settings. */
 @Serializable
 data object TasteProfileRoute : NavKey
