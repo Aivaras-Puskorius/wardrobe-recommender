@@ -147,6 +147,8 @@
     <string name="why_balanced_fit">The %1$s %2$s with the %3$s %4$s keeps the proportions balanced.</string>
     <string name="why_light_dark">Light from the %1$s balances the darker pieces.</string>
     <string name="why_outdoor_holds">The %1$s goes with the rest, so the look holds outdoors too.</string>
+    <string name="why_taste_outfit">You liked this outfit before.</string>
+    <string name="why_taste_pair">You liked %1$s with %2$s before.</string>
     <string name="list_and">%1$s and %2$s</string>
 
     <string name="settings_appearance">Appearance</string>
@@ -180,6 +182,19 @@
     <string name="garment_boots">Boots</string>
     <string name="garment_jacket">Jacket</string>
     <string name="garment_coat">Coat</string>
+    <string name="garments_t_shirt">T-shirts</string>
+    <string name="garments_long_sleeve">Long-sleeve tops</string>
+    <string name="garments_shirt">Shirts</string>
+    <string name="garments_sweater">Sweaters</string>
+    <string name="garments_jeans">Jeans</string>
+    <string name="garments_trousers">Trousers</string>
+    <string name="garments_sweatpants">Sweatpants</string>
+    <string name="garments_shorts">Shorts</string>
+    <string name="garments_skirt">Skirts</string>
+    <string name="garments_sneakers">Sneakers</string>
+    <string name="garments_boots">Boots</string>
+    <string name="garments_jacket">Jackets</string>
+    <string name="garments_coat">Coats</string>
 
     <string name="color_white">White</string>
     <string name="color_cream">Cream</string>

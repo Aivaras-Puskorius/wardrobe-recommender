@@ -10,6 +10,7 @@ import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
 import app.wardrobe.domain.model.WeatherCondition
 import app.wardrobe.ui.label
+import app.wardrobe.ui.pluralLabel
 
 // Turns the engine's titles and score terms into English sentences, like Labels.kt does for single values.
 
@@ -94,6 +95,17 @@ fun ScoreTerm.whyLine(day: DayForecast): String? = when (reason) {
     }
     Reason.LIGHT_DARK -> stringResource(R.string.why_light_dark, items.single().describe())
     Reason.OUTDOOR_HOLDS -> stringResource(R.string.why_outdoor_holds, items.single().describe())
+    Reason.TASTE_OUTFIT -> stringResource(R.string.why_taste_outfit)
+    Reason.TASTE_COLORS -> stringResource(
+        R.string.why_taste_pair,
+        stringResource(items[0].color.label()).lowercase(),
+        stringResource(items[1].color.label()).lowercase(),
+    )
+    Reason.TASTE_GARMENTS -> stringResource(
+        R.string.why_taste_pair,
+        stringResource(items[0].garment.pluralLabel()).lowercase(),
+        stringResource(items[1].garment.pluralLabel()).lowercase(),
+    )
     Reason.OUT_OF_SEASON, Reason.RECENT_REPEAT -> null
 }
 

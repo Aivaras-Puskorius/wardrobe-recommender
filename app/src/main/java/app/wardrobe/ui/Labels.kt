@@ -38,6 +38,24 @@ fun Garment.label(): Int = when (this) {
     Garment.COAT -> R.string.garment_coat
 }
 
+/** The garment in the plural, such as "Shirts". */
+@StringRes
+fun Garment.pluralLabel(): Int = when (this) {
+    Garment.T_SHIRT -> R.string.garments_t_shirt
+    Garment.LONG_SLEEVE -> R.string.garments_long_sleeve
+    Garment.SHIRT -> R.string.garments_shirt
+    Garment.SWEATER -> R.string.garments_sweater
+    Garment.JEANS -> R.string.garments_jeans
+    Garment.TROUSERS -> R.string.garments_trousers
+    Garment.SWEATPANTS -> R.string.garments_sweatpants
+    Garment.SHORTS -> R.string.garments_shorts
+    Garment.SKIRT -> R.string.garments_skirt
+    Garment.SNEAKERS -> R.string.garments_sneakers
+    Garment.BOOTS -> R.string.garments_boots
+    Garment.JACKET -> R.string.garments_jacket
+    Garment.COAT -> R.string.garments_coat
+}
+
 @StringRes
 fun ItemColor.label(): Int = when (this) {
     ItemColor.WHITE -> R.string.color_white

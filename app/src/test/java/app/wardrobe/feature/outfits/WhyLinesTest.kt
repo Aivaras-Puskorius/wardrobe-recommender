@@ -13,7 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/** The sentences of the material, fit and outdoor rules, as docs/ENGINE.md section 4 words them. */
+/** The sentences of the material, fit, outdoor and taste rules, as docs/ENGINE.md sections 4 and 13.5 word them. */
 @RunWith(RobolectricTestRunner::class)
 class WhyLinesTest {
 
@@ -84,5 +84,35 @@ class WhyLinesTest {
             "Cotton breathes, so the white t-shirt keeps you cool at 26°.",
             term.line(day(19, 26, WeatherCondition.CLEAR, 0)),
         )
+    }
+
+    @Test
+    fun tasteLineForARatedOutfit() {
+        val term = ScoreTerm(Reason.TASTE_OUTFIT, 2, items("olive-overshirt", "dark-jeans", "black-sneakers"))
+        assertEquals("You liked this outfit before.", term.line(day(7, 14, WeatherCondition.PARTLY_CLOUDY, 10)))
+    }
+
+    @Test
+    fun tasteLineNamesTheColorsInOutfitOrder() {
+        val term = ScoreTerm(Reason.TASTE_COLORS, 1, items("olive-overshirt", "dark-jeans"))
+        assertEquals("You liked olive with denim before.", term.line(day(7, 14, WeatherCondition.PARTLY_CLOUDY, 10)))
+    }
+
+    @Test
+    fun tasteLineForOneColorTwice() {
+        val term = ScoreTerm(Reason.TASTE_COLORS, 1, items("black-tee", "black-sneakers"))
+        assertEquals("You liked black with black before.", term.line(day(7, 14, WeatherCondition.PARTLY_CLOUDY, 10)))
+    }
+
+    @Test
+    fun tasteLineNamesTheGarmentsInThePlural() {
+        val term = ScoreTerm(Reason.TASTE_GARMENTS, 1, items("oxford-shirt", "dark-jeans"))
+        assertEquals("You liked shirts with jeans before.", term.line(day(7, 14, WeatherCondition.PARTLY_CLOUDY, 10)))
+    }
+
+    @Test
+    fun tasteLineForTShirtsKeepsTheHyphen() {
+        val term = ScoreTerm(Reason.TASTE_GARMENTS, 2, items("white-tee", "white-sneakers"))
+        assertEquals("You liked t-shirts with sneakers before.", term.line(day(7, 14, WeatherCondition.PARTLY_CLOUDY, 10)))
     }
 }
