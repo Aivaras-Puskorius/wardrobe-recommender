@@ -35,11 +35,12 @@ class StoreCheckTest {
         assertEquals(
             listOf(
                 DayBand.COOL to listOf("black-tee", "grey-skirt", "white-sneakers", "new"),
-                DayBand.COLD to listOf("black-tee", "grey-skirt", "white-sneakers", "new"),
+                // The shown outfits count seasons, as outfit ideas do, so the cold day gets winter pieces.
+                DayBand.COLD to listOf("cream-knit", "black-trousers", "brown-boots", "new"),
             ),
             result.ids(),
         )
-        assertEquals(listOf(8, 8), result.outfits.map { it.outfit.score })
+        assertEquals(listOf(8, 7), result.outfits.map { it.outfit.score })
     }
 
     /** T50: cream is 12.3 from white, so a cream T-shirt nearly repeats the white tee. */
@@ -59,7 +60,7 @@ class StoreCheckTest {
                 DayBand.HOT to listOf("new", "beige-chinos", "black-sneakers"),
                 DayBand.MILD to listOf("new", "beige-chinos", "black-sneakers", "denim-jacket"),
                 DayBand.COOL to listOf("new", "beige-chinos", "black-sneakers", "camel-coat"),
-                DayBand.COLD to listOf("new", "beige-chinos", "black-sneakers", "camel-coat"),
+                DayBand.COLD to listOf("new", "black-trousers", "brown-boots", "camel-coat"),
             ),
             result.ids(),
         )

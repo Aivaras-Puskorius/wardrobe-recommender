@@ -27,20 +27,20 @@ object StoreCheck {
 
     /**
      * Checks [item], which isn't in the [wardrobe], with the same days, tie rule and season rule as What to add.
+     * The outfits shown count seasons again, as outfit ideas do, so the cold day gets the user's winter pieces.
      *
      * INFO(limit): about 4 engine runs per wardrobe item, a fraction of a second for the sample. Fine for a
      * wardrobe of hundreds.
      */
     fun check(wardrobe: List<ClothingItem>, item: ClothingItem): StoreCheckResult {
         val checked = WardrobeGaps.allYear(listOf(item)).single().copy(id = WardrobeGaps.newItemId(item.garment, item.color))
-        val allYear = WardrobeGaps.allYear(wardrobe)
         val outfits = WardrobeGaps.REFERENCE_DAYS.mapNotNull { (band, day) ->
-            val result = OutfitEngine.suggest(allYear, checked, day, limit = 1)
+            val result = OutfitEngine.suggest(wardrobe, checked, day, limit = 1)
             (result as? EngineResult.Outfits)?.outfits?.firstOrNull()?.let { BandOutfit(band, it) }
         }
         return StoreCheckResult(
             checked = checked,
-            goesWith = WardrobeGaps.score(allYear, checked).goesWith,
+            goesWith = WardrobeGaps.score(WardrobeGaps.allYear(wardrobe), checked).goesWith,
             itemCount = wardrobe.size,
             similar = wardrobe.filter { it.garment == item.garment && WardrobeGaps.near(it.color, item.color) },
             outfits = outfits,
