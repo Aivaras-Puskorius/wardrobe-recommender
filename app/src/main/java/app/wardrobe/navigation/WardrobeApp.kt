@@ -36,6 +36,8 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.defaultPopTransitionSpec
 import app.wardrobe.AppContainer
 import app.wardrobe.R
+import app.wardrobe.data.SampleData
+import app.wardrobe.data.removeSampleItems
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -217,12 +219,15 @@ fun WardrobeApp(container: AppContainer) {
         entry<SettingsRoute> {
             val themeMode by container.theme.mode.collectAsStateWithLifecycle()
             val place by container.weather.place.collectAsStateWithLifecycle()
+            val items by container.wardrobeRepository.items.collectAsStateWithLifecycle(initialValue = emptyList())
             SettingsScreen(
                 themeMode = themeMode,
                 onThemeModeChange = container.theme::choose,
                 place = place,
                 onOpenLocation = { navigator.navigate(LocationRoute) },
                 onOpenTasteProfile = { navigator.navigate(TasteProfileRoute) },
+                sampleItemCount = items.count(SampleData::isSample),
+                onRemoveSampleItems = { scope.launch { container.wardrobeRepository.removeSampleItems() } },
                 versionName = versionName,
             )
         }

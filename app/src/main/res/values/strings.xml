@@ -159,6 +159,17 @@
     <string name="theme_dark">Dark</string>
     <string name="settings_weather">Weather</string>
     <string name="settings_outfit_ideas">Outfit ideas</string>
+    <string name="settings_remove_samples">Remove sample items</string>
+    <plurals name="settings_remove_samples_body">
+        <item quantity="one">The %d item the app started with. Your own items stay.</item>
+        <item quantity="other">The %d items the app started with. Your own items stay.</item>
+    </plurals>
+    <string name="settings_remove_samples_title">Remove sample items?</string>
+    <plurals name="settings_remove_samples_confirm">
+        <item quantity="one">This deletes the %d sample item, also if you edited it. Your own items stay.</item>
+        <item quantity="other">This deletes the %d sample items, also ones you edited. Your own items stay.</item>
+    </plurals>
+    <string name="settings_remove_samples_action">Remove</string>
     <string name="settings_taste_profile">Taste profile</string>
     <string name="settings_taste_profile_body">What your likes and dislikes teach the app about your style.</string>
     <string name="settings_about">About</string>

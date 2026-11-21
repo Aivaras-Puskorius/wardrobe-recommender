@@ -59,7 +59,7 @@ class AccessibilityTest {
     @Test
     fun settingsSectionsAreHeadings() {
         composeRule.setContent {
-            WardrobeTheme { SettingsScreen(ThemeMode.SYSTEM, {}, SampleData.places.first(), onOpenLocation = {}, onOpenTasteProfile = {}, versionName = "0.1.0") }
+            WardrobeTheme { SettingsScreen(ThemeMode.SYSTEM, {}, SampleData.places.first(), onOpenLocation = {}, onOpenTasteProfile = {}, sampleItemCount = 17, onRemoveSampleItems = {}, versionName = "0.1.0") }
         }
         composeRule.onNodeWithText("Appearance").assert(isHeading())
         composeRule.onNodeWithText("Outfit ideas").assert(isHeading())

@@ -2,10 +2,14 @@ package app.wardrobe.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import app.wardrobe.AppContainer
 import app.wardrobe.ui.theme.ThemeMode
@@ -53,5 +57,19 @@ class SettingsFlowTest {
         composeRule.onNodeWithText("Vilnius").assertIsDisplayed()
         composeRule.onNodeWithText("Outfits").performClick()
         composeRule.onNodeWithText("Vilnius · Today").assertIsDisplayed()
+    }
+
+    @Test
+    fun removingSampleItemsEmptiesTheSampleWardrobe() {
+        composeRule.setContent { WardrobeTheme { WardrobeApp(AppContainer()) } }
+        composeRule.onNodeWithText("Settings").performClick()
+        composeRule.onNodeWithText("Remove sample items").performScrollTo().performClick()
+        composeRule.onNodeWithText("Cancel").performClick()
+        composeRule.onNodeWithText("Remove sample items").performClick()
+        composeRule.onNode(hasText("Remove") and hasAnyAncestor(isDialog())).performClick()
+
+        composeRule.onNodeWithText("Remove sample items").assertDoesNotExist()
+        composeRule.onNodeWithText("Wardrobe").performClick()
+        composeRule.onNodeWithText("Your wardrobe is empty").assertIsDisplayed()
     }
 }
