@@ -44,7 +44,6 @@ The build makes one APK per processor type, and the install tasks pick the devic
 | Outfits | Built by rules from the wardrobe and the day's forecast, three per item, and three more each time you tap More outfits. On drizzle days a wool top gets a jacket over it. Past suggestions don't change later ones, but ratings do. |
 | Weather | 7-day forecast for the chosen city, Kaunas by default, from [Open-Meteo](https://open-meteo.com/) (free for non-commercial use, data CC BY 4.0). Fetched at app start and on the Outfits tab when the saved one is over an hour old. The last forecast stays on the phone for offline use. Without one, the Outfits screens ask to retry. Drizzle under 1 mm a day counts as cloudy. Celsius only. |
 | Likes | Saved on the phone. A rated outfit gets 2 points up or down. Other outfits get up to 2 points from the color and garment pairs of the top, bottoms and shoes they share with rated ones. A rating reorders the outfits at once. Taste learns only from outfits you were shown. Start over makes older ratings stop counting, and History keeps them. |
-| Theme | Kept until the app restarts. |
 
 ## Test
 
