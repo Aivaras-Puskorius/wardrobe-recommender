@@ -28,7 +28,7 @@ The build makes one APK per processor type, and the install tasks pick the devic
 
 | Screen | Actions |
 |---|---|
-| Wardrobe tab | Category chips. Filter icon: colors, seasons. Tap a card for details. Add item button. |
+| Wardrobe tab | Category chips. Filter icon: colors, seasons. Lightbulb: What to add. Tap a card for details. Add item button. |
 | Item | Edit. Delete, with Undo on the snackbar. Style it: outfit ideas for this item, today. |
 | Add item | Take a photo or Choose from gallery, then confirm the suggested type and color, set material, fit, warmth and seasons, Save. |
 | Outfits tab | Pick a day and an item, Show outfits. Like or dislike each outfit. The History button lists rated outfits, or the liked ones as a gallery. |
@@ -43,6 +43,7 @@ The build makes one APK per processor type, and the install tasks pick the devic
 | Photo recognition | On the phone. A clothes model trained for the app (`tools/train_garment_model.py`) suggests the type, from whichever of the photo and its cut-out it is surer about. ML Kit's subject segmentation (beta, downloaded by Google Play services) makes the cut-out. An ImageNet model splits its pants, shoes and outerwear classes. ML Kit's standard labels (Google Play services downloads that model on first use) suggest wool, and decide the type when the clothes model is unsure. They don't tell denim apart, so jeans need ImageNet's "jean" label and usually come out as trousers. When no model is sure of the type, the form leaves it for you to pick. The clothes model's boots class learned from 55 hand-sorted photos, so it finds some boots and calls some dark leather shoes boots. The color comes from the cut-out, or from the middle of the photo when there is none. Sweatpants are suggested as trousers and long-sleeve tops as sweaters, since the clothes model has no such classes. `adb logcat -s MlKitRecognizer` shows the raw labels. |
 | Outfits | Built by rules from the wardrobe and the day's forecast, three per item, and three more each time you tap More outfits. On drizzle days a wool top gets a jacket over it. Past suggestions don't change later ones, but ratings do. |
 | Weather | 7-day forecast for the chosen city, Kaunas by default, from [Open-Meteo](https://open-meteo.com/) (free for non-commercial use, data CC BY 4.0). Fetched at app start and on the Outfits tab when the saved one is over an hour old. The last forecast stays on the phone for offline use. Without one, the Outfits screens ask to retry. Drizzle under 1 mm a day counts as cloudy. Celsius only. |
+| What to add | For each category, the garment and colors you don't have that the outfit rules would pick with the most of your items, judged on four fixed dry days (hot, mild, cool, cold). Takes a few seconds. A color close to one you have in that garment is skipped. |
 | Likes | Saved on the phone. A rated outfit gets 2 points up or down. Other outfits get up to 2 points from the color and garment pairs of the top, bottoms and shoes they share with rated ones. A rating reorders the outfits at once. Taste learns only from outfits you were shown. Start over makes older ratings stop counting, and History keeps them. |
 
 ## Test
@@ -67,12 +68,13 @@ app/src/main/java/app/wardrobe/
   AppContainer.kt         shared objects: repository, recognizer, forecast, theme
   data/                   repository (Room, and in memory for tests), sample data, stand-in recognizer
   domain/model/           items, colors, forecast
-  domain/engine/          outfit rules, scoring and reasons, taste from ratings
+  domain/engine/          outfit rules, scoring and reasons, taste from ratings, wardrobe gaps
   feature/wardrobe/       grid and filters
   feature/item/           detail, add, edit
   feature/outfits/        generator, results, outfit titles and reason sentences
   feature/history/        rated outfits and the liked gallery
   feature/taste/          taste profile, Start over
+  feature/gaps/           What to add
   feature/settings/       settings, location search
   navigation/             routes, back stacks per tab, app shell
   ui/                     theme, shared components, labels
