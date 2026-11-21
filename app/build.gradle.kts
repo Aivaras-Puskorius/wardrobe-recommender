@@ -119,8 +119,8 @@ dependencies {
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    // HACK: ui-test-junit4 brings Espresso 3.5.0, which reaches InputManager.getInstance by reflection. Android 16
-    // and 17 dropped that method, so every Compose test on them failed with NoSuchMethodException. Espresso 3.7.0
+    // HACK: ui-test-junit4 brings Espresso 3.5.0, which reaches InputManager.getInstance by reflection. The API 37
+    // emulator has no such method, so every Compose test failed there with NoSuchMethodException. Espresso 3.7.0
     // uses getSystemService instead (AndroidX Test release notes). Drop this line once ui-test-junit4 brings 3.7.0.
     androidTestImplementation(libs.androidx.test.espresso.core)
 }
