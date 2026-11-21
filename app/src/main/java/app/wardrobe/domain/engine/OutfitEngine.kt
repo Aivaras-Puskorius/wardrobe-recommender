@@ -80,13 +80,32 @@ object OutfitEngine {
         recent: List<Set<String>> = emptyList(),
         limit: Int = DEFAULT_LIMIT,
         taste: Taste = Taste.NONE,
+    ): EngineResult = when (val ranked = rank(wardrobe, anchor, day, recent, taste)) {
+        is EngineResult.Outfits -> EngineResult.Outfits(pick(ranked.outfits.asSequence(), anchor, limit))
+        else -> ranked
+    }
+
+    /**
+     * Every outfit around [anchor] that passes the hard rules, best first, or why there is none. With [mustInclude],
+     * which must be in the [wardrobe], only the outfits that have it.
+     */
+    internal fun rank(
+        wardrobe: List<ClothingItem>,
+        anchor: ClothingItem,
+        day: DayForecast,
+        recent: List<Set<String>> = emptyList(),
+        taste: Taste = Taste.NONE,
+        mustInclude: ClothingItem? = null,
     ): EngineResult {
         val items = (wardrobe + anchor).distinctBy { it.id }
         for (category in listOf(Category.TOP, Category.BOTTOM, Category.FOOTWEAR)) {
             if (items.none { it.category == category }) return EngineResult.Missing(category)
         }
-        fun slot(category: Category) =
-            if (anchor.category == category) listOf(anchor) else items.filter { it.category == category }
+        fun slot(category: Category) = when (category) {
+            anchor.category -> listOf(anchor)
+            mustInclude?.category -> listOf(mustInclude)
+            else -> items.filter { it.category == category }
+        }
 
         val wet = day.condition == WeatherCondition.RAIN || day.condition == WeatherCondition.SNOW ||
             day.precipitationChancePercent >= WET_CHANCE_PERCENT
@@ -99,7 +118,7 @@ object OutfitEngine {
             low < MILD_LOW || wet -> outerwear.ifEmpty { return EngineResult.Missing(Category.OUTERWEAR) }
             low < HOT_LOW -> listOf(null) + outerwear
             else -> listOf(null)
-        }
+        }.let { options -> if (mustInclude?.category == Category.OUTERWEAR) options.filterNotNull() else options }
 
         val candidates = buildList {
             for (outer in outerwearOptions) for (top in slot(Category.TOP)) for (bottom in slot(Category.BOTTOM)) {
@@ -110,12 +129,11 @@ object OutfitEngine {
             }
         }
         if (candidates.isEmpty()) return EngineResult.NothingFits
+        return EngineResult.Outfits(candidates.sortedWith(RANKING))
+    }
 
-        val ranked = candidates.sortedWith(
-            compareByDescending<ScoredOutfit> { it.score }
-                .thenBy { it.accentColors().size }
-                .thenComparator { a, b -> compareIds(a.sortedIds(), b.sortedIds()) },
-        )
+    /** Takes outfits from [ranked] in order, skipping near copies of ones already taken, until there are [limit]. */
+    internal fun pick(ranked: Sequence<ScoredOutfit>, anchor: ClothingItem, limit: Int = DEFAULT_LIMIT): List<ScoredOutfit> {
         val picked = mutableListOf<ScoredOutfit>()
         for (outfit in ranked) {
             val others = outfit.items.map { it.id }.toSet() - anchor.id
@@ -124,8 +142,13 @@ object OutfitEngine {
             }
             if (picked.size == limit) break
         }
-        return EngineResult.Outfits(picked)
+        return picked
     }
+
+    /** The order of section 5: score, then fewer accent colors indoors, then item ids. */
+    internal val RANKING: Comparator<ScoredOutfit> = compareByDescending<ScoredOutfit> { it.score }
+        .thenBy { it.accentColors().size }
+        .thenComparator { a, b -> compareIds(a.sortedIds(), b.sortedIds()) }
 
     /** Applies the hard rules and scores the outfit, or returns null when it breaks a hard rule. */
     private fun score(
@@ -263,21 +286,26 @@ private val ItemColor.green get() = ((argb shr 8) and 0xFF) / 255.0
 private val ItemColor.blue get() = (argb and 0xFF) / 255.0
 
 /** Hue in degrees, 0 to 360, as in the HSV color model. 0 for greys. */
-internal val ItemColor.hue: Double
-    get() {
-        val max = maxOf(red, green, blue)
-        val delta = max - minOf(red, green, blue)
-        if (delta == 0.0) return 0.0
-        val sector = when (max) {
-            red -> ((green - blue) / delta).mod(6.0)
-            green -> (blue - red) / delta + 2
-            else -> (red - green) / delta + 4
-        }
-        return sector * 60
-    }
+internal val ItemColor.hue: Double get() = HUES[ordinal]
 
 /** CIELAB lightness L*: 0 is black, 100 is white. */
-internal val ItemColor.lightness: Double get() = Lab.of(argb).l
+internal val ItemColor.lightness: Double get() = LIGHTNESS[ordinal]
+
+// Worked out once per color: the engine reads them for every outfit it scores.
+private val HUES = ItemColor.entries.map { it.computeHue() }.toDoubleArray()
+private val LIGHTNESS = ItemColor.entries.map { Lab.of(it.argb).l }.toDoubleArray()
+
+private fun ItemColor.computeHue(): Double {
+    val max = maxOf(red, green, blue)
+    val delta = max - minOf(red, green, blue)
+    if (delta == 0.0) return 0.0
+    val sector = when (max) {
+        red -> ((green - blue) / delta).mod(6.0)
+        green -> (blue - red) / delta + 2
+        else -> (red - green) / delta + 4
+    }
+    return sector * 60
+}
 
 internal val ItemColor.isLight: Boolean get() = lightness >= 70
 internal val ItemColor.isDark: Boolean get() = lightness <= 36
