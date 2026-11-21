@@ -53,9 +53,11 @@ The build makes one APK per processor type, and the install tasks pick the devic
 ./gradlew verifyRoborazziDebug   # same, plus screenshot comparison
 ./gradlew recordRoborazziDebug   # re-record screenshots after an intended UI change
 ./gradlew lintDebug
+./gradlew connectedDebugAndroidTest   # on an emulator: installs, tests, then uninstalls the app and its data
 ```
 
 - Reference screenshots: `app/src/test/screenshots/`
+- Device tests: `app/src/androidTest/`. A fresh install is expected (sample items), so run them on an emulator, not a phone with your own wardrobe.
 - Database schemas, one file per version: `app/schemas/`. The debug build packs them as assets for `WardrobeMigrationTest`.
 - CI: `.github/workflows/ci.yml` runs `assembleDebug assembleRelease verifyRoborazziDebug lintDebug` on every push to `main` and on pull requests.
 
