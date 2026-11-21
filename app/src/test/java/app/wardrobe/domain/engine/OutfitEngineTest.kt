@@ -8,6 +8,10 @@ import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
 import app.wardrobe.domain.model.Material
+import app.wardrobe.domain.model.OutfitRating
+import app.wardrobe.domain.model.Rating
+import app.wardrobe.domain.model.Rating.DISLIKED
+import app.wardrobe.domain.model.Rating.LIKED
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.domain.model.WeatherCondition
@@ -16,6 +20,7 @@ import app.wardrobe.domain.model.WeatherCondition.CLOUDY
 import app.wardrobe.domain.model.WeatherCondition.PARTLY_CLOUDY
 import app.wardrobe.domain.model.WeatherCondition.RAIN
 import app.wardrobe.domain.model.WeatherCondition.SNOW
+import java.time.Instant
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -52,7 +57,8 @@ class OutfitEngineTest {
         day: DayForecast,
         recent: List<Set<String>> = emptyList(),
         limit: Int = 3,
-    ) = OutfitEngine.suggest(wardrobe, wardrobe.first { it.id == anchor }, day, recent, limit)
+        taste: Taste = Taste.NONE,
+    ) = OutfitEngine.suggest(wardrobe, wardrobe.first { it.id == anchor }, day, recent, limit, taste)
 
     private fun EngineResult.outfits() = (this as EngineResult.Outfits).outfits
 
@@ -469,5 +475,98 @@ class OutfitEngineTest {
         assertEquals(listOf(Reason.LAYERS_FIT to 2, Reason.NEUTRAL_BASE to 3), looseOnLoose.points())
     }
 
+    // Taste, docs/ENGINE.md section 13. Outfits 1 to 3 are those of section 9.
+    private val outfit1 = listOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat")
+    private val outfit2 = listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket")
+    private val outfit3 = listOf("olive-overshirt", "dark-jeans", "black-sneakers", "olive-rain-jacket")
+    private var ratedAt = Instant.parse("2026-11-21T08:00:00Z")
+
+    /** A rating given a minute after the previous one. */
+    private fun rated(rating: Rating, ids: List<String>) =
+        OutfitRating(ids.toSet(), rating, ratedAt).also { ratedAt = ratedAt.plusSeconds(60) }
+
+    private fun taste(vararg ratings: OutfitRating, since: Instant? = null) = Taste.of(ratings.toList(), sample, since)
+
+    /** Example 1 of section 13.9. */
+    @Test
+    fun t30ALikedOutfitComesFirst() {
+        val outfits = suggest(sample, "dark-jeans", coolDay, taste = taste(rated(LIKED, outfit3))).outfits()
+        assertEquals(listOf(outfit3, outfit2, outfit1), outfits.map { o -> o.items.map { it.id } })
+        assertEquals(listOf(9, 8, 7), outfits.map { it.score })
+        assertEquals(listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.TASTE_OUTFIT), outfits[0].why.map { it.reason })
+        // The taste line takes the third place from the light and dark line, which has the same points.
+        assertEquals(listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.TASTE_COLORS), outfits[1].why.map { it.reason })
+        assertEquals(listOf("dark-jeans", "black-sneakers"), outfits[1].why.last().items.map { it.id })
+        assertTrue(outfits[2].terms.none { it.reason in TASTE })
+    }
+
+    @Test
+    fun t31TasteCarriesOverToOtherAnchors() {
+        val outfits = suggest(sample, "black-sneakers", coolDay, taste = taste(rated(LIKED, outfit3))).outfits()
+        assertEquals(
+            listOf(outfit3, outfit2, listOf("black-tee", "beige-chinos", "black-sneakers", "camel-coat")),
+            outfits.map { o -> o.items.map { it.id } },
+        )
+        assertEquals(listOf(9, 8, 7), outfits.map { it.score })
+    }
+
+    /** Example 2. */
+    @Test
+    fun t32ADislikedOutfitDropsTwoPoints() {
+        val taste = taste(rated(DISLIKED, outfit1))
+        assertEquals(
+            listOf(outfit2, outfit3, listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket")),
+            suggest(sample, "dark-jeans", coolDay, taste = taste).itemIds(),
+        )
+        assertEquals(5, onlyOutfit(outfit1, taste).score)
+    }
+
+    /** Example 3: two likes make two of outfit 1's pairs positive, and its own dislike still costs 2 points. */
+    @Test
+    fun t33LikesOfOtherOutfitsDoNotCancelADislike() {
+        val taste = taste(rated(LIKED, outfit3), rated(LIKED, outfit2), rated(DISLIKED, outfit1))
+        val outfits = suggest(sample, "dark-jeans", coolDay, taste = taste).outfits()
+        assertEquals(
+            listOf(outfit2, outfit3, listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket")),
+            outfits.map { o -> o.items.map { it.id } },
+        )
+        assertEquals(listOf(9, 9, 7), outfits.map { it.score })
+        assertEquals(5, onlyOutfit(outfit1, taste).score)
+    }
+
+    /** Example 4. */
+    @Test
+    fun t37StartOverKeepsOnlyLaterRatings() {
+        val like = rated(LIKED, outfit3)
+        val since = ratedAt
+        val taste = taste(like, rated(DISLIKED, outfit2), since = since)
+        assertEquals(
+            listOf(
+                outfit1,
+                listOf("oxford-shirt", "dark-jeans", "brown-boots", "denim-jacket"),
+                listOf("olive-overshirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
+            ),
+            suggest(sample, "dark-jeans", coolDay, taste = taste).itemIds(),
+        )
+        assertEquals(6, onlyOutfit(outfit3, taste).score)
+    }
+
+    @Test
+    fun t39ADislikedOutfitStillShowsWhenNothingElseFits() {
+        val t4 = listOf("cream-knit", "dark-jeans", "brown-boots", "camel-coat")
+        val outfit = suggest(t4.map(::item), "dark-jeans", day(-1, 4, SNOW, 60), taste = taste(rated(DISLIKED, t4)))
+            .outfits().single()
+        assertEquals(5, outfit.score)
+        assertEquals(-2, outfit.term(Reason.TASTE_OUTFIT).points)
+    }
+
+    /** The outfit made of [ids] alone, scored on the cool day: a wardrobe with only its items. */
+    private fun onlyOutfit(ids: List<String>, taste: Taste) =
+        suggest(ids.map(::item), ids[1], coolDay, taste = taste).outfits().single()
+
     private fun ScoredOutfit.term(reason: Reason) = terms.single { it.reason == reason }
+
+    private companion object {
+        val TASTE = setOf(Reason.TASTE_OUTFIT, Reason.TASTE_COLORS, Reason.TASTE_GARMENTS)
+    }
 }

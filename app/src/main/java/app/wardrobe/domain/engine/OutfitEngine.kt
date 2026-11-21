@@ -25,6 +25,7 @@ enum class Reason {
 }
 
 private val COLOR_REASONS = setOf(Reason.NEUTRAL_BASE, Reason.SINGLE_ACCENT, Reason.TONAL, Reason.ANALOGOUS, Reason.COMPLEMENTARY)
+private val TASTE_REASONS = setOf(Reason.TASTE_OUTFIT, Reason.TASTE_COLORS, Reason.TASTE_GARMENTS)
 
 /** One rule that applied to an outfit: its [points] and the [items] the rule is about. */
 data class ScoreTerm(val reason: Reason, val points: Int, val items: List<ClothingItem> = emptyList())
@@ -33,11 +34,15 @@ data class ScoreTerm(val reason: Reason, val points: Int, val items: List<Clothi
 data class ScoredOutfit(val items: List<ClothingItem>, val terms: List<ScoreTerm>) {
     val score: Int get() = terms.sumOf { it.points }
 
-    /** The reasons shown under the outfit: the three strongest positive terms. */
+    /** The reasons shown under the outfit: the three strongest positive terms, always with taste when it adds points. */
     val why: List<ScoreTerm>
-        get() = terms.filter { it.points > 0 }
-            .sortedWith(compareByDescending<ScoreTerm> { it.points }.thenBy { it.reason.ordinal })
-            .take(MAX_WHY_LINES)
+        get() {
+            val positive = terms.filter { it.points > 0 }
+                .sortedWith(compareByDescending<ScoreTerm> { it.points }.thenBy { it.reason.ordinal })
+            val strongest = positive.take(MAX_WHY_LINES)
+            val taste = positive.firstOrNull { it.reason in TASTE_REASONS }
+            return if (taste == null || taste in strongest) strongest else strongest.dropLast(1) + taste
+        }
 
     /** The term that describes the outfit's colors, or null when its two accents are unrelated. */
     val colorTerm: ScoreTerm? get() = terms.firstOrNull { it.reason in COLOR_REASONS }
@@ -59,7 +64,8 @@ object OutfitEngine {
 
     /**
      * Outfits around [anchor] for [day], at most [limit], best first. [recent] holds the item ids of outfits shown in
-     * the last 7 days. A higher [limit] keeps the order and adds the next outfits after the first ones.
+     * the last 7 days. A higher [limit] keeps the order and adds the next outfits after the first ones. [taste] adds
+     * points from the user's ratings.
      *
      * INFO(limit): tries every combination, about 360 for the sample wardrobe. At a few hundred items,
      * filter each slot by the hard rules before combining.
@@ -70,6 +76,7 @@ object OutfitEngine {
         day: DayForecast,
         recent: List<Set<String>> = emptyList(),
         limit: Int = DEFAULT_LIMIT,
+        taste: Taste = Taste.NONE,
     ): EngineResult {
         val items = (wardrobe + anchor).distinctBy { it.id }
         for (category in listOf(Category.TOP, Category.BOTTOM, Category.FOOTWEAR)) {
@@ -94,7 +101,8 @@ object OutfitEngine {
         val candidates = buildList {
             for (outer in outerwearOptions) for (top in slot(Category.TOP)) for (bottom in slot(Category.BOTTOM)) {
                 for (footwear in slot(Category.FOOTWEAR)) {
-                    score(listOfNotNull(top, bottom, footwear, outer), anchor, day, wet, outerwearNeeded, recent)?.let(::add)
+                    score(listOfNotNull(top, bottom, footwear, outer), anchor, day, wet, outerwearNeeded, recent, taste)
+                        ?.let(::add)
                 }
             }
         }
@@ -124,6 +132,7 @@ object OutfitEngine {
         wet: Boolean,
         outerwearNeeded: Boolean,
         recent: List<Set<String>>,
+        taste: Taste,
     ): ScoredOutfit? {
         val outer = items.firstOrNull { it.category == Category.OUTERWEAR }
         val top = items.first { it.category == Category.TOP }
@@ -164,6 +173,7 @@ object OutfitEngine {
         if (outerwearNeeded && outer != null && colorTerm(items, items.accents()) != null) {
             terms += ScoreTerm(Reason.OUTDOOR_HOLDS, 1, listOf(outer))
         }
+        taste.term(items)?.let { terms += it }
         val season = seasonOf(day.date)
         items.filter { it.id != anchor.id && season !in it.seasons }.forEach {
             terms += ScoreTerm(Reason.OUT_OF_SEASON, -2, listOf(it))
