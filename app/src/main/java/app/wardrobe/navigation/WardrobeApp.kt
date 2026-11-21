@@ -59,6 +59,8 @@ import app.wardrobe.feature.outfits.OutfitResultsViewModel
 import app.wardrobe.feature.settings.LocationScreen
 import app.wardrobe.feature.settings.LocationViewModel
 import app.wardrobe.feature.settings.SettingsScreen
+import app.wardrobe.feature.taste.TasteProfileScreen
+import app.wardrobe.feature.taste.TasteProfileViewModel
 import app.wardrobe.feature.wardrobe.WardrobeScreen
 import app.wardrobe.feature.wardrobe.WardrobeViewModel
 
@@ -186,11 +188,18 @@ fun WardrobeApp(container: AppContainer) {
                 onThemeModeChange = { container.themeMode.value = it },
                 place = place,
                 onOpenLocation = { navigator.navigate(LocationRoute) },
+                onOpenTasteProfile = { navigator.navigate(TasteProfileRoute) },
                 versionName = versionName,
             )
         }
         entry<LocationRoute> {
             LocationScreen(viewModel = viewModel { LocationViewModel(container.weather) }, onBack = navigator::goBack)
+        }
+        entry<TasteProfileRoute> {
+            TasteProfileScreen(
+                viewModel = viewModel { TasteProfileViewModel(container.wardrobeRepository, container.ratingRepository) },
+                onBack = navigator::goBack,
+            )
         }
     }
 

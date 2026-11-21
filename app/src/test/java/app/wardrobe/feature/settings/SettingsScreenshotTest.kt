@@ -20,11 +20,11 @@ class SettingsScreenshotTest {
 
     @Test
     fun systemTheme() = composeRule.captureInTheme {
-        SettingsScreen(themeMode = ThemeMode.SYSTEM, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, versionName = "0.1.0")
+        SettingsScreen(themeMode = ThemeMode.SYSTEM, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, onOpenTasteProfile = {}, versionName = "0.1.0")
     }
 
     @Test
     fun darkTheme() = composeRule.captureInTheme(darkTheme = true) {
-        SettingsScreen(themeMode = ThemeMode.DARK, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, versionName = "0.1.0")
+        SettingsScreen(themeMode = ThemeMode.DARK, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, onOpenTasteProfile = {}, versionName = "0.1.0")
     }
 }

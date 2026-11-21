@@ -231,7 +231,7 @@ private fun GalleryTile(outfit: RatedOutfit, onOpen: () -> Unit) {
 }
 
 // INFO(limit): English month names to match the English-only UI. Use the app locale once translations exist.
-private fun LocalDate.shortDate(): String = format(DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH))
+internal fun LocalDate.shortDate(): String = format(DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH))
 
 private fun HistoryFilter.label(): Int = when (this) {
     HistoryFilter.ALL -> R.string.history_all

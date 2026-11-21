@@ -123,7 +123,7 @@ class LargeFontScreenshotTest {
 
     @Test
     fun settings() = composeRule.captureInTheme(fontScale = LARGE) {
-        SettingsScreen(themeMode = ThemeMode.SYSTEM, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, versionName = "0.1.0")
+        SettingsScreen(themeMode = ThemeMode.SYSTEM, onThemeModeChange = {}, place = SampleData.places.first(), onOpenLocation = {}, onOpenTasteProfile = {}, versionName = "0.1.0")
     }
 
     private companion object {

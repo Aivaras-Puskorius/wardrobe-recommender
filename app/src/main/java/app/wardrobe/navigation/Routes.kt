@@ -33,5 +33,9 @@ data object HistoryRoute : NavKey
 @Serializable
 data object LocationRoute : NavKey
 
+/** What the ratings taught about the user's taste, from Settings. */
+@Serializable
+data object TasteProfileRoute : NavKey
+
 /** Bottom bar destinations in display order. Each one keeps its own back stack. */
 val TopLevelRoutes: List<NavKey> = listOf(WardrobeRoute, OutfitsRoute, SettingsRoute)

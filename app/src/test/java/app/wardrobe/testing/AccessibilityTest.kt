@@ -9,15 +9,21 @@ import app.wardrobe.data.InMemoryRatingRepository
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
 import app.wardrobe.data.SampleWeather
+import app.wardrobe.domain.engine.Taste
+import app.wardrobe.domain.model.OutfitRating
+import app.wardrobe.domain.model.Rating
 import app.wardrobe.feature.outfits.OutfitGeneratorContent
 import app.wardrobe.feature.outfits.OutfitGeneratorUiState
 import app.wardrobe.feature.outfits.OutfitResultsContent
 import app.wardrobe.feature.outfits.OutfitResultsUiState
 import app.wardrobe.feature.outfits.OutfitResultsViewModel
 import app.wardrobe.feature.settings.SettingsScreen
+import app.wardrobe.feature.taste.TasteProfileContent
+import app.wardrobe.feature.taste.TasteProfileUiState
 import app.wardrobe.ui.theme.ThemeMode
 import app.wardrobe.ui.theme.WardrobeTheme
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
+import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -53,10 +59,10 @@ class AccessibilityTest {
     @Test
     fun settingsSectionsAreHeadings() {
         composeRule.setContent {
-            WardrobeTheme { SettingsScreen(ThemeMode.SYSTEM, {}, SampleData.places.first(), onOpenLocation = {}, versionName = "0.1.0") }
+            WardrobeTheme { SettingsScreen(ThemeMode.SYSTEM, {}, SampleData.places.first(), onOpenLocation = {}, onOpenTasteProfile = {}, versionName = "0.1.0") }
         }
         composeRule.onNodeWithText("Appearance").assert(isHeading())
-        composeRule.onNodeWithText("Coming later").assert(isHeading())
+        composeRule.onNodeWithText("Outfit ideas").assert(isHeading())
     }
 
     @Test
@@ -76,5 +82,23 @@ class AccessibilityTest {
         }
         composeRule.onNodeWithText("Tomorrow").assertContentDescriptionContains("Rain")
         composeRule.onNodeWithText("Start from").assert(isHeading())
+    }
+
+    @Test
+    fun tasteProfileSectionsAreHeadings() {
+        val taste = Taste.of(
+            listOf(
+                OutfitRating(setOf("olive-overshirt", "dark-jeans", "black-sneakers", "olive-rain-jacket"), Rating.LIKED, Instant.EPOCH),
+                OutfitRating(setOf("black-tee", "dark-jeans", "white-sneakers", "camel-coat"), Rating.DISLIKED, Instant.EPOCH),
+            ),
+            SampleData.items,
+        )
+        composeRule.setContent {
+            WardrobeTheme {
+                TasteProfileContent(TasteProfileUiState.Ready(2, null, taste.liked, taste.avoided), onBack = {}, onStartOver = {})
+            }
+        }
+        composeRule.onNodeWithText("You like").assert(isHeading())
+        composeRule.onNodeWithText("You avoid").assert(isHeading())
     }
 }
