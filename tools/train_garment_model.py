@@ -11,6 +11,11 @@ TensorFlow Lite's CPU accelerator ("failed to prepare"), while MobileNetV2 runs 
 
 The dataset puts all footwear in "Shoes". tools/clothing_relabels.csv moves its 55 boots, sorted by eye
 from contact sheets on 2026-10-23, to a "Boots" class, and fixes two photos of shorts filed as shoes.
+The dataset has no sweater label either: its "Longsleeve" photos mix knits, sweatshirts, cardigans and zip tops
+with plain long-sleeve tops. The same file marks 233 of the 699, the plain long-sleeve tops and blouses sorted by eye
+on 2026-11-09, as "LongsleeveTop". They still train as sweaters. A model with its own long-sleeve class
+(2026-11-09) was right on 75.5% of the test photos, 74.1% with that class weighted double, against 78.9%, and
+on the phone it still rated a real long-sleeve top a sweater, so the app leaves that type to the user.
 
 Setup, outside the repo (TensorFlow needs Python 3.10 to 3.13):
     uv venv --python 3.12 ~/.cache/clankdrobe-training/venv
@@ -36,7 +41,7 @@ import tensorflow as tf
 CLASSES = {
     "t_shirt": ["T-Shirt", "Polo", "Undershirt", "Top"],
     "shirt": ["Shirt", "Blouse"],
-    "sweater": ["Longsleeve", "Hoodie"],
+    "sweater": ["Longsleeve", "LongsleeveTop", "Hoodie"],
     "pants": ["Pants"],
     "shorts": ["Shorts"],
     "skirt": ["Skirt"],
