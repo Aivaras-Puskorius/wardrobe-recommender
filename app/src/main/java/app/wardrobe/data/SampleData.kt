@@ -17,6 +17,7 @@ import app.wardrobe.domain.model.Season.WINTER
 import app.wardrobe.domain.model.Warmth
 import app.wardrobe.domain.model.WeatherCondition
 import java.time.LocalDate
+import kotlinx.coroutines.flow.first
 
 /** Fixed wardrobe and forecast for milestone 1, before photos, storage and the weather API exist. */
 object SampleData {
@@ -49,6 +50,11 @@ object SampleData {
         ),
         item("camel-coat", "Camel coat", Garment.COAT, ItemColor.CAMEL, Warmth.WARM, AUTUMN, WINTER),
     )
+
+    /** True for an item the app started with, edited or not. Sample items keep their fixed ids. */
+    fun isSample(item: ClothingItem): Boolean = item.id in sampleIds
+
+    private val sampleIds: Set<String> by lazy { items.map { it.id }.toSet() }
 
     /** What the stand-in recognizer "sees" in each new photo, in turn. None of them are in [items]. */
     val photoSuggestions: List<ItemSuggestion> = listOf(
@@ -96,4 +102,9 @@ object SampleData {
         material: Material = garment.defaultMaterial,
         fit: Fit = Fit.REGULAR,
     ) = ClothingItem(id, name, garment, color, material, fit, warmth, seasons.toSet(), photo = null)
+}
+
+/** Deletes the items the app started with. The user's own items stay. */
+suspend fun WardrobeRepository.removeSampleItems() {
+    items.first().filter(SampleData::isSample).forEach { delete(it.id) }
 }
