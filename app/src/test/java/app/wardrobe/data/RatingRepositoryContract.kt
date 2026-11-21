@@ -62,4 +62,18 @@ abstract class RatingRepositoryContract {
         repository.clear(setOf("c", "b", "a"))
         assertEquals(emptyList<OutfitRating>(), ratings())
     }
+
+    @Test
+    fun noStartOverAtFirst() = runTest {
+        assertEquals(null, repository.tasteSince.first())
+    }
+
+    @Test
+    fun startOverSavesTheTimeAndKeepsTheRatings() = runTest {
+        repository.rate(outfit, Rating.LIKED)
+        now = now.plusSeconds(60)
+        repository.startTasteOver()
+        assertEquals(now, repository.tasteSince.first())
+        assertEquals(listOf(outfit), ratings().map { it.itemIds })
+    }
 }

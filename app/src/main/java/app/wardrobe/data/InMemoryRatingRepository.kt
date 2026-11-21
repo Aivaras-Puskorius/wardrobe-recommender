@@ -22,4 +22,12 @@ class InMemoryRatingRepository(private val now: () -> Instant = Instant::now) : 
     override suspend fun clear(itemIds: Set<String>) {
         state.update { ratings -> ratings.filterNot { it.itemIds == itemIds } }
     }
+
+    private val since = MutableStateFlow<Instant?>(null)
+
+    override val tasteSince: StateFlow<Instant?> = since.asStateFlow()
+
+    override suspend fun startTasteOver() {
+        since.value = now()
+    }
 }

@@ -2,6 +2,7 @@ package app.wardrobe.data
 
 import app.wardrobe.domain.model.OutfitRating
 import app.wardrobe.domain.model.Rating
+import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -15,6 +16,12 @@ interface RatingRepository {
 
     /** Removes the rating of the outfit made of [itemIds], if it has one. */
     suspend fun clear(itemIds: Set<String>)
+
+    /** When the user last chose Start over on the Taste profile, or null. Older ratings stop teaching the taste. */
+    val tasteSince: Flow<Instant?>
+
+    /** Makes the ratings given so far stop teaching the taste. They stay in History. */
+    suspend fun startTasteOver()
 }
 
 /** Rates the outfit made of [itemIds], or clears its rating if it already has this one, as a toggle button does. */

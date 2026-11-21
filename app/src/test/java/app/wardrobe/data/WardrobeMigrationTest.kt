@@ -1,5 +1,6 @@
 package app.wardrobe.data
 
+import android.content.Context
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import app.wardrobe.domain.model.ClothingItem
@@ -150,7 +151,8 @@ class WardrobeMigrationTest {
         helper.runMigrationsAndValidate(NAME, 5, true, WardrobeDatabase.MIGRATION_4_5).close()
 
         val database = WardrobeDatabase.build(RuntimeEnvironment.getApplication(), NAME)
-        val ratings = RoomRatingRepository(database.ratings()) { Instant.EPOCH }
+        val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("taste", Context.MODE_PRIVATE)
+        val ratings = RoomRatingRepository(database.ratings(), prefs) { Instant.EPOCH }
         val (items, saved) = runBlocking {
             ratings.rate(setOf("jeans", "tee"), Rating.LIKED)
             RoomWardrobeRepository(database.items()).items.first() to ratings.ratings.first()

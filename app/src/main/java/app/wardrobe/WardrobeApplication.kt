@@ -26,7 +26,7 @@ class WardrobeApplication : Application() {
             recognizer = recognizer,
             photoStore = PhotoStore(filesDir),
             weather = OpenMeteoWeather(getSharedPreferences("weather", MODE_PRIVATE), scope),
-            ratingRepository = RoomRatingRepository(database.ratings()),
+            ratingRepository = RoomRatingRepository(database.ratings(), getSharedPreferences("taste", MODE_PRIVATE)),
         )
     }
 
