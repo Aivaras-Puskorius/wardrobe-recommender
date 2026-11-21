@@ -32,13 +32,13 @@ The build makes one APK per processor type, and the install tasks pick the devic
 | Item | Edit. Delete, with Undo on the snackbar. Style it: outfit ideas for this item, today. |
 | Add item | Take a photo or Choose from gallery, then confirm the suggested type and color, set material, fit, warmth and seasons, Save. Try with my clothes: see what it would do for your wardrobe without saving it. |
 | Outfits tab | Pick a day and an item, Show outfits. Like or dislike each outfit. The History button lists rated outfits, or the liked ones as a gallery. |
-| Settings tab | Theme: System, Light, Dark. Location: search for the forecast's city with Open-Meteo's place search. Taste profile: the color and garment pairs your ratings taught, Start over. |
+| Settings tab | Theme: System, Light, Dark. Location: search for the forecast's city with Open-Meteo's place search. Taste profile: the color and garment pairs your ratings taught, Start over. Remove sample items, while any are left. |
 
 ## Prototype limits
 
 | Feature | Now |
 |---|---|
-| Storage | Room database on the phone. The first launch adds the 17 sample items. |
+| Storage | Room database on the phone. The first launch adds the 17 sample items, and Settings can remove them. Uninstalling the app or clearing its data deletes everything, and there is no export yet. |
 | Photos | Taken with the phone's camera app or picked from the gallery, kept at full size in app storage. Items show the cut-out of their photo, or the photo itself when it has none. Sample items show drawings. |
 | Photo recognition | On the phone. A clothes model trained for the app (`tools/train_garment_model.py`) suggests the type, from whichever of the photo and its cut-out it is surer about. ML Kit's subject segmentation (beta, downloaded by Google Play services) makes the cut-out. An ImageNet model splits its pants, shoes and outerwear classes. ML Kit's standard labels (Google Play services downloads that model on first use) suggest wool, and decide the type when the clothes model is unsure. They don't tell denim apart, so jeans need ImageNet's "jean" label and usually come out as trousers. When no model is sure of the type, the form leaves it for you to pick. The clothes model's boots class learned from 55 hand-sorted photos, so it finds some boots and calls some dark leather shoes boots. The color comes from the cut-out, or from the middle of the photo when there is none. Sweatpants are suggested as trousers and long-sleeve tops as sweaters, since the clothes model has no such classes. `adb logcat -s MlKitRecognizer` shows the raw labels. |
 | Outfits | Built by rules from the wardrobe and the day's forecast, three per item, and three more each time you tap More outfits. On drizzle days a wool top gets a jacket over it. Past suggestions don't change later ones, but ratings do. |
