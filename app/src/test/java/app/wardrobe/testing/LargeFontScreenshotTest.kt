@@ -96,6 +96,7 @@ class LargeFontScreenshotTest {
             onPickPhoto = {},
             onFormChange = {},
             onSave = {},
+            onTry = {},
         )
     }
 

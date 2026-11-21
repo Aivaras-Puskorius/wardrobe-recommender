@@ -15,22 +15,28 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -47,11 +53,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.wardrobe.R
-import app.wardrobe.ui.components.BottomActionBar
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.ui.components.GarmentBackdrop
 import java.io.FileNotFoundException
@@ -62,6 +68,7 @@ fun AddItemScreen(
     viewModel: AddItemViewModel,
     onClose: () -> Unit,
     onSaved: (ClothingItem) -> Unit,
+    onTry: (ClothingItem) -> Unit,
 ) {
     val step by viewModel.step.collectAsStateWithLifecycle()
     val photoError by viewModel.photoError.collectAsStateWithLifecycle()
@@ -101,6 +108,7 @@ fun AddItemScreen(
         onPickPhoto = { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
         onFormChange = viewModel::update,
         onSave = { scope.launch { viewModel.save()?.let(onSaved) } },
+        onTry = { viewModel.itemToTry()?.let(onTry) },
         snackbarHostState = snackbarHostState,
     )
 }
@@ -115,6 +123,7 @@ fun AddItemContent(
     onPickPhoto: () -> Unit,
     onFormChange: (ItemFormChange) -> Unit,
     onSave: () -> Unit,
+    onTry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     showDiscardDialogInitially: Boolean = false,
@@ -137,7 +146,7 @@ fun AddItemContent(
             )
         },
         bottomBar = {
-            if (step is AddItemStep.Details) BottomActionBar(stringResource(R.string.add_item_save), onSave)
+            if (step is AddItemStep.Details) DetailsActionBar(canTry = step.form.garment != null, onTry, onSave)
         },
     ) { padding ->
         // Cross-fades between steps. Keyed by step type, so editing the form doesn't animate.
@@ -277,5 +286,29 @@ private fun Analyzing(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/**
+ * Save, and the store check beside it, which needs a type and keeps the form as it is. Name and seasons aren't
+ * needed to try an item.
+ */
+@Composable
+private fun DetailsActionBar(canTry: Boolean, onTry: () -> Unit, onSave: () -> Unit) {
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            OutlinedButton(onClick = onTry, enabled = canTry, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.store_try), textAlign = TextAlign.Center)
+            }
+            Button(onClick = onSave, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.add_item_save), textAlign = TextAlign.Center)
+            }
+        }
     }
 }

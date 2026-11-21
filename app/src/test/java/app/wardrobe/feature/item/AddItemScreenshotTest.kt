@@ -89,6 +89,7 @@ class AddItemScreenshotTest {
             onPickPhoto = {},
             onFormChange = {},
             onSave = {},
+            onTry = {},
             showDiscardDialogInitially = showDiscardDialog,
         )
     }

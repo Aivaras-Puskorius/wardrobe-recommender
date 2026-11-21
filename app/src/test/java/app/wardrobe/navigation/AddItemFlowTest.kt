@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -32,6 +33,7 @@ import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -113,6 +115,22 @@ class AddItemFlowTest {
         composeRule.onNodeWithText("Green sweater added").assertIsDisplayed()
         composeRule.onNodeWithText("Green sweater").assertIsDisplayed()
         assertArrayEquals(CAMERA_PHOTO, photoStore.file(savedSweater().photo!!).readBytes())
+    }
+
+    /** The store check, docs/ENGINE.md section 15: trying an item saves nothing, and back keeps the form. */
+    @Test
+    fun tryingAnItemSavesNothingAndKeepsTheForm() {
+        composeRule.onNodeWithText("Take a photo").performClick()
+        composeRule.onNodeWithText("Try with my clothes").performClick()
+        // The check takes a moment, off the main thread.
+        composeRule.waitUntil(30_000) {
+            composeRule.onAllNodes(hasText("top three outfits", substring = true)).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Best outfits with it").assertIsDisplayed()
+
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.onNodeWithText("Suggested from your photo. Change anything that is wrong.").assertIsDisplayed()
+        assertTrue(runBlocking { container.wardrobeRepository.items.first() }.none { it.name == "Green sweater" })
     }
 
     @Test

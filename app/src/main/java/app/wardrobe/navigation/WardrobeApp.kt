@@ -36,8 +36,11 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.defaultPopTransitionSpec
 import app.wardrobe.AppContainer
 import app.wardrobe.R
+import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.feature.store.StoreCheckScreen
+import app.wardrobe.feature.store.StoreCheckViewModel
 import app.wardrobe.ui.components.LocalEntryAnimatedScope
 import app.wardrobe.ui.components.LocalPhotoStore
 import app.wardrobe.ui.components.LocalSharedTransitionScope
@@ -130,6 +133,31 @@ fun WardrobeApp(container: AppContainer) {
                     navigator.goBack()
                     showMessage(resources.getString(R.string.item_added, item.name))
                 },
+                onTry = { item ->
+                    val name = item.name.ifBlank { defaultItemName(item.garment, item.color) }
+                    navigator.navigate(
+                        StoreCheckRoute(name, item.garment, item.color, item.material, item.fit, item.warmth, item.photo),
+                    )
+                },
+            )
+        }
+        entry<StoreCheckRoute> { route ->
+            StoreCheckScreen(
+                viewModel = viewModel {
+                    val item = ClothingItem(
+                        id = "shop-item",
+                        name = route.name,
+                        garment = route.garment,
+                        color = route.color,
+                        material = route.material,
+                        fit = route.fit,
+                        warmth = route.warmth,
+                        seasons = emptySet(),
+                        photo = route.photo,
+                    )
+                    StoreCheckViewModel(container.wardrobeRepository, item)
+                },
+                onBack = navigator::goBack,
             )
         }
         entry<ItemDetailRoute> { route ->

@@ -1,6 +1,11 @@
 package app.wardrobe.navigation
 
 import androidx.navigation3.runtime.NavKey
+import app.wardrobe.domain.model.Fit
+import app.wardrobe.domain.model.Garment
+import app.wardrobe.domain.model.ItemColor
+import app.wardrobe.domain.model.Material
+import app.wardrobe.domain.model.Warmth
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -32,6 +37,18 @@ data object HistoryRoute : NavKey
 /** The place search for the forecast, from Settings. */
 @Serializable
 data object LocationRoute : NavKey
+
+/** An item seen in a shop, as the Add item form describes it, tried with the wardrobe without adding it. */
+@Serializable
+data class StoreCheckRoute(
+    val name: String,
+    val garment: Garment,
+    val color: ItemColor,
+    val material: Material,
+    val fit: Fit,
+    val warmth: Warmth,
+    val photo: String?,
+) : NavKey
 
 /** The garments and colors that would widen the wardrobe, from the Wardrobe tab. */
 @Serializable

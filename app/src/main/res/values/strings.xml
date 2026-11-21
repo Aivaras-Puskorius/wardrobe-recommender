@@ -227,6 +227,18 @@
     <string name="gaps_colors_more">%1$s or %2$d more</string>
     <string name="gaps_empty_title">Add a few more items first</string>
     <string name="gaps_empty_body">No single new piece makes an outfit with what you have yet. A top, bottoms and shoes are the start.</string>
+    <string name="store_try">Try with my clothes</string>
+    <string name="store_title">With your clothes</string>
+    <string name="store_working">Trying it with your wardrobe…</string>
+    <string name="store_count">In the top three outfits for %1$d of your %2$d items</string>
+    <string name="store_count_none">Not in the top three outfits for any of your items</string>
+    <string name="store_similar">You have a similar one: %1$s</string>
+    <string name="store_outfits">Best outfits with it</string>
+    <string name="store_nothing">Nothing in your wardrobe goes with it yet.</string>
+    <string name="store_band_hot">Hot day</string>
+    <string name="store_band_mild">Mild day</string>
+    <string name="store_band_cool">Cool day</string>
+    <string name="store_band_cold">Cold day</string>
 
     <string name="color_white">White</string>
     <string name="color_cream">Cream</string>
