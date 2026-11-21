@@ -29,9 +29,9 @@ class GapsFlowTest {
         composeRule.onNodeWithContentDescription("What to add").performClick()
         // The suggestions take a few seconds to work out.
         composeRule.waitUntil(30_000) {
-            composeRule.onAllNodes(hasText("Goes with 14 of your 17 items")).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodes(hasText("Goes with 11 of your 17 items")).fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("Sneakers").assertIsDisplayed()
+        composeRule.onNodeWithText("Long-sleeve top").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Back").performClick()
         composeRule.onNodeWithContentDescription("What to add").assertIsDisplayed()
     }

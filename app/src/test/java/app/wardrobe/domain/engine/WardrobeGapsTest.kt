@@ -46,18 +46,18 @@ class WardrobeGapsTest {
     fun sampleWardrobe() {
         assertEquals(
             listOf(
-                Gap(Garment.SNEAKERS, listOf(BROWN, NAVY), goesWith = 14, itemDays = 33),
+                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 11, itemDays = 31),
                 Gap(
                     Garment.COAT,
                     listOf(
-                        WHITE, CREAM, BEIGE, BROWN, GREY, BLACK, NAVY, DENIM, LIGHT_BLUE, BLUE, GREEN, ORANGE, RED,
-                        BURGUNDY, PINK,
+                        WHITE, CREAM, BEIGE, BROWN, GREY, BLACK, NAVY, DENIM, LIGHT_BLUE, BLUE, OLIVE, YELLOW, ORANGE,
+                        PURPLE,
                     ),
-                    goesWith = 13,
-                    itemDays = 20,
+                    goesWith = 11,
+                    itemDays = 13,
                 ),
-                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 11, itemDays = 34),
-                Gap(Garment.JEANS, listOf(WHITE, CREAM, BEIGE), goesWith = 11, itemDays = 15),
+                Gap(Garment.SNEAKERS, listOf(BROWN, NAVY), goesWith = 7, itemDays = 11),
+                Gap(Garment.JEANS, listOf(BROWN, BLACK, NAVY), goesWith = 6, itemDays = 11),
             ),
             WardrobeGaps.find(SampleData.items),
         )
@@ -72,6 +72,13 @@ class WardrobeGapsTest {
         assertTrue(Garment.SNEAKERS to WHITE !in candidates)
         // Cream boots are fine: the brown boots are far from cream.
         assertTrue(Garment.BOOTS to CREAM in candidates)
+    }
+
+    /** Seasons play no part (user, 2026-11-21): an all-year wardrobe gets the same rows. */
+    @Test
+    fun seasonsDoNotChangeTheResult() {
+        val allYear = SampleData.items.map { it.copy(seasons = Season.entries.toSet()) }
+        assertEquals(WardrobeGaps.find(allYear), WardrobeGaps.find(SampleData.items))
     }
 
     @Test
@@ -98,8 +105,8 @@ class WardrobeGapsTest {
                     goesWith = 8,
                     itemDays = 15,
                 ),
-                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE, BROWN, BLACK, NAVY), goesWith = 7, itemDays = 21),
-                Gap(Garment.SNEAKERS, listOf(BEIGE, LIGHT_BLUE), goesWith = 7, itemDays = 16),
+                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 7, itemDays = 20),
+                Gap(Garment.SNEAKERS, listOf(BEIGE), goesWith = 3, itemDays = 6),
             ),
             WardrobeGaps.find(tenItems),
         )

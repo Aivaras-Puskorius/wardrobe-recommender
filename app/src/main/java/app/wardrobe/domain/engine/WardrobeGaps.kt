@@ -27,7 +27,10 @@ object WardrobeGaps {
      * result per wardrobe when that gets slow on the phone.
      */
     fun find(wardrobe: List<ClothingItem>): List<Gap> {
-        val scored = candidates(wardrobe).map { it to score(wardrobe, it) }
+        // Seasons play no part (user, 2026-11-21): a new item would otherwise get a head start over the user's own,
+        // which only count in the seasons marked on them.
+        val allYear = wardrobe.map { it.copy(seasons = Season.entries.toSet()) }
+        val scored = candidates(wardrobe).map { it to score(allYear, it) }
             .sortedWith(
                 compareByDescending<Pair<ClothingItem, Score>> { it.second.goesWith }
                     .thenByDescending { it.second.itemDays }
