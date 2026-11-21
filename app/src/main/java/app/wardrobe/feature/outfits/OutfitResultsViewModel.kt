@@ -14,6 +14,7 @@ import app.wardrobe.domain.engine.OutfitEngine
 import app.wardrobe.domain.engine.Reason
 import app.wardrobe.domain.engine.ScoreTerm
 import app.wardrobe.domain.engine.ScoredOutfit
+import app.wardrobe.domain.engine.Taste
 import app.wardrobe.domain.model.Category
 import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.DayForecast
@@ -70,11 +71,11 @@ sealed interface OutfitResultsUiState {
 }
 
 /**
- * Outfits built around one item for one forecast day, by [OutfitEngine]. A [date] the forecast doesn't have, such as
- * yesterday after midnight, falls back to the forecast's first day.
+ * Outfits built around one item for one forecast day, by [OutfitEngine] with the taste the ratings teach. A rating
+ * given here changes the order at once. A [date] the forecast doesn't have, such as yesterday after midnight, falls
+ * back to the forecast's first day.
  *
- * INFO(limit): ratings are saved but don't change the suggestions yet, and the engine gets no history of shown
- * outfits. Milestone 3's taste learning will use the ratings.
+ * INFO(limit): the engine gets no history of shown outfits (user choice, 2026-10-29). More outfits shows the next ones.
  */
 class OutfitResultsViewModel(
     itemId: String,
@@ -88,7 +89,13 @@ class OutfitResultsViewModel(
     private val shown = MutableStateFlow(MORE_OUTFITS)
 
     val uiState: StateFlow<OutfitResultsUiState> =
-        combine(repository.items, ratings.ratings, weather.state, shown) { items, rated, weatherState, count ->
+        combine(
+            repository.items,
+            ratings.ratings,
+            ratings.tasteSince,
+            weather.state,
+            shown,
+        ) { items, rated, tasteSince, weatherState, count ->
             val ready = when (weatherState) {
                 WeatherState.Loading -> return@combine OutfitResultsUiState.Loading
                 WeatherState.Unavailable -> return@combine OutfitResultsUiState.NoForecast
@@ -98,7 +105,8 @@ class OutfitResultsViewModel(
             val anchor = items.firstOrNull { it.id == itemId } ?: return@combine OutfitResultsUiState.NotFound
             val day = forecast.days.firstOrNull { it.date == date } ?: forecast.days.first()
             // One more than shown, to know whether More outfits has anything to add.
-            val result = OutfitEngine.suggest(items, anchor, day, limit = count + 1)
+            val taste = Taste.of(rated, items, tasteSince)
+            val result = OutfitEngine.suggest(items, anchor, day, limit = count + 1, taste = taste)
             val outfits = (result as? EngineResult.Outfits)?.outfits.orEmpty()
             OutfitResultsUiState.Ready(
                 anchor = anchor,

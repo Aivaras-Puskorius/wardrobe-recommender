@@ -5,6 +5,7 @@ import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
 import app.wardrobe.data.SampleWeather
 import app.wardrobe.data.WeatherState
+import app.wardrobe.data.itemIdsOf
 import app.wardrobe.domain.engine.Reason
 import app.wardrobe.domain.engine.ScoreTerm
 import app.wardrobe.domain.engine.ScoredOutfit
@@ -34,7 +35,8 @@ class OutfitResultsViewModelTest {
 
     private val today = LocalDate.of(2026, 10, 8)
     private val weather = SampleWeather { today }
-    private val ratings = InMemoryRatingRepository()
+    private var clock = Instant.parse("2026-10-08T08:00:00Z")
+    private val ratings = InMemoryRatingRepository { clock }
     private lateinit var repository: InMemoryWardrobeRepository
 
     @Before
@@ -136,10 +138,13 @@ class OutfitResultsViewModelTest {
         assertTrue(outfits.none { outfit -> outfit.items.any { it.id == "camel-coat" } })
     }
 
+    /** A wardrobe with one outfit for Dark jeans, so a dislike can't push it off the screen. */
     @Test
     fun ratingAgainClearsItAndTheOtherRatingReplacesIt() = runTest {
+        val kept = setOf("black-tee", "dark-jeans", "black-sneakers", "camel-coat")
+        SampleData.items.filterNot { it.id in kept }.forEach { repository.delete(it.id) }
         val viewModel = viewModel("dark-jeans")
-        val id = viewModel.ready().outfits[1].id
+        val id = viewModel.ready().outfits.single().id
         viewModel.rate(id, Rating.LIKED)
         assertEquals(Rating.LIKED, viewModel.ready().outfits.first { it.id == id }.rating)
 
@@ -148,6 +153,29 @@ class OutfitResultsViewModelTest {
 
         viewModel.rate(id, Rating.DISLIKED)
         assertNull(viewModel.ready().outfits.first { it.id == id }.rating)
+    }
+
+    /** T41 of docs/ENGINE.md: a rating changes the taste at once (user, 2026-11-21). */
+    @Test
+    fun aRatingChangesTheOrderAtOnce() = runTest {
+        val viewModel = viewModel("dark-jeans")
+        val (outfit1, outfit2, outfit3) = viewModel.ready().outfits.map { it.id }
+        viewModel.rate(outfit3, Rating.LIKED)
+        assertEquals(listOf(outfit3, outfit2, outfit1), viewModel.ready().outfits.map { it.id })
+        assertEquals(Reason.TASTE_OUTFIT, viewModel.ready().outfits.first().why.last().reason)
+
+        viewModel.rate(outfit1, Rating.DISLIKED)
+        assertTrue(viewModel.ready().outfits.none { it.id == outfit1 })
+    }
+
+    @Test
+    fun ratingsBeforeStartOverDoNotChangeTheOrder() = runTest {
+        val viewModel = viewModel("dark-jeans")
+        val before = viewModel.ready().outfits.map { it.id }
+        ratings.rate(itemIdsOf(before[2]), Rating.LIKED)
+        clock = clock.plusSeconds(60)
+        ratings.startTasteOver()
+        assertEquals(before, viewModel.ready().outfits.map { it.id })
     }
 
     @Test
