@@ -3,6 +3,7 @@ package app.wardrobe.feature.item
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.PhotoStore
 import app.wardrobe.domain.model.Category
+import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -304,5 +305,25 @@ class AddItemViewModelTest {
 
     private companion object {
         const val PHOTO = "green-sweater.jpg"
+    }
+
+    /** T54 of docs/ENGINE.md: the store check needs only a type, and saves nothing. */
+    @Test
+    fun tryingWithMyClothesNeedsOnlyAType() = runTest {
+        nextSuggestion = ItemSuggestion(null, ItemColor.GREEN)
+        val file = viewModel.startCamera()
+        file.writeBytes(byteArrayOf(1, 2, 3))
+        viewModel.cameraFinished(saved = true)
+        assertNull(viewModel.itemToTry())
+
+        viewModel.update(ItemFormChange.SetGarment(Garment.COAT))
+        val item = checkNotNull(viewModel.itemToTry())
+        assertEquals(Garment.COAT, item.garment)
+        assertEquals(ItemColor.GREEN, item.color)
+        assertEquals(Garment.COAT.defaultMaterial, item.material)
+        assertEquals(Garment.COAT.defaultWarmth, item.warmth)
+        assertEquals(file.name, item.photo)
+        assertEquals(false, form().showErrors)
+        assertEquals(emptyList<ClothingItem>(), repository.items.first())
     }
 }

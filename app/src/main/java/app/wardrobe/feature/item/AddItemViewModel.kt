@@ -124,7 +124,22 @@ class AddItemViewModel(
         return form.toItem(newId()).also { repository.add(it) }
     }
 
+    /**
+     * The item as the form describes it, for the store check, or null until a type is picked. Name and seasons
+     * may still be missing, and nothing is saved.
+     */
+    fun itemToTry(): ClothingItem? {
+        val form = (_step.value as? AddItemStep.Details)?.form ?: return null
+        if (form.garment == null) return null
+        return form.toItem(TRY_ID)
+    }
+
     private fun editForm(change: (ItemForm) -> ItemForm) {
         _step.update { step -> if (step is AddItemStep.Details) step.copy(form = change(step.form)) else step }
+    }
+
+    private companion object {
+        /** The store check gives the item its own id, so this one is never seen. */
+        const val TRY_ID = "item-to-try"
     }
 }
