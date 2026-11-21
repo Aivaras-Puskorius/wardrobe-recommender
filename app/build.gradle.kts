@@ -19,6 +19,7 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -63,6 +64,8 @@ android {
         // WARN: the first test run after a schema change fails with "Cannot find the schema file", because the
         // assets are merged before KSP writes the new file. Run the tests again.
         getByName("debug").assets.srcDir("$projectDir/schemas")
+        // Tests on a device read them from the test APK.
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
 }
 
@@ -109,4 +112,15 @@ dependencies {
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.androidx.compose.ui.test.junit4)
+
+    // Tests on a device or emulator: ./gradlew connectedDebugAndroidTest
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    // HACK: ui-test-junit4 brings Espresso 3.5.0, which reaches InputManager.getInstance by reflection. Android 16
+    // and 17 dropped that method, so every Compose test on them failed with NoSuchMethodException. Espresso 3.7.0
+    // uses getSystemService instead (AndroidX Test release notes). Drop this line once ui-test-junit4 brings 3.7.0.
+    androidTestImplementation(libs.androidx.test.espresso.core)
 }
