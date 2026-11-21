@@ -34,14 +34,17 @@ data class ScoreTerm(val reason: Reason, val points: Int, val items: List<Clothi
 data class ScoredOutfit(val items: List<ClothingItem>, val terms: List<ScoreTerm>) {
     val score: Int get() = terms.sumOf { it.points }
 
-    /** The reasons shown under the outfit: the three strongest positive terms, always with taste when it adds points. */
+    /**
+     * The reasons shown under the outfit: the three strongest positive terms. Taste that adds points always shows,
+     * as a fourth line when three others outrank it, so it never pushes a weather reason out.
+     */
     val why: List<ScoreTerm>
         get() {
             val positive = terms.filter { it.points > 0 }
                 .sortedWith(compareByDescending<ScoreTerm> { it.points }.thenBy { it.reason.ordinal })
             val strongest = positive.take(MAX_WHY_LINES)
             val taste = positive.firstOrNull { it.reason in TASTE_REASONS }
-            return if (taste == null || taste in strongest) strongest else strongest.dropLast(1) + taste
+            return if (taste == null || taste in strongest) strongest else strongest + taste
         }
 
     /** The term that describes the outfit's colors, or null when its two accents are unrelated. */

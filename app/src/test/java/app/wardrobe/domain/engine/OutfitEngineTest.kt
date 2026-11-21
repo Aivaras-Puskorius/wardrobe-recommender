@@ -494,8 +494,11 @@ class OutfitEngineTest {
         assertEquals(listOf(outfit3, outfit2, outfit1), outfits.map { o -> o.items.map { it.id } })
         assertEquals(listOf(9, 8, 7), outfits.map { it.score })
         assertEquals(listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.TASTE_OUTFIT), outfits[0].why.map { it.reason })
-        // The taste line takes the third place from the light and dark line, which has the same points.
-        assertEquals(listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.TASTE_COLORS), outfits[1].why.map { it.reason })
+        // Three other reasons outrank the taste line, so it comes as a fourth line (user, 2026-11-21).
+        assertEquals(
+            listOf(Reason.SINGLE_ACCENT, Reason.LAYERS_FIT, Reason.LIGHT_DARK, Reason.TASTE_COLORS),
+            outfits[1].why.map { it.reason },
+        )
         assertEquals(listOf("dark-jeans", "black-sneakers"), outfits[1].why.last().items.map { it.id })
         assertTrue(outfits[2].terms.none { it.reason in TASTE })
     }
