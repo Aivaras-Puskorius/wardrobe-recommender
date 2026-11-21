@@ -2,6 +2,7 @@ package app.wardrobe.domain.engine
 
 import app.wardrobe.data.SampleData
 import app.wardrobe.domain.model.Category
+import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -129,5 +130,38 @@ class WardrobeGapsTest {
             listOf(Gap(Garment.SNEAKERS, ItemColor.entries, goesWith = 2, itemDays = 4)),
             WardrobeGaps.find(items("white-tee", "dark-jeans")),
         )
+    }
+
+    /** The search as first written: every engine run from scratch, with the new item in the wardrobe. */
+    private fun fullRunScore(allYear: List<ClothingItem>, new: ClothingItem): Pair<Int, Int> {
+        var itemDays = 0
+        val goesWith = allYear.count { anchor ->
+            val days = WardrobeGaps.REFERENCE_DAYS.values.count { day ->
+                val result = OutfitEngine.suggest(allYear + new, anchor, day)
+                result is EngineResult.Outfits && result.outfits.any { new in it.items }
+            }
+            itemDays += days
+            days > 0
+        }
+        return goesWith to itemDays
+    }
+
+    /** The faster search reuses each item's ranking. It must count exactly what full engine runs count. */
+    @Test
+    fun theFastSearchAgreesWithFullEngineRuns() {
+        val wardrobes = listOf(
+            tenItems,
+            SampleData.items.filterNot { it.category == Category.OUTERWEAR },
+            items("white-tee", "dark-jeans"),
+            items("black-tee", "cream-knit", "dark-jeans", "white-sneakers", "camel-coat"),
+        )
+        for (wardrobe in wardrobes) {
+            val allYear = WardrobeGaps.allYear(wardrobe)
+            val search = WardrobeGaps.Search(allYear)
+            for (candidate in WardrobeGaps.candidates(wardrobe)) {
+                val fast = search.score(candidate)
+                assertEquals(candidate.id, fullRunScore(allYear, candidate), fast.goesWith to fast.itemDays)
+            }
+        }
     }
 }

@@ -40,7 +40,7 @@ object StoreCheck {
         }
         return StoreCheckResult(
             checked = checked,
-            goesWith = WardrobeGaps.score(WardrobeGaps.allYear(wardrobe), checked).goesWith,
+            goesWith = WardrobeGaps.Search(WardrobeGaps.allYear(wardrobe)).score(checked).goesWith,
             itemCount = wardrobe.size,
             similar = wardrobe.filter { it.garment == item.garment && WardrobeGaps.near(it.color, item.color) },
             outfits = outfits,

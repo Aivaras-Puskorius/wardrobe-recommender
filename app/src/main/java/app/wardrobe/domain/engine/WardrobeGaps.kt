@@ -10,6 +10,7 @@ import app.wardrobe.domain.model.Lab
 import app.wardrobe.domain.model.Season
 import app.wardrobe.domain.model.WeatherCondition
 import java.time.LocalDate
+import java.util.stream.Collectors
 
 /**
  * A garment the user could add: the [colors] that do best, how many of the user's items it [goesWith], and on how
@@ -26,13 +27,16 @@ object WardrobeGaps {
      * INFO(limit): tries every candidate with every item and day, about 240 × items × 4 engine runs. Cache the
      * result per wardrobe when that gets slow on the phone.
      *
-     * PERF: 1.9 s for 17 items, 21 s for 34 and 101 s for 51 on the desktop JVM (2026-11-21), and likely slower on
-     * the phone. Each engine run ranks every outfit for the item again, though only the outfits with the new piece
-     * differ between candidates, so twice the items take about 11 times as long.
+     * PERF: 0.15 s for 17 items, 0.3 s for 34 and 1.2 s for 51 on the desktop JVM with 16 cores (2026-11-21), after
+     * [Search] began reusing each item's ranking and candidates ran in parallel. Before, every engine run ranked every
+     * outfit again: 1.9 s, 21 s and 101 s. Not timed on the phone, which has 8 cores.
      */
     fun find(wardrobe: List<ClothingItem>): List<Gap> {
-        val allYear = allYear(wardrobe)
-        val scored = candidates(wardrobe).map { it to score(allYear, it) }
+        val search = Search(allYear(wardrobe))
+        // Each candidate is scored on its own, so they run on all cores. The list keeps the candidates' order.
+        val scored = candidates(wardrobe).parallelStream()
+            .map { it to search.score(it) }
+            .collect(Collectors.toList())
             .sortedWith(
                 compareByDescending<Pair<ClothingItem, Score>> { it.second.goesWith }
                     .thenByDescending { it.second.itemDays }
@@ -69,20 +73,45 @@ object WardrobeGaps {
     internal data class Score(val goesWith: Int, val itemDays: Int)
 
     /**
-     * The items of an [allYear] [wardrobe] whose three outfits include [new] on at least one reference day, and on
-     * how many item-days.
+     * Scores new items against an [allYear] [wardrobe]: the items whose three outfits include the new one on at least
+     * one reference day, and on how many item-days. Each item's ranking for each day is worked out once. A new item
+     * only adds the outfits that have it, so those are ranked and merged in, and the top three picked from the merge,
+     * as a full engine run with the new item in the wardrobe would pick them.
      */
-    internal fun score(wardrobe: List<ClothingItem>, new: ClothingItem): Score {
-        var itemDays = 0
-        val goesWith = wardrobe.count { anchor ->
-            val days = REFERENCE_DAYS.values.count { day ->
-                val result = OutfitEngine.suggest(wardrobe + new, anchor, day)
-                result is EngineResult.Outfits && result.outfits.any { outfit -> new in outfit.items }
-            }
-            itemDays += days
-            days > 0
+    internal class Search(private val wardrobe: List<ClothingItem>) {
+
+        private val rankings: List<List<List<ScoredOutfit>>> = wardrobe.map { anchor ->
+            REFERENCE_DAYS.values.map { day -> outfitsOf(OutfitEngine.rank(wardrobe, anchor, day)) }
         }
-        return Score(goesWith, itemDays)
+
+        fun score(new: ClothingItem): Score {
+            val withNew = wardrobe + new
+            var itemDays = 0
+            val goesWith = wardrobe.indices.count { i ->
+                val anchor = wardrobe[i]
+                // The anchor holds its own slot, so a new item of the same category is never in its outfits.
+                if (anchor.category == new.category) return@count false
+                val days = REFERENCE_DAYS.values.withIndex().count { (d, day) ->
+                    val withIt = outfitsOf(OutfitEngine.rank(withNew, anchor, day, mustInclude = new))
+                    withIt.isNotEmpty() &&
+                        OutfitEngine.pick(merged(rankings[i][d], withIt), anchor).any { new in it.items }
+                }
+                itemDays += days
+                days > 0
+            }
+            return Score(goesWith, itemDays)
+        }
+
+        private fun outfitsOf(result: EngineResult) = (result as? EngineResult.Outfits)?.outfits.orEmpty()
+
+        /** Two lists in ranking order, merged in that order. */
+        private fun merged(a: List<ScoredOutfit>, b: List<ScoredOutfit>) = sequence {
+            var i = 0
+            var j = 0
+            while (i < a.size || j < b.size) {
+                if (j == b.size || (i < a.size && OutfitEngine.RANKING.compare(a[i], b[j]) <= 0)) yield(a[i++]) else yield(b[j++])
+            }
+        }
     }
 
     private fun newItem(garment: Garment, color: ItemColor) = ClothingItem(
