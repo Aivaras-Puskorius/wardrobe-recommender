@@ -36,12 +36,24 @@ class EditItemViewModel(
         viewModelScope.launch {
             val item = repository.item(itemId).first()
             original = item
-            _uiState.value = item?.let { EditItemUiState.Editing(it.toForm(), hasChanges = false) }
+            _uiState.value = item?.let { EditItemUiState.Editing(formFor(it), hasChanges = false) }
                 ?: EditItemUiState.NotFound
         }
     }
 
     fun update(change: ItemFormChange) = editForm { it.apply(change, defaultName) }
+
+    /**
+     * The form for [item]. A name the app could have made, for any type and color, counts as not typed, so it follows
+     * type and color changes as in the add form. That also renames items whose type changed before this rule, such as
+     * boots retyped as shoes and still called "Black boots". Material and warmth stay as saved.
+     */
+    private fun formFor(item: ClothingItem): ItemForm {
+        val generated = Garment.entries.any { garment ->
+            ItemColor.entries.any { defaultName(garment, it) == item.name }
+        }
+        return item.toForm().copy(nameEditedByUser = !generated)
+    }
 
     /** Saves the item and returns it, or shows the form's errors and returns null. */
     suspend fun save(): ClothingItem? {

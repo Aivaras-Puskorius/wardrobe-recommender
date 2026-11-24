@@ -56,7 +56,7 @@ data class ItemForm(
     }
 }
 
-/** A form holding an existing item's values, as the edit screen starts with. */
+/** A form holding an existing item's values, each counted as picked by the user. The edit screen starts from it. */
 fun ClothingItem.toForm() = ItemForm(
     name = name,
     nameEditedByUser = true,

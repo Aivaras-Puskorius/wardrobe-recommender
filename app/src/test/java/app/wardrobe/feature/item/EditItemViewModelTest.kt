@@ -2,6 +2,7 @@ package app.wardrobe.feature.item
 
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.domain.model.ClothingItem
 import app.wardrobe.domain.model.Fit
 import app.wardrobe.domain.model.Garment
 import app.wardrobe.domain.model.ItemColor
@@ -10,6 +11,7 @@ import app.wardrobe.domain.model.Season
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -43,6 +45,14 @@ class EditItemViewModelTest {
 
     private fun editing() = viewModel.uiState.value as EditItemUiState.Editing
 
+    /** An editor for [item], which is added to the repository first. */
+    private fun editorFor(item: ClothingItem): EditItemViewModel {
+        runBlocking { repository.add(item) }
+        return EditItemViewModel(item.id, repository, defaultName = { garment, color -> "$color $garment" })
+    }
+
+    private fun EditItemViewModel.form() = (uiState.value as EditItemUiState.Editing).form
+
     @Test
     fun loadsTheItemIntoTheForm() {
         val form = editing().form
@@ -69,6 +79,35 @@ class EditItemViewModelTest {
     @Test
     fun changingTheColorKeepsTheName() {
         viewModel.update(ItemFormChange.SetColor(ItemColor.NAVY))
+        assertEquals(tee.name, editing().form.name)
+    }
+
+    /** A name the app made follows a new type, as in the add form (user, 2026-11-24). */
+    @Test
+    fun aGeneratedNameFollowsTheType() {
+        val edit = editorFor(tee.copy(id = "boots", name = "BLACK BOOTS", garment = Garment.BOOTS))
+        edit.update(ItemFormChange.SetGarment(Garment.SHOES))
+        assertEquals("BLACK SHOES", edit.form().name)
+    }
+
+    @Test
+    fun aGeneratedNameFollowsTheColor() {
+        val edit = editorFor(tee.copy(id = "boots", name = "BLACK BOOTS", garment = Garment.BOOTS))
+        edit.update(ItemFormChange.SetColor(ItemColor.BROWN))
+        assertEquals("BROWN BOOTS", edit.form().name)
+    }
+
+    /** Boots retyped as shoes before this fix kept the boots' name. Picking Shoes again renames them. */
+    @Test
+    fun aNameMadeForAnotherTypeFollowsWhenTheTypeIsPickedAgain() {
+        val edit = editorFor(tee.copy(id = "shoes", name = "BLACK BOOTS", garment = Garment.SHOES))
+        edit.update(ItemFormChange.SetGarment(Garment.SHOES))
+        assertEquals("BLACK SHOES", edit.form().name)
+    }
+
+    @Test
+    fun aTypedNameStaysWhenTheTypeChanges() {
+        viewModel.update(ItemFormChange.SetGarment(Garment.LONG_SLEEVE))
         assertEquals(tee.name, editing().form.name)
     }
 
