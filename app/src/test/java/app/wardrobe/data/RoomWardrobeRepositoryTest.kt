@@ -2,8 +2,13 @@ package app.wardrobe.data
 
 import androidx.room.Room
 import app.wardrobe.domain.model.ClothingItem
+import app.wardrobe.domain.model.Garment
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -25,5 +30,13 @@ class RoomWardrobeRepositoryTest : WardrobeRepositoryContract() {
         val repository = RoomWardrobeRepository(database.items())
         runBlocking { initialItems.forEach { repository.add(it) } }
         return repository
+    }
+
+    /** Room saves the garment by its name, so every type, the newest included, must read back as saved. */
+    @Test
+    fun everyGarmentIsSavedAndReadBack() = runTest {
+        val items = Garment.entries.map { shirt.copy(id = it.name, garment = it) }
+        items.forEach { repository.add(it) }
+        assertEquals(items, items.map { repository.item(it.id).first() })
     }
 }

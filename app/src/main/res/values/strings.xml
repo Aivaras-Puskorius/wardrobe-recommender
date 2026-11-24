@@ -190,6 +190,7 @@
     <string name="garment_shorts">Shorts</string>
     <string name="garment_skirt">Skirt</string>
     <string name="garment_sneakers">Sneakers</string>
+    <string name="garment_shoes">Shoes</string>
     <string name="garment_boots">Boots</string>
     <string name="garment_jacket">Jacket</string>
     <string name="garment_coat">Coat</string>
@@ -203,6 +204,7 @@
     <string name="garments_shorts">Shorts</string>
     <string name="garments_skirt">Skirts</string>
     <string name="garments_sneakers">Sneakers</string>
+    <string name="garments_shoes">Shoes</string>
     <string name="garments_boots">Boots</string>
     <string name="garments_jacket">Jackets</string>
     <string name="garments_coat">Coats</string>

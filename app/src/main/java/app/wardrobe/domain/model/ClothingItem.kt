@@ -24,6 +24,10 @@ enum class Category { TOP, BOTTOM, FOOTWEAR, OUTERWEAR }
  *
  * @param defaultMaterial what a new item of this garment starts with in the form.
  * @param defaultWarmth the same for warmth.
+ *
+ * WARN: Room saves each item's garment by its name. Renaming or removing a value makes saved items unreadable, so
+ * only add values. A build from before a value was added crashes on items that use it, so never install an older
+ * build over a phone with real items.
  */
 enum class Garment(val category: Category, val defaultMaterial: Material, val defaultWarmth: Warmth) {
     T_SHIRT(Category.TOP, Material.COTTON, Warmth.LIGHT),
@@ -36,6 +40,7 @@ enum class Garment(val category: Category, val defaultMaterial: Material, val de
     SHORTS(Category.BOTTOM, Material.COTTON, Warmth.LIGHT),
     SKIRT(Category.BOTTOM, Material.COTTON, Warmth.LIGHT),
     SNEAKERS(Category.FOOTWEAR, Material.SYNTHETIC, Warmth.LIGHT),
+    SHOES(Category.FOOTWEAR, Material.LEATHER, Warmth.MEDIUM),
     BOOTS(Category.FOOTWEAR, Material.LEATHER, Warmth.WARM),
     JACKET(Category.OUTERWEAR, Material.SYNTHETIC, Warmth.MEDIUM),
     COAT(Category.OUTERWEAR, Material.WOOL, Warmth.WARM),

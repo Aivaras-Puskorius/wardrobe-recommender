@@ -110,6 +110,14 @@ class OutfitEngineTest {
         assertEquals(EngineResult.NothingFits, suggest(wardrobe, "dark-jeans", day(-1, 4, SNOW, 60)))
     }
 
+    /** Only boots are snow footwear, so shoes are left out like sneakers. */
+    @Test
+    fun snowWithShoesFitsNothing() {
+        val shoes = item("brown-boots").copy(id = "black-shoes", garment = Garment.SHOES, color = ItemColor.BLACK)
+        val wardrobe = listOf(item("cream-knit"), item("dark-jeans"), shoes, item("camel-coat"))
+        assertEquals(EngineResult.NothingFits, suggest(wardrobe, "dark-jeans", day(-1, 4, SNOW, 60)))
+    }
+
     @Test
     fun t4SnowWithBoots() {
         val wardrobe = listOf(item("cream-knit"), item("dark-jeans"), item("white-sneakers"), item("camel-coat"), item("brown-boots"))

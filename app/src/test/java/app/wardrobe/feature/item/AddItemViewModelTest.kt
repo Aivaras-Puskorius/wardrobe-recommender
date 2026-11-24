@@ -195,6 +195,18 @@ class AddItemViewModelTest {
         assertEquals(Category.TOP, Garment.LONG_SLEEVE.category)
     }
 
+    /** Shoes, footwear that is neither sneakers nor boots, are a type since the real wardrobe (user, 2026-11-24). */
+    @Test
+    fun shoesAreLeatherAndMediumWarmth() {
+        nextSuggestion = ItemSuggestion(Garment.SNEAKERS, ItemColor.BLACK)
+        viewModel.recognizePhoto(PHOTO)
+        viewModel.update(ItemFormChange.SetGarment(Garment.SHOES))
+        assertEquals("BLACK SHOES", form().name)
+        assertEquals(Material.LEATHER, form().material)
+        assertEquals(Warmth.MEDIUM, form().warmth)
+        assertEquals(Category.FOOTWEAR, Garment.SHOES.category)
+    }
+
     @Test
     fun saveRejectsAnItemWithoutAType() = runTest {
         nextSuggestion = ItemSuggestion(garment = null, color = ItemColor.NAVY)

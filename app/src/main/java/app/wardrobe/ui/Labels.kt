@@ -33,6 +33,7 @@ fun Garment.label(): Int = when (this) {
     Garment.SHORTS -> R.string.garment_shorts
     Garment.SKIRT -> R.string.garment_skirt
     Garment.SNEAKERS -> R.string.garment_sneakers
+    Garment.SHOES -> R.string.garment_shoes
     Garment.BOOTS -> R.string.garment_boots
     Garment.JACKET -> R.string.garment_jacket
     Garment.COAT -> R.string.garment_coat
@@ -51,6 +52,7 @@ fun Garment.pluralLabel(): Int = when (this) {
     Garment.SHORTS -> R.string.garments_shorts
     Garment.SKIRT -> R.string.garments_skirt
     Garment.SNEAKERS -> R.string.garments_sneakers
+    Garment.SHOES -> R.string.garments_shoes
     Garment.BOOTS -> R.string.garments_boots
     Garment.JACKET -> R.string.garments_jacket
     Garment.COAT -> R.string.garments_coat
