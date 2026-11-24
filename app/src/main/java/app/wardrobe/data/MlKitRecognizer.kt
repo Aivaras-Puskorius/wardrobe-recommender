@@ -102,7 +102,7 @@ class MlKitRecognizer(private val context: Context) : Recognizer {
             garment = garmentFor(classifier, standardLabels, imageNetLabels),
             color = cutout?.color ?: colorOf(photo),
             material = materialFromLabels(standardLabels, imageNetLabels),
-        )
+        ).also { Log.d(TAG, "${photo.name} suggested $it") }
     }
 
     /** What a photo's cut-out shows: its color, null when too little of it is item, and the clothes model's labels. */

@@ -1,6 +1,7 @@
 package app.wardrobe.data
 
 import android.database.sqlite.SQLiteConstraintException
+import android.util.Log
 import app.wardrobe.domain.model.ClothingItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -16,6 +17,8 @@ class RoomWardrobeRepository(private val dao: ItemDao) : WardrobeRepository {
     override suspend fun add(item: ClothingItem) {
         try {
             dao.insert(item.toEntity())
+            // What was saved, to compare with the suggestion MlKitRecognizer logged: adb logcat -s RoomWardrobeRepository
+            Log.d(TAG, "Added $item")
         } catch (e: SQLiteConstraintException) {
             throw IllegalArgumentException("Item ${item.id} already exists", e)
         }
@@ -23,9 +26,14 @@ class RoomWardrobeRepository(private val dao: ItemDao) : WardrobeRepository {
 
     override suspend fun update(item: ClothingItem) {
         require(dao.update(item.toEntity()) == 1) { "No item ${item.id}" }
+        Log.d(TAG, "Updated $item")
     }
 
     override suspend fun delete(id: String) {
         dao.delete(id)
+    }
+
+    private companion object {
+        const val TAG = "RoomWardrobeRepository"
     }
 }
