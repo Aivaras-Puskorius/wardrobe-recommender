@@ -2,7 +2,7 @@
 
 Android app. Catalog of the clothes you own, outfit suggestions built from it.
 
-Status: milestone 3 in progress. Items are stored on the phone, starting with 17 sample items. Photo recognition runs on the phone. The forecast comes from Open-Meteo.
+Status: every feature of the course proposal is built, both extras included (store check, What to add). Items are stored on the phone, starting with 17 sample items. Photo recognition runs on the phone. The forecast comes from Open-Meteo.
 
 | Wardrobe | Item | Add item | Outfit ideas |
 |---|---|---|---|
@@ -22,7 +22,7 @@ Status: milestone 3 in progress. Items are stored on the phone, starting with 17
 ./gradlew installRelease    # install the minified build, for demos
 ```
 
-The build makes one APK per processor type, and the install tasks pick the device's. The release build is shrunk with R8 (arm64 about 19 MB, most of it ML Kit's native code and the image model) and signed with the local debug key, so it installs over the debug build. Not for publishing.
+The build makes one APK per processor type, and the install tasks pick the device's. The release build is shrunk with R8 (arm64 about 22 MB, most of it ML Kit's native code and the image model) and signed with the local debug key, so it installs over the debug build. Not for publishing.
 
 ## Use
 
@@ -66,8 +66,8 @@ The build makes one APK per processor type, and the install tasks pick the devic
 
 ```
 app/src/main/java/app/wardrobe/
-  AppContainer.kt         shared objects: repository, recognizer, forecast, theme
-  data/                   repository (Room, and in memory for tests), sample data, stand-in recognizer
+  AppContainer.kt         shared objects: item and rating repositories, recognizer, photo store, forecast, theme
+  data/                   repositories (Room, and in memory for tests), sample data, ML Kit recognizer and its stand-in, Open-Meteo, photo store, theme setting
   domain/model/           items, colors, forecast
   domain/engine/          outfit rules, scoring and reasons, taste from ratings, wardrobe gaps, store check
   feature/wardrobe/       grid and filters
@@ -89,6 +89,6 @@ Screens with data: a ViewModel exposing one `StateFlow` of UI state, and a state
 
 ## Stack
 
-Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.0, Room 2.8.5 with KSP 2.3.12, Coil 3.6.3, ML Kit image labeling 16.0.8 and custom image labeling 17.0.3, AGP 9.4.1, Gradle 9.8.2. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.77.0.
+Kotlin 2.4.21, Jetpack Compose (BOM 2026.09.00), Material 3, Navigation 3 1.2.1, Room 2.8.5 with KSP 2.3.12, Coil 3.6.3, ML Kit image labeling 16.0.8, custom image labeling 17.0.3 and subject segmentation 16.0.0-beta1, AGP 9.5.1, Gradle 9.9.0. Tests: JUnit 4, Robolectric 4.17, Roborazzi 1.78.0, Espresso 3.7.0 for device tests.
 
 Icons: Material Symbols, Apache License 2.0. Image model `app/src/main/assets/models/imagenet_efficientnet_lite0_int8.tflite`: EfficientNet-Lite0 int8 by TensorFlow, from tensorflow/efficientnet on Kaggle, Apache License 2.0. Clothes model `garments_mobilenetv2_int8.tflite`: trained by `tools/train_garment_model.py` on the clothing dataset by Alexey Grigorev (github.com/alexeygrigorev/clothing-dataset, CC0 1.0), starting from Keras 3.15.1's MobileNetV2 ImageNet weights (Keras: Apache License 2.0).
