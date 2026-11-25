@@ -1,5 +1,6 @@
 package app.wardrobe.feature.gaps
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -31,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.wardrobe.R
@@ -82,7 +86,7 @@ fun GapsContent(state: GapsUiState, onBack: () -> Unit, modifier: Modifier = Mod
                 )
             }
 
-            state is GapsUiState.Ready && state.gaps.isEmpty() -> EmptyState(
+            state is GapsUiState.Ready && state.gaps.isEmpty -> EmptyState(
                 icon = R.drawable.ic_lightbulb,
                 title = stringResource(R.string.gaps_empty_title),
                 body = stringResource(R.string.gaps_empty_body),
@@ -101,10 +105,36 @@ fun GapsContent(state: GapsUiState, onBack: () -> Unit, modifier: Modifier = Mod
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                items(state.gaps, key = { it.garment }) { gap -> GapCard(gap, state.itemCount) }
+                group(R.string.gaps_neutral, "neutral", state.gaps.neutral, state.itemCount)
+                group(R.string.gaps_bold, "bold", state.gaps.bold, state.itemCount)
             }
         }
     }
+}
+
+/** A heading, then the group's rows, or one line when it has none (docs/ENGINE.md section 16.3). */
+private fun LazyListScope.group(@StringRes heading: Int, key: String, gaps: List<Gap>, itemCount: Int) {
+    item(key = key) {
+        Text(
+            text = stringResource(heading),
+            modifier = Modifier
+                .padding(start = 4.dp, top = 12.dp)
+                .semantics { heading() },
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+    if (gaps.isEmpty()) {
+        item(key = "$key-empty") {
+            Text(
+                text = stringResource(R.string.gaps_group_empty),
+                modifier = Modifier.padding(start = 4.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+    items(gaps, key = { "$key-${it.garment}" }) { gap -> GapCard(gap, itemCount) }
 }
 
 @Composable

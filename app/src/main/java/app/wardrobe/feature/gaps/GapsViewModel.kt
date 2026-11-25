@@ -3,7 +3,7 @@ package app.wardrobe.feature.gaps
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.wardrobe.data.WardrobeRepository
-import app.wardrobe.domain.engine.Gap
+import app.wardrobe.domain.engine.GapGroups
 import app.wardrobe.domain.engine.WardrobeGaps
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.stateIn
 sealed interface GapsUiState {
     data object Loading : GapsUiState
 
-    /** @param gaps empty when no new item would go with anything. */
-    data class Ready(val itemCount: Int, val gaps: List<Gap>) : GapsUiState
+    /** @param gaps empty groups when no new item would go with anything. */
+    data class Ready(val itemCount: Int, val gaps: GapGroups) : GapsUiState
 }
 
 /**

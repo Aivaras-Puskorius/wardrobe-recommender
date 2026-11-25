@@ -18,11 +18,21 @@ import java.util.stream.Collectors
  */
 data class Gap(val garment: Garment, val colors: List<ItemColor>, val goesWith: Int, val itemDays: Int)
 
+/**
+ * What to add in two groups (docs/ENGINE.md section 16.3): pieces in [neutral] colors, for more neutral outfits, and in
+ * accent colors, for [bold] ones. Each has at most one row per category, best first.
+ */
+data class GapGroups(val neutral: List<Gap>, val bold: List<Gap>) {
+    /** True when no new piece in any color would go with anything. */
+    val isEmpty: Boolean get() = neutral.isEmpty() && bold.isEmpty()
+}
+
 /** What to add to the wardrobe. The rules are in docs/ENGINE.md section 14. */
 object WardrobeGaps {
 
     /**
-     * The best garment per category, best first, or none when no new item would go with anything.
+     * The best garment per category in neutral and in accent colors, best first. A group is empty when no new item in
+     * its colors would go with anything.
      *
      * INFO(limit): tries every candidate with every item and day, about 240 × items × 4 engine runs. Cache the
      * result per wardrobe when that gets slow on the phone.
@@ -31,7 +41,7 @@ object WardrobeGaps {
      * [Search] began reusing each item's ranking and candidates ran in parallel. Before, every engine run ranked every
      * outfit again: 1.9 s, 21 s and 101 s. Not timed on the phone, which has 8 cores.
      */
-    fun find(wardrobe: List<ClothingItem>): List<Gap> {
+    fun find(wardrobe: List<ClothingItem>): GapGroups {
         val search = Search(allYear(wardrobe))
         // Each candidate is scored on its own, so they run on all cores. The list keeps the candidates' order.
         val scored = candidates(wardrobe).parallelStream()
@@ -43,14 +53,19 @@ object WardrobeGaps {
                     .thenBy { it.first.garment.ordinal }
                     .thenBy { it.first.color.ordinal },
             )
-        return Category.entries.mapNotNull { category ->
+        val (neutral, bold) = scored.partition { it.first.color.isNeutral }
+        return GapGroups(rows(neutral), rows(bold))
+    }
+
+    /** One row per category from [scored], which is best first, and the rows best first. */
+    private fun rows(scored: List<Pair<ClothingItem, Score>>): List<Gap> =
+        Category.entries.mapNotNull { category ->
             val inCategory = scored.filter { it.first.category == category }
             val (best, score) = inCategory.firstOrNull() ?: return@mapNotNull null
             if (score.goesWith == 0) return@mapNotNull null
             val colors = inCategory.filter { it.first.garment == best.garment && it.second == score }.map { it.first.color }
             Gap(best.garment, colors, score.goesWith, score.itemDays)
         }.sortedWith(compareByDescending<Gap> { it.goesWith }.thenByDescending { it.itemDays })
-    }
 
     /** Every item the user could add: each garment in each color, except those the user has or nearly has. */
     fun candidates(wardrobe: List<ClothingItem>): List<ClothingItem> =

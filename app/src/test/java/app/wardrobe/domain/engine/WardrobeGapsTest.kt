@@ -42,23 +42,22 @@ class WardrobeGapsTest {
         "white-sneakers", "black-sneakers", "brown-boots", "denim-jacket", "camel-coat",
     )
 
-    /** T44. */
+    /** T44 and T60: the sample's two groups of section 16.5. */
     @Test
     fun sampleWardrobe() {
         assertEquals(
-            listOf(
-                // Since section 16.2 a new colored piece can make the varied third outfit.
-                Gap(Garment.T_SHIRT, listOf(LIGHT_BLUE, YELLOW, PINK), goesWith = 11, itemDays = 11),
-                Gap(Garment.JEANS, listOf(BLUE), goesWith = 10, itemDays = 29),
-                Gap(Garment.SNEAKERS, listOf(BLUE), goesWith = 10, itemDays = 29),
-                Gap(
-                    Garment.COAT,
-                    listOf(
-                        WHITE, CREAM, BEIGE, BROWN, GREY, BLACK, NAVY, DENIM, LIGHT_BLUE, BLUE, OLIVE, YELLOW, ORANGE,
-                        PURPLE,
-                    ),
-                    goesWith = 9,
-                    itemDays = 11,
+            GapGroups(
+                neutral = listOf(
+                    Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 10, itemDays = 22),
+                    Gap(Garment.COAT, listOf(WHITE, CREAM, BEIGE, BROWN, GREY, BLACK, NAVY, DENIM), goesWith = 9, itemDays = 11),
+                    Gap(Garment.SNEAKERS, listOf(BROWN, NAVY), goesWith = 5, itemDays = 9),
+                    Gap(Garment.JEANS, listOf(BROWN, BLACK, NAVY), goesWith = 4, itemDays = 8),
+                ),
+                bold = listOf(
+                    Gap(Garment.T_SHIRT, listOf(LIGHT_BLUE, YELLOW, PINK), goesWith = 11, itemDays = 11),
+                    Gap(Garment.JEANS, listOf(BLUE), goesWith = 10, itemDays = 29),
+                    Gap(Garment.SNEAKERS, listOf(BLUE), goesWith = 10, itemDays = 29),
+                    Gap(Garment.COAT, listOf(LIGHT_BLUE, BLUE, OLIVE, YELLOW, ORANGE, PURPLE), goesWith = 9, itemDays = 11),
                 ),
             ),
             WardrobeGaps.find(SampleData.items),
@@ -92,44 +91,55 @@ class WardrobeGapsTest {
         assertEquals(Season.entries.toSet(), candidate.seasons)
     }
 
-    /** T46. */
+    /** T46, in the groups of section 16.5. */
     @Test
     fun tenItems() {
         assertEquals(
-            listOf(
-                // Section 16.2 changes the counts, and yellow or pink jeans now tie with white ones.
-                Gap(Garment.JEANS, listOf(WHITE, CREAM, BEIGE, YELLOW, PINK), goesWith = 8, itemDays = 25),
-                Gap(
-                    Garment.COAT,
-                    listOf(
-                        WHITE, CREAM, BEIGE, BROWN, GREY, BLACK, NAVY, DENIM, LIGHT_BLUE, BLUE, GREEN, OLIVE, YELLOW,
-                        ORANGE, RED, BURGUNDY, PINK, PURPLE,
-                    ),
-                    goesWith = 8,
-                    itemDays = 13,
+            GapGroups(
+                neutral = listOf(
+                    Gap(Garment.JEANS, listOf(WHITE, CREAM, BEIGE), goesWith = 8, itemDays = 25),
+                    Gap(Garment.COAT, listOf(WHITE, CREAM, BEIGE, BROWN, GREY, BLACK, NAVY, DENIM), goesWith = 8, itemDays = 13),
+                    Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 7, itemDays = 18),
+                    Gap(Garment.SNEAKERS, listOf(BEIGE), goesWith = 2, itemDays = 5),
                 ),
-                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 7, itemDays = 18),
-                Gap(Garment.SNEAKERS, listOf(BLUE), goesWith = 6, itemDays = 8),
+                bold = listOf(
+                    Gap(Garment.JEANS, listOf(YELLOW, PINK), goesWith = 8, itemDays = 25),
+                    Gap(
+                        Garment.COAT,
+                        listOf(LIGHT_BLUE, BLUE, GREEN, OLIVE, YELLOW, ORANGE, RED, BURGUNDY, PINK, PURPLE),
+                        goesWith = 8,
+                        itemDays = 13,
+                    ),
+                    Gap(Garment.LONG_SLEEVE, listOf(LIGHT_BLUE, YELLOW, PINK), goesWith = 7, itemDays = 15),
+                    Gap(Garment.SNEAKERS, listOf(BLUE), goesWith = 6, itemDays = 8),
+                ),
             ),
             WardrobeGaps.find(tenItems),
         )
     }
 
-    /** T47. */
+    /** T47: a jacket comes first in both groups. */
     @Test
     fun withoutOuterwearAJacketComesFirst() {
         val wardrobe = SampleData.items.filterNot { it.category == Category.OUTERWEAR }
-        val first = WardrobeGaps.find(wardrobe).first()
-        assertEquals(Garment.JACKET, first.garment)
-        assertEquals(13, first.goesWith)
+        val groups = WardrobeGaps.find(wardrobe)
+        listOf(groups.neutral.first(), groups.bold.first()).forEach { first ->
+            assertEquals(Garment.JACKET, first.garment)
+            assertEquals(13, first.goesWith)
+        }
     }
 
-    /** T48. */
+    /** T48: tops alone get nothing. With a tee and jeans, sneakers in any color go with both, in each group. */
     @Test
     fun topsAloneHaveNoGapAnItemCanFill() {
-        assertEquals(emptyList<Gap>(), WardrobeGaps.find(items("white-tee", "black-tee")))
+        assertEquals(GapGroups(emptyList(), emptyList()), WardrobeGaps.find(items("white-tee", "black-tee")))
+        assertTrue(WardrobeGaps.find(items("white-tee", "black-tee")).isEmpty)
+        val (neutral, bold) = ItemColor.entries.partition { it.isNeutral }
         assertEquals(
-            listOf(Gap(Garment.SNEAKERS, ItemColor.entries, goesWith = 2, itemDays = 4)),
+            GapGroups(
+                neutral = listOf(Gap(Garment.SNEAKERS, neutral, goesWith = 2, itemDays = 4)),
+                bold = listOf(Gap(Garment.SNEAKERS, bold, goesWith = 2, itemDays = 4)),
+            ),
             WardrobeGaps.find(items("white-tee", "dark-jeans")),
         )
     }

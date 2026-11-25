@@ -237,6 +237,9 @@
     <string name="gaps_intro">Pieces that would go into outfit ideas with the most of your items, across a hot, mild, cool and cold day.</string>
     <string name="gaps_working">Trying new pieces with your wardrobe…</string>
     <string name="gaps_goes_with">Goes with %1$d of your %2$d items</string>
+    <string name="gaps_neutral">For more neutral outfits</string>
+    <string name="gaps_bold">For bolder outfits</string>
+    <string name="gaps_group_empty">Nothing in these colors goes with your items yet.</string>
     <string name="gaps_colors_more">%1$s or %2$d more</string>
     <string name="gaps_empty_title">Add a few more items first</string>
     <string name="gaps_empty_body">No single new piece makes an outfit with what you have yet. A top, bottoms and shoes are the start.</string>

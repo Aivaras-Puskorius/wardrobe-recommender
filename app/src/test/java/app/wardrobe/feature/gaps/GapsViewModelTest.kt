@@ -2,6 +2,7 @@ package app.wardrobe.feature.gaps
 
 import app.wardrobe.data.InMemoryWardrobeRepository
 import app.wardrobe.data.SampleData
+import app.wardrobe.domain.engine.GapGroups
 import app.wardrobe.domain.model.Garment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,12 +35,16 @@ class GapsViewModelTest {
     private suspend fun GapsViewModel.ready() = uiState.filterIsInstance<GapsUiState.Ready>().first()
 
     @Test
-    fun theSampleWardrobeGetsFourRows() = runTest {
+    fun theSampleWardrobeGetsFourRowsPerGroup() = runTest {
         val state = GapsViewModel(InMemoryWardrobeRepository(SampleData.items), dispatcher).ready()
         assertEquals(17, state.itemCount)
         assertEquals(
+            listOf(Garment.LONG_SLEEVE, Garment.COAT, Garment.SNEAKERS, Garment.JEANS),
+            state.gaps.neutral.map { it.garment },
+        )
+        assertEquals(
             listOf(Garment.T_SHIRT, Garment.JEANS, Garment.SNEAKERS, Garment.COAT),
-            state.gaps.map { it.garment },
+            state.gaps.bold.map { it.garment },
         )
     }
 
@@ -47,6 +52,6 @@ class GapsViewModelTest {
     fun topsAloneGetNoRows() = runTest {
         val repository = InMemoryWardrobeRepository(SampleData.items.filter { it.id in setOf("white-tee", "black-tee") })
         val viewModel = GapsViewModel(repository, dispatcher)
-        assertEquals(GapsUiState.Ready(2, emptyList()), viewModel.ready())
+        assertEquals(GapsUiState.Ready(2, GapGroups(emptyList(), emptyList())), viewModel.ready())
     }
 }
