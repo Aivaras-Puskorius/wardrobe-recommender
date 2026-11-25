@@ -42,7 +42,7 @@ class StoreCheckViewModelTest {
     fun checksTheItemAgainstTheWardrobe() = runTest {
         val viewModel = StoreCheckViewModel(InMemoryWardrobeRepository(SampleData.items), navyCoat, dispatcher)
         val result = viewModel.uiState.filterIsInstance<StoreCheckUiState.Ready>().first().result
-        assertEquals(11, result.goesWith)
+        assertEquals(9, result.goesWith)
         assertEquals(17, result.itemCount)
     }
 }

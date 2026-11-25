@@ -234,7 +234,8 @@ class OutfitEngineTest {
             listOf(
                 listOf("oxford-shirt", "dark-jeans", "black-sneakers", "denim-jacket"),
                 listOf("olive-overshirt", "dark-jeans", "black-sneakers", "olive-rain-jacket"),
-                listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket"),
+                // T56: both are one accent, so the third is the best all-neutral outfit (section 16.2).
+                listOf("cream-knit", "dark-jeans", "brown-boots", "denim-jacket"),
             ),
             suggest(sample, "dark-jeans", coolDay, recent).itemIds(),
         )
@@ -432,6 +433,81 @@ class OutfitEngineTest {
         }
     }
 
+    /** An outfit with its own top and shoes, so any two differ in two items besides the jeans, and one color term. */
+    private fun handMade(name: String, reason: Reason?) = ScoredOutfit(
+        listOf(item("white-tee").copy(id = "$name-top"), item("dark-jeans"), item("white-sneakers").copy(id = "$name-shoes")),
+        listOfNotNull(reason?.let { ScoreTerm(it, 3) }),
+    )
+
+    /** The names of the outfits picked from [ranked], which is in ranking order. */
+    private fun picked(limit: Int, vararg ranked: ScoredOutfit) =
+        OutfitEngine.pick(ranked.asSequence(), item("dark-jeans"), limit).map { it.items.first().id.removeSuffix("-top") }
+
+    /** T55, section 16.2: after all neutral and one accent, the third outfit has two colors. */
+    @Test
+    fun t55TheThirdOutfitBringsAnotherKindOfColorMatch() {
+        val ranked = arrayOf(
+            handMade("a", Reason.NEUTRAL_BASE), handMade("b", Reason.SINGLE_ACCENT), handMade("c", Reason.SINGLE_ACCENT),
+            handMade("d", Reason.NEUTRAL_BASE), handMade("e", Reason.COMPLEMENTARY),
+        )
+        assertEquals(listOf("a", "b", "e"), picked(3, *ranked))
+    }
+
+    /** Section 16.1: tonal, analogous and complementary are one kind, two colors (user, 2026-11-25). */
+    @Test
+    fun t55TheTwoColorTermsAreOneKind() {
+        val ranked = arrayOf(
+            handMade("a", Reason.COMPLEMENTARY), handMade("b", Reason.NEUTRAL_BASE), handMade("c", Reason.TONAL),
+            handMade("d", Reason.ANALOGOUS), handMade("e", Reason.SINGLE_ACCENT),
+        )
+        assertEquals(listOf("a", "b", "e"), picked(3, *ranked))
+    }
+
+    /** The varied third skips a near copy of an outfit already picked. */
+    @Test
+    fun t55TheVariedThirdIsNoNearCopy() {
+        val ranked = arrayOf(
+            handMade("a", Reason.NEUTRAL_BASE), handMade("b", Reason.SINGLE_ACCENT), handMade("a", Reason.COMPLEMENTARY),
+            handMade("e", Reason.TONAL),
+        )
+        assertEquals(listOf("a", "b", "e"), picked(3, *ranked))
+    }
+
+    /** T57: with no outfit of a missing kind, the third is the next in ranking order. */
+    @Test
+    fun t57WithoutAnotherKindTheThirdFollowsTheRanking() {
+        val ranked = arrayOf(
+            handMade("a", Reason.NEUTRAL_BASE), handMade("b", Reason.SINGLE_ACCENT), handMade("c", Reason.SINGLE_ACCENT),
+            handMade("d", Reason.NEUTRAL_BASE),
+        )
+        assertEquals(listOf("a", "b", "c"), picked(3, *ranked))
+    }
+
+    /** T58: every page of three gets the rule, and earlier pages don't change (user answer 3, 2026-11-25). */
+    @Test
+    fun t58EveryPageOfThreeGetsTheRule() {
+        val ranked = arrayOf(
+            handMade("a", Reason.NEUTRAL_BASE), handMade("b", Reason.SINGLE_ACCENT), handMade("c", Reason.SINGLE_ACCENT),
+            handMade("d", Reason.NEUTRAL_BASE), handMade("e", Reason.COMPLEMENTARY), handMade("f", Reason.TONAL),
+            handMade("g", Reason.SINGLE_ACCENT),
+        )
+        assertEquals(listOf("a", "b", "e", "c", "d", "f"), picked(6, *ranked))
+        assertEquals(listOf("a", "b", "e"), picked(3, *ranked))
+    }
+
+    /** T59: two unrelated accents have no kind, so such an outfit is never the varied third, only the next in line. */
+    @Test
+    fun t59AnOutfitWithNoKindIsNeverTheVariedThird() {
+        assertEquals(
+            listOf("a", "b", "e"),
+            picked(3, handMade("a", Reason.NEUTRAL_BASE), handMade("b", Reason.SINGLE_ACCENT), handMade("x", null), handMade("e", Reason.COMPLEMENTARY)),
+        )
+        assertEquals(
+            listOf("a", "b", "x"),
+            picked(3, handMade("a", Reason.NEUTRAL_BASE), handMade("b", Reason.SINGLE_ACCENT), handMade("x", null)),
+        )
+    }
+
     /** Light drizzle counts as cloudy, but wool stays under a jacket (user, 2026-10-27). */
     @Test
     fun t27OnADrizzleDayAWoolTopNeedsAJacketOverIt() {
@@ -526,7 +602,8 @@ class OutfitEngineTest {
     fun t32ADislikedOutfitDropsTwoPoints() {
         val taste = taste(rated(DISLIKED, outfit1))
         assertEquals(
-            listOf(outfit2, outfit3, listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket")),
+            // Both are one accent, so the third is the best all-neutral outfit (section 16.2).
+            listOf(outfit2, outfit3, listOf("black-tee", "dark-jeans", "brown-boots", "camel-coat")),
             suggest(sample, "dark-jeans", coolDay, taste = taste).itemIds(),
         )
         assertEquals(5, onlyOutfit(outfit1, taste).score)
@@ -538,10 +615,11 @@ class OutfitEngineTest {
         val taste = taste(rated(LIKED, outfit3), rated(LIKED, outfit2), rated(DISLIKED, outfit1))
         val outfits = suggest(sample, "dark-jeans", coolDay, taste = taste).outfits()
         assertEquals(
-            listOf(outfit2, outfit3, listOf("oxford-shirt", "dark-jeans", "brown-boots", "olive-rain-jacket")),
+            // Both are one accent, so the third is the best all-neutral outfit (section 16.2).
+            listOf(outfit2, outfit3, listOf("black-tee", "dark-jeans", "black-sneakers", "camel-coat")),
             outfits.map { o -> o.items.map { it.id } },
         )
-        assertEquals(listOf(9, 9, 7), outfits.map { it.score })
+        assertEquals(listOf(9, 9, 6), outfits.map { it.score })
         assertEquals(5, onlyOutfit(outfit1, taste).score)
     }
 

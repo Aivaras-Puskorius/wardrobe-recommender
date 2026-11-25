@@ -27,6 +27,19 @@ enum class Reason {
 private val COLOR_REASONS = setOf(Reason.NEUTRAL_BASE, Reason.SINGLE_ACCENT, Reason.TONAL, Reason.ANALOGOUS, Reason.COMPLEMENTARY)
 private val TASTE_REASONS = setOf(Reason.TASTE_OUTFIT, Reason.TASTE_COLORS, Reason.TASTE_GARMENTS)
 
+/** The kinds of color match of docs/ENGINE.md section 16.1. The three two-color terms are one kind (user, 2026-11-25). */
+private enum class ColorKind { ALL_NEUTRAL, ONE_ACCENT, TWO_COLORS }
+
+/** The outfit's kind of color match, or null for two accents that get no color term. */
+private fun ScoredOutfit.colorKind(): ColorKind? = terms.firstNotNullOfOrNull { term ->
+    when (term.reason) {
+        Reason.NEUTRAL_BASE -> ColorKind.ALL_NEUTRAL
+        Reason.SINGLE_ACCENT -> ColorKind.ONE_ACCENT
+        Reason.TONAL, Reason.ANALOGOUS, Reason.COMPLEMENTARY -> ColorKind.TWO_COLORS
+        else -> null
+    }
+}
+
 /** One rule that applied to an outfit: its [points] and the [items] the rule is about. */
 data class ScoreTerm(val reason: Reason, val points: Int, val items: List<ClothingItem> = emptyList())
 
@@ -132,15 +145,37 @@ object OutfitEngine {
         return EngineResult.Outfits(candidates.sortedWith(RANKING))
     }
 
-    /** Takes outfits from [ranked] in order, skipping near copies of ones already taken, until there are [limit]. */
+    /**
+     * Takes outfits from [ranked], which is in ranking order, until there are [limit], in pages of three as the results
+     * screen shows them (docs/ENGINE.md section 16.2). The first two of a page are the best left. The third has a kind
+     * of color match the page's first two don't have, when one is left, and otherwise is the best left too. Near copies
+     * of picked outfits are skipped throughout, and a higher [limit] keeps the earlier pages.
+     */
     internal fun pick(ranked: Sequence<ScoredOutfit>, anchor: ClothingItem, limit: Int = DEFAULT_LIMIT): List<ScoredOutfit> {
-        val picked = mutableListOf<ScoredOutfit>()
-        for (outfit in ranked) {
-            val others = outfit.items.map { it.id }.toSet() - anchor.id
-            if (picked.all { (others - it.items.map { item -> item.id }.toSet()).size >= MIN_DIFFERENT_ITEMS }) {
-                picked += outfit
+        // The ranking is read once and kept, since a page's third may look further down than its first two.
+        val read = mutableListOf<ScoredOutfit>()
+        val source = ranked.iterator()
+        val outfits = sequence {
+            var i = 0
+            while (i < read.size || source.hasNext()) {
+                if (i == read.size) read += source.next()
+                yield(read[i++])
             }
-            if (picked.size == limit) break
+        }
+        val picked = mutableListOf<ScoredOutfit>()
+        // A picked outfit differs from itself in no items, so this also skips the ones already picked.
+        fun isNew(outfit: ScoredOutfit): Boolean {
+            val others = outfit.items.map { it.id }.toSet() - anchor.id
+            return picked.all { (others - it.items.map { item -> item.id }.toSet()).size >= MIN_DIFFERENT_ITEMS }
+        }
+        while (picked.size < limit) {
+            val varied = if (picked.size % PAGE_SIZE == PAGE_SIZE - 1) {
+                val page = picked.takeLast(PAGE_SIZE - 1).map { it.colorKind() }
+                outfits.firstOrNull { outfit -> outfit.colorKind().let { it != null && it !in page } && isNew(outfit) }
+            } else {
+                null
+            }
+            picked += varied ?: outfits.firstOrNull(::isNew) ?: break
         }
         return picked
     }
@@ -249,6 +284,9 @@ object OutfitEngine {
 
     private const val DEFAULT_LIMIT = 3
     private const val MIN_DIFFERENT_ITEMS = 2
+
+    /** The results screen shows three outfits at a time, and each three gets the variety rule. */
+    private const val PAGE_SIZE = 3
     private const val MAX_ACCENTS = 2
     private const val WET_CHANCE_PERCENT = 50
     private const val SHORTS_HIGH = 20

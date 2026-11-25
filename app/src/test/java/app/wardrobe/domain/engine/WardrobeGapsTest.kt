@@ -47,18 +47,19 @@ class WardrobeGapsTest {
     fun sampleWardrobe() {
         assertEquals(
             listOf(
-                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 11, itemDays = 31),
+                // Since section 16.2 a new colored piece can make the varied third outfit.
+                Gap(Garment.T_SHIRT, listOf(LIGHT_BLUE, YELLOW, PINK), goesWith = 11, itemDays = 11),
+                Gap(Garment.JEANS, listOf(BLUE), goesWith = 10, itemDays = 29),
+                Gap(Garment.SNEAKERS, listOf(BLUE), goesWith = 10, itemDays = 29),
                 Gap(
                     Garment.COAT,
                     listOf(
                         WHITE, CREAM, BEIGE, BROWN, GREY, BLACK, NAVY, DENIM, LIGHT_BLUE, BLUE, OLIVE, YELLOW, ORANGE,
                         PURPLE,
                     ),
-                    goesWith = 11,
-                    itemDays = 13,
+                    goesWith = 9,
+                    itemDays = 11,
                 ),
-                Gap(Garment.SNEAKERS, listOf(BROWN, NAVY), goesWith = 7, itemDays = 11),
-                Gap(Garment.JEANS, listOf(BROWN, BLACK, NAVY), goesWith = 6, itemDays = 11),
             ),
             WardrobeGaps.find(SampleData.items),
         )
@@ -96,7 +97,8 @@ class WardrobeGapsTest {
     fun tenItems() {
         assertEquals(
             listOf(
-                Gap(Garment.JEANS, listOf(WHITE, CREAM, BEIGE), goesWith = 8, itemDays = 25),
+                // Section 16.2 changes the counts, and yellow or pink jeans now tie with white ones.
+                Gap(Garment.JEANS, listOf(WHITE, CREAM, BEIGE, YELLOW, PINK), goesWith = 8, itemDays = 25),
                 Gap(
                     Garment.COAT,
                     listOf(
@@ -104,10 +106,10 @@ class WardrobeGapsTest {
                         ORANGE, RED, BURGUNDY, PINK, PURPLE,
                     ),
                     goesWith = 8,
-                    itemDays = 15,
+                    itemDays = 13,
                 ),
-                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 7, itemDays = 20),
-                Gap(Garment.SNEAKERS, listOf(BEIGE), goesWith = 3, itemDays = 6),
+                Gap(Garment.LONG_SLEEVE, listOf(WHITE, CREAM, BEIGE), goesWith = 7, itemDays = 18),
+                Gap(Garment.SNEAKERS, listOf(BLUE), goesWith = 6, itemDays = 8),
             ),
             WardrobeGaps.find(tenItems),
         )

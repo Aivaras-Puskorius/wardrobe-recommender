@@ -25,11 +25,11 @@ class StoreCheckTest {
         band to outfit.items.map { if (it.id == checked.id) "new" else it.id }
     }
 
-    /** T49. */
+    /** T49, with the count of section 16.5 (11 before the varied third outfit). */
     @Test
-    fun aNavyCoatGoesWithElevenItemsOnCoolAndColdDays() {
+    fun aNavyCoatGoesWithNineItemsOnCoolAndColdDays() {
         val result = check(Garment.COAT, ItemColor.NAVY)
-        assertEquals(11, result.goesWith)
+        assertEquals(9, result.goesWith)
         assertEquals(17, result.itemCount)
         assertEquals(emptyList<ClothingItem>(), result.similar)
         assertEquals(
@@ -54,7 +54,8 @@ class StoreCheckTest {
     @Test
     fun aWhiteTShirtGetsAnOutfitForEveryBand() {
         val result = check(Garment.T_SHIRT, ItemColor.WHITE)
-        assertEquals(8, result.goesWith)
+        // Section 16.5: its outfits tie with the white tee's, which win, and the third goes to another kind (8 before).
+        assertEquals(0, result.goesWith)
         assertEquals(
             listOf(
                 DayBand.HOT to listOf("new", "beige-chinos", "black-sneakers"),
@@ -67,11 +68,11 @@ class StoreCheckTest {
         assertEquals(listOf(7, 5, 7, 7), result.outfits.map { it.outfit.score })
     }
 
-    /** T51: green sneakers can be worn, but never make the top three for one of the user's items. */
+    /** T51: green sneakers make the varied third outfit of 8 items (section 16.5, 0 before) and fit every kind of day. */
     @Test
-    fun greenSneakersGoWithNothingButStillHaveOutfits() {
+    fun greenSneakersGoWithEightItemsAndHaveOutfitsForEveryBand() {
         val result = check(Garment.SNEAKERS, ItemColor.GREEN)
-        assertEquals(0, result.goesWith)
+        assertEquals(8, result.goesWith)
         assertEquals(listOf(DayBand.HOT, DayBand.MILD, DayBand.COOL, DayBand.COLD), result.outfits.map { it.band })
     }
 

@@ -38,7 +38,7 @@ class GapsViewModelTest {
         val state = GapsViewModel(InMemoryWardrobeRepository(SampleData.items), dispatcher).ready()
         assertEquals(17, state.itemCount)
         assertEquals(
-            listOf(Garment.LONG_SLEEVE, Garment.COAT, Garment.SNEAKERS, Garment.JEANS),
+            listOf(Garment.T_SHIRT, Garment.JEANS, Garment.SNEAKERS, Garment.COAT),
             state.gaps.map { it.garment },
         )
     }
