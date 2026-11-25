@@ -50,6 +50,16 @@ class WhyLinesTest {
         )
     }
 
+    /** Most pairs the rule calls complementary are 125° to 150° apart, not opposite, so the line says contrast (user, 2026-11-25). */
+    @Test
+    fun complementaryLineSaysTheColorsContrast() {
+        val term = ScoreTerm(Reason.COMPLEMENTARY, 2, items("oxford-shirt", "burgundy-sweater"))
+        assertEquals(
+            "The light blue shirt and burgundy sweater contrast across the color wheel, so each stands out.",
+            term.line(day(7, 14, WeatherCondition.PARTLY_CLOUDY, 10)),
+        )
+    }
+
     @Test
     fun woolLineNamesEveryWoolItem() {
         val term = ScoreTerm(Reason.WARM_WOOL, 1, items("camel-coat", "cream-knit"))
